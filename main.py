@@ -10,8 +10,12 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 users = []
+futures = []
+
 def main():
     for section in config.sections():
+        if config.get(section, 'enabled', fallback='true') == 'false': continue
+
         email = config.get(section, 'email')
         password = config.get(section, 'password')
 
@@ -21,13 +25,13 @@ def main():
         eduweight = int(config.get(section, 'edu_weight', fallback=0))
         minlvl4gold = int(config.get(section, 'minlvl4gold', fallback=999))
         state = int(config.get(section, 'state', fallback=0))
-        headless = bool(int(config.get(section, 'headless', fallback=1)))
+        headless = config.get(section, 'headless', fallback='true')
         
         user.set_perkweights('gold', goldweight)
         user.set_perkweights('edu', eduweight)
         user.set_perkweights('minlvl4gold', minlvl4gold)
         user.set_state(state)
-        user.set_driveroptions('headless', headless)
+        user.set_driveroptions('headless', (False if headless == 'false' else True))
 
         if not user.start():
             alert(user, 'Login failed. Exiting...')
@@ -36,9 +40,11 @@ def main():
         
         users.append(user)
         log(user, 'Login successful. Waiting for page to load...')
+        time.sleep(1)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(session, user) for user in users]
+        concurrent.futures.wait(futures)
     
     exit()
 
@@ -47,4 +53,9 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         for user in users:
-            user.terminate()
+            if user is not None:
+                user.terminate()
+        for future in futures:
+            if future is not None:
+                future.cancel()
+        exit()

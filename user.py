@@ -78,9 +78,11 @@ class User:
             log(self, "Error logging in. Check your credentials.")
             self.terminate()
 
-    def __del__(self):
-        if self.driver is not None:
-            self.driver.quit()
-        
     def terminate(self):
-        self.s.cancel()
+        if self.s:
+            self.s.clear()
+            self.s = None
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        del self
