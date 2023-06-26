@@ -14,7 +14,7 @@ futures = []
 
 def main():
     for section in config.sections():
-        if str.lower(config.get(section, 'enabled', fallback='true').strip()) == 'false': continue
+        if str.lower(config.get(section, 'enabled').strip()) == 'false': continue
 
         email = config.get(section, 'email')
         password = config.get(section, 'password')
@@ -25,7 +25,7 @@ def main():
         eduweight = int(config.get(section, 'edu_weight', fallback=0))
         minlvl4gold = int(config.get(section, 'minlvl4gold', fallback=999))
         state = int(config.get(section, 'state', fallback=0))
-        headless = str.lower(config.get(section, 'headless', fallback='true').strip())
+        headless = str.lower(config.get(section, 'headless').strip())
         
         user.set_perkweights('gold', goldweight)
         user.set_perkweights('edu', eduweight)
