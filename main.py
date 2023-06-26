@@ -39,8 +39,7 @@ def main():
             continue
         
         users.append(user)
-        log(user, 'Login successful. Waiting for page to load...')
-        time.sleep(1)
+        log(user, 'Login successful.')
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(session, user) for user in users]

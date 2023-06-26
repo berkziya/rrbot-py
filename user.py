@@ -69,10 +69,10 @@ class User:
 
         submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[name='s']")
         submit_button.click()
-        time.sleep(1)
 
         try:
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#g")))
+            time.sleep(1)
             return True
         except:
             log(self, "Error logging in. Check your credentials.")
