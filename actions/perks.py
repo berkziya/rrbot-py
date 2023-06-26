@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from actions.status import setPerks
 from misc.utils import *
+from misc.logger import log
 
 
 def isTraining(user):
@@ -39,9 +40,11 @@ def upgradePerk(user):
         elif strtime <= edutime: perk = 'str'
         else: perk = 'end'
 
-        currency = '2' if (9-user.perkweights['gold']) < (user.perkweights[perk]+6)%10 else '1'
-        currency = '1' if user.perkweights[perk] < user.perkweights['minlvl4gold'] else currency
+        currency = '2' if (9-user.perkweights['gold']) < (user.perks[perk]+6)%10 else '1'
+        currency = '1' if user.perks[perk] < user.perkweights['minlvl4gold'] else currency
         currency = '1' if user.money['gold'] < 10000 else currency
+
+        log(user, 'Upgrading perk: ' + perk + ' with currency: ' + ('gold' if currency == '2' else 'money'))
 
         javascript_code = """
         var perk = arguments[0];
