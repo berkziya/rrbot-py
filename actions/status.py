@@ -9,30 +9,38 @@ from misc.utils import *
 
 def setPerks(user):
     try:
-        str = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2")
-        edu = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(5) > .perk_source_2")
-        end = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(6) > .perk_source_2")
+        str = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2").text
+        edu = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(5) > .perk_source_2").text
+        end = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(6) > .perk_source_2").text
 
-        user.set_perk('str', dotless(str.text))
-        user.set_perk('edu', dotless(edu.text))
-        user.set_perk('end', dotless(end.text))
+        user.set_perk('str', dotless(str))
+        user.set_perk('edu', dotless(edu))
+        user.set_perk('end', dotless(end))
+        return True
+    except:
+        return False
+
+def setLevel(user):
+    try:
+        level = user.driver.find_element(By.CSS_SELECTOR, "#header_my_expbar_big > div:nth-child(2)").text
+        user.set_level(dotless(level))
         return True
     except:
         return False
 
 def setMoney(user):
     try:
-        money = user.driver.find_element(By.CSS_SELECTOR, "#m")
-        gold = user.driver.find_element(By.CSS_SELECTOR, "#g")
+        money = user.driver.find_element(By.CSS_SELECTOR, "#m").text
+        gold = user.driver.find_element(By.CSS_SELECTOR, "#g").text
 
-        user.set_money('money', dotless(money.text))
-        user.set_money('gold', dotless(gold.text))
+        user.set_money('money', dotless(money))
+        user.set_money('gold', dotless(gold))
 
         user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(6)").click()
         time.sleep(1)
 
-        energy = user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.storage_item:nth-child(11) > .storage_number > .storage_number_change")))
-        user.set_money('energy', dotless(energy.text))
+        energy = user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.storage_item:nth-child(11) > .storage_number > .storage_number_change"))).text
+        user.set_money('energy', dotless(energy))
 
         user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(5)").click()
         time.sleep(1)
@@ -54,7 +62,7 @@ def isTraveling(user):
             return False
 
 def isResidency(user):
-    if isTraveling(user): return False # TODO: if user is traveling, use alternate method to check residency
+    if isTraveling(user): return False
     button = user.driver.find_element(By.CSS_SELECTOR, '.index_registartion_home').text
     if button == 'Your residency': return True
     return False

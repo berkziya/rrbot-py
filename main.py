@@ -29,7 +29,6 @@ for section in config.sections():
     user.set_perkweights('gold', goldweight)
     user.set_perkweights('edu', eduweight)
     user.set_perkweights('minlvl4gold', minlvl4gold)
-    user.set_goldperks(goldperks)
     user.set_state(state)
     user.set_driveroptions('headless', (False if headless == 'false' else True))
 

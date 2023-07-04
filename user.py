@@ -20,25 +20,25 @@ class User:
 
         self.s = sched.scheduler(time.time, time.sleep)
         self.s.run(blocking=True)
-
+        
+        self.level = 0
         self.money = {'money':0, 'gold':0, 'energy':0}
 
         self.perkweights = {'edu':0, 'gold':0, 'minlvl4gold':999}
-        self.goldperks = ''
         self.perks = {'str':0, 'edu':0, 'end':0}
 
         self.state = 0
 
         self.region = {'residency': 0, 'state': 0, 'region': 0}
 
+    def set_level(self, value):
+        self.level = value
+
     def set_money(self, currency, value):
         self.money[currency] = value
 
     def set_perkweights(self, element, value):
         self.perkweights[element] = value
-
-    def set_goldperks(self, value):
-        self.goldperks = value
 
     def set_perk(self, perk, value):
         self.perks[perk] = value
@@ -81,7 +81,7 @@ class User:
         except:
             log(self, "Error logging in. Check your credentials.")
             return False
-    
+
     def __del__(self):
         if self.driver:
             self.driver.quit()

@@ -1,4 +1,4 @@
-from actions.status import setMoney, setPerks, setRegion
+from actions.status import setLevel, setMoney, setPerks, setRegion
 from events import perks, upcoming_events
 from misc.logger import alert, log
 from misc.utils import *
@@ -7,6 +7,12 @@ events = [perks, upcoming_events]
 
 def session(user):
     log(user, f"Gold weight: {user.perkweights['gold']*10}% | Edu Weight: {user.perkweights['edu']}% | State: {user.state}")
+
+    if setLevel(user):
+        log(user, f"Level: {user.level}")
+    else:
+        user.s.enter(10, 1, setLevel, (user,))
+        alert(user, "Error setting level, will try again in 10 seconds.")
 
     if setMoney(user):
         log(user, f"Money: {numba(user.money['money'])} | Gold: {numba(user.money['gold'])} | Energy: {numba(user.money['energy'])}")
