@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from actions.status import isResidency, setRegion
 from misc.utils import *
 
+
 def militaryAcademy(user, fucked=0):
     fucked+=1
     if not isResidency(user): return False

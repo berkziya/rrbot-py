@@ -24,6 +24,7 @@ class User:
         self.money = {'money':0, 'gold':0, 'energy':0}
 
         self.perkweights = {'edu':0, 'gold':0, 'minlvl4gold':999}
+        self.goldperks = ''
         self.perks = {'str':0, 'edu':0, 'end':0}
 
         self.state = 0
@@ -35,6 +36,9 @@ class User:
 
     def set_perkweights(self, element, value):
         self.perkweights[element] = value
+
+    def set_goldperks(self, value):
+        self.goldperks = value
 
     def set_perk(self, perk, value):
         self.perks[perk] = value
@@ -76,13 +80,11 @@ class User:
             return True
         except:
             log(self, "Error logging in. Check your credentials.")
-            self.terminate()
-
-    def terminate(self):
-        if self.s:
-            self.s.clear()
-            self.s = None
+            return False
+    
+    def __del__(self):
         if self.driver:
             self.driver.quit()
-            self.driver = None
-        del self
+        self.wait = None
+        self.s = None
+        self.driver = None

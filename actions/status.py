@@ -1,10 +1,11 @@
 import time
 
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
 
 from misc.utils import *
+
 
 def setPerks(user):
     try:
@@ -53,7 +54,7 @@ def isTraveling(user):
             return False
 
 def isResidency(user):
-    if isTraveling(user): return False
+    if isTraveling(user): return False # TODO: if user is traveling, use alternate method to check residency
     button = user.driver.find_element(By.CSS_SELECTOR, '.index_registartion_home').text
     if button == 'Your residency': return True
     return False

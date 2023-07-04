@@ -1,5 +1,3 @@
-import time
-
 from actions.status import setMoney, setPerks, setRegion
 from events import perks, upcoming_events
 from misc.logger import alert, log

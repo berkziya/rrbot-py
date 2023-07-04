@@ -1,11 +1,10 @@
 import time
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
-from actions.status import setPerks
-from misc.utils import *
+from actions.status import setMoney, setPerks
 from misc.logger import log
+from misc.utils import *
 
 
 def isTraining(user):
@@ -19,10 +18,11 @@ def isTraining(user):
 
 def upgradePerk(user):
     try:
-        if not setPerks(user):
+        if not (setPerks(user) and setMoney(user)):
             return False
         
         perkurl = {'str': '1', 'edu': '2', 'end': '3'}
+        currencyurl = {'money': '1', 'gold': '2'}
 
         str = user.perks['str']
         edu = user.perks['edu']
@@ -40,11 +40,12 @@ def upgradePerk(user):
         elif strtime <= edutime: perk = 'str'
         else: perk = 'end'
 
-        currency = '2' if (9-user.perkweights['gold']) < (user.perks[perk]+6)%10 else '1'
-        currency = '1' if user.perks[perk] < user.perkweights['minlvl4gold'] else currency
-        currency = '1' if user.money['gold'] < 10000 else currency
+        currency = 'gold' if (9-user.perkweights['gold']) < (user.perks[perk]+6)%10 else 'money'
+        currency = 'money' if user.perks[perk] < user.perkweights['minlvl4gold'] else currency
+        currency = 'money' if perk not in user.goldperks else currency
+        currency = 'money' if user.money['gold'] < 10000 else currency
 
-        log(user, 'Upgrading perk: ' + perk + ' with currency: ' + ('gold' if currency == '2' else 'money'))
+        log(user, 'Upgrading perk: ' + perk + ' with currency: ' + currency)
 
         javascript_code = """
         var perk = arguments[0];
@@ -58,7 +59,7 @@ def upgradePerk(user):
                 location.reload();
             },
         });"""
-        user.driver.execute_script(javascript_code, perkurl[perk], currency)
+        user.driver.execute_script(javascript_code, perkurl[perk], currencyurl[currency])
         time.sleep(3)
         return True
     except:
