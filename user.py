@@ -24,6 +24,7 @@ class User:
         self.level = 0
         self.money = {'money':0, 'gold':0, 'energy':0}
 
+        self.goldperks = ''
         self.perkweights = {'edu':0, 'gold':0, 'minlvl4gold':999}
         self.perks = {'str':0, 'edu':0, 'end':0}
 
@@ -36,6 +37,9 @@ class User:
 
     def set_money(self, currency, value):
         self.money[currency] = value
+
+    def set_goldperks(self, value):
+        self.goldperks = value
 
     def set_perkweights(self, element, value):
         self.perkweights[element] = value
