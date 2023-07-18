@@ -28,12 +28,6 @@ def session(user):
     else:
         user.s.enter(10, 1, setPerks, (user,))
         alert(user, "Error setting perks, will try again in 10 seconds.")
-
-    if setRegion(user):
-        log(user, f"State: {user.region['state']} | Region: {user.region['region']} | Residency: {user.region['residency']}")
-    else:
-        user.s.enter(10, 1, setRegion, (user,))
-        alert(user, "Error setting region, will try again in 10 seconds.")
     
     for event in events:
         event(user)

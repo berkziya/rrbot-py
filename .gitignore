@@ -1,7 +1,18 @@
 config.ini
+geckodriver
+geckodriver.exe
 geckodriver.log
 log.txt
 run.bat
+
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+._*
+
+Pipfile
+Pipfile.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

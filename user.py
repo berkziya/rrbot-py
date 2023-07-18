@@ -1,10 +1,13 @@
 import sched
 import time
 
-from selenium.webdriver import Firefox, FirefoxOptions
+from selenium.webdriver import Firefox
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.firefox import GeckoDriverManager
 
 from misc.logger import log
 
@@ -16,7 +19,8 @@ class User:
         self.email = email
         self.password = password
 
-        self.driveroptions = {'binary_location': 'C:\\Program Files\\Mozilla Firefox\\firefox.exe', 'headless': True}
+        self.driveroptions = {'headless': True, 'binary_location': None}
+        self.driver = None
 
         self.s = sched.scheduler(time.time, time.sleep)
         self.s.run(blocking=True)
@@ -58,12 +62,14 @@ class User:
 
     def start(self):
         options = FirefoxOptions()
-        options.binary_location = self.driveroptions['binary_location']
-        options.headless = self.driveroptions['headless']
+        if self.driveroptions['headless'] or not self.driveroptions['binary_location']:
+            options.add_argument('--headless')
+        else:
+            options.binary_location = self.driveroptions['binary_location']
         options.add_argument('--lang=en-US')
         options.set_preference('intl.accept_languages', 'en-US')
+        self.driver = Firefox(options=options, service=FirefoxService(GeckoDriverManager().install()))
 
-        self.driver = Firefox(options=options)
         self.wait = WebDriverWait(self.driver, 10)
         self.driver.get('https://rivalregions.com')
         time.sleep(1)

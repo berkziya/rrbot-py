@@ -10,8 +10,10 @@ config.read('config.ini')
 
 users = []
 futures = []
+binary = config.get('general', 'binary', fallback=None)
 
 for section in config.sections():
+    if section == 'general': continue
     if str.lower(config.get(section, 'enabled').strip()) == 'false': continue
 
     email = config.get(section, 'email')
@@ -21,17 +23,17 @@ for section in config.sections():
 
     goldweight = int(config.get(section, 'gold_weight', fallback=0))
     eduweight = int(config.get(section, 'edu_weight', fallback=0))
-    minlvl4gold = int(config.get(section, 'minlvl4gold', fallback=999))
-    goldperks = str.lower(config.get(section, 'perks4gold', fallback='')).strip()
-    state = int(config.get(section, 'state', fallback=0))
+    minlvl4gold = int(config.get(section, 'minlvl4gold', fallback=0))
+    perks4gold = str.lower(config.get(section, 'perks4gold', fallback='')).strip()
     headless = str.lower(config.get(section, 'headless').strip())
     
     user.set_perkweights('gold', goldweight)
     user.set_perkweights('edu', eduweight)
     user.set_perkweights('minlvl4gold', minlvl4gold)
-    user.set_goldperks(goldperks)
-    user.set_state(state)
+    user.set_goldperks(perks4gold)
     user.set_driveroptions('headless', (False if headless == 'false' else True))
+
+    user.set_driveroptions('binary_location', binary)
 
     if not user.start():
         alert(user, 'Login failed. Exiting...')
