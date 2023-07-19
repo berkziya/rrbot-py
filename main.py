@@ -11,27 +11,28 @@ config.read('config.ini')
 users = []
 futures = []
 binary = config.get('general', 'binary', fallback=None)
+headless = config.getboolean('general', 'headless', fallback=True)
 
 for section in config.sections():
     if section == 'general': continue
-    if str.lower(config.get(section, 'enabled').strip()) == 'false': continue
+    if config.getboolean(section, 'enabled') == False: continue
 
     email = config.get(section, 'email')
     password = config.get(section, 'password')
 
     user = User(section, email, password)
 
-    goldweight = int(config.get(section, 'gold_weight', fallback=0))
-    eduweight = int(config.get(section, 'edu_weight', fallback=0))
-    minlvl4gold = int(config.get(section, 'minlvl4gold', fallback=0))
+    goldweight = config.getint(section, 'gold_weight', fallback=0)
+    eduweight = config.getint(section, 'edu_weight', fallback=0)
+    minlvl4gold = config.getint(section, 'minlvl4gold', fallback=0)
     perks4gold = str.lower(config.get(section, 'perks4gold', fallback='')).strip()
-    headless = str.lower(config.get(section, 'headless').strip())
+    isheadless = config.getboolean(section, 'headless', fallback=headless)
     
     user.set_perkweights('gold', goldweight)
     user.set_perkweights('edu', eduweight)
     user.set_perkweights('minlvl4gold', minlvl4gold)
     user.set_goldperks(perks4gold)
-    user.set_driveroptions('headless', (False if headless == 'false' else True))
+    user.set_driveroptions('headless', isheadless)
 
     user.set_driveroptions('binary_location', binary)
 
