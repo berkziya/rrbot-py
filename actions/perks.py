@@ -40,10 +40,10 @@ def upgradePerk(user):
         elif strtime <= edutime: perk = 'str'
         else: perk = 'end'
 
-        currency = 'gold' if (9-user.perkweights['gold']) < (user.perks[perk]+6)%10 else 'money'
+        currency = 'gold' if perk in user.goldperks else 'money'
+        currency = 'money' if (9-user.perkweights['gold']) > (user.perks[perk]+6)%10 else currency
         currency = 'money' if user.perks[perk] < user.perkweights['minlvl4gold'] else currency
-        currency = 'money' if perk not in user.goldperks else currency
-        currency = 'money' if user.money['gold'] < 10000 else currency
+        currency = 'money' if user.money['gold'] < 1000 else currency
 
         log(user, 'Upgrading perk: ' + perk + ' with currency: ' + currency)
 
