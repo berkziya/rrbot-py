@@ -22,7 +22,7 @@ for section in config.sections():
 
     user = User(section, email, password)
 
-    goldweight = config.getint(section, 'gold_weight', fallback=0)
+    goldweight = config.getint(section, 'gold_weight', fallback=10)
     eduweight = config.getint(section, 'edu_weight', fallback=0)
     minlvl4gold = config.getint(section, 'minlvl4gold', fallback=0)
     perks4gold = str.lower(config.get(section, 'perks4gold', fallback='')).strip()
