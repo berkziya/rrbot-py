@@ -11,7 +11,6 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 from misc.logger import log
 
-
 class User:
     def __init__(self, name, email, password):
         self.name = name
@@ -27,14 +26,14 @@ class User:
         
         self.level = 0
         self.money = {'money':0, 'gold':0, 'energy':0}
-
-        self.goldperks = ''
-        self.perkweights = {'edu':0, 'gold':0, 'minlvl4gold':999}
         self.perks = {'str':0, 'edu':0, 'end':0}
 
-        self.state = 0
+        self.perkoptions = {'goldperks': '', 'eduweight':0, 'goldweight':0, 'minlvl4gold':999}
 
-        self.region = {'residency': 0, 'state': 0, 'region': 0}
+        self.regionvalues = {'residency': 0, 'state': 0, 'region': 0}
+
+    def set_driveroptions(self, element, value):
+        self.driveroptions[element] = value
 
     def set_level(self, value):
         self.level = value
@@ -42,23 +41,14 @@ class User:
     def set_money(self, currency, value):
         self.money[currency] = value
 
-    def set_goldperks(self, value):
-        self.goldperks = value
-
-    def set_perkweights(self, element, value):
-        self.perkweights[element] = value
-
     def set_perk(self, perk, value):
         self.perks[perk] = value
 
-    def set_state(self, state):
-        self.state = state
+    def set_perkoptions(self, element, value):
+        self.perkoptions[element] = value
 
-    def set_region(self, element, value):
-        self.region[element] = value
-
-    def set_driveroptions(self, element, value):
-        self.driveroptions[element] = value
+    def set_regionvalues(self, element, value):
+        self.regionvalues[element] = value
 
     def start(self):
         options = FirefoxOptions()

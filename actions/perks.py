@@ -6,7 +6,7 @@ from actions.status import setMoney, setPerks
 from misc.logger import log
 from misc.utils import *
 
-
+# isTraining(user) returns False if not training, otherwise returns time left in seconds
 def isTraining(user):
     try:
         perk_counter = user.driver.find_element(By.ID, 'perk_counter_2')
@@ -16,6 +16,7 @@ def isTraining(user):
     except:
         return False
 
+# upgradePerk(user) returns True if successful, False otherwise
 def upgradePerk(user):
     try:
         if not (setPerks(user) and setMoney(user)):
@@ -29,7 +30,7 @@ def upgradePerk(user):
         end = user.perks['end']
 
         strtime = (str+1)**2 / 2
-        edutime = (edu+1)**2 * (1 - user.perkweights['edu']/100)
+        edutime = (edu+1)**2 * (1 - user.perkoptions['eduweight']/100)
         endtime = (end+1)**2
         
         strtime = strtime / (4 if str < 50 else (2 if str < 100 else 1))
@@ -40,10 +41,24 @@ def upgradePerk(user):
         elif strtime <= edutime: perk = 'str'
         else: perk = 'end'
 
-        currency = 'gold' if perk in user.goldperks else 'money'
-        currency = 'money' if (9-user.perkweights['gold']) > (user.perks[perk]+6)%10 else currency
-        currency = 'money' if user.perks[perk] < user.perkweights['minlvl4gold'] else currency
-        currency = 'money' if user.money['gold'] < 1000 else currency
+        goldprice = (user.perks[perk]+6)//10*10
+
+        currency = 'gold'
+        if goldprice > user.money['gold']:
+            log(user, 'not enough gold')
+            currency = 'money'
+        elif perk not in user.perkoptions['goldperks']:
+            log(user, '{perk} is not in goldperks')
+            currency = 'money'
+        elif (10-user.perkoptions['goldweight']) > (user.perks[perk]+6)%10:
+            currency = 'money'
+            log(user, 'goldweight')
+        elif user.perks[perk] < user.perkoptions['minlvl4gold']:
+            log(user, 'minlvl4gold')
+            currency = 'money'
+        elif int(user.money['energy']/10) + user.money['gold'] < 10000:
+            log(user, 'not enough gold+energy')
+            currency = 'money'
 
         log(user, 'Upgrading perk: ' + perk + ' with currency: ' + currency)
 

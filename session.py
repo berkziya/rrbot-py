@@ -9,7 +9,7 @@ events = [perks, upcoming_events]
 
 def session(user):
     time.sleep(4)
-    log(user, f"Gold weight: {user.perkweights['gold']*10}% | Edu Weight: {user.perkweights['edu']}% | State: {user.state}")
+    log(user, f"Gold weight: {user.perkoptions['goldweight']*10}% | Edu Weight: {user.perkoptions['eduweight']}")
 
     if setLevel(user):
         log(user, f"Level: {user.level}")
@@ -19,6 +19,7 @@ def session(user):
 
     if setMoney(user):
         log(user, f"Money: {numba(user.money['money'])} | Gold: {numba(user.money['gold'])} | Energy: {numba(user.money['energy'])}")
+        log(user, f"TOTAL GOLD: {numba(user.money['energy']//10 + user.money['gold'])}")
     else:
         user.s.enter(10, 1, setMoney, (user,))
         alert(user, "Error setting money, will try again in 10 seconds.")
