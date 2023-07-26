@@ -22,7 +22,6 @@ class User:
         self.driver = None
 
         self.s = sched.scheduler(time.time, time.sleep)
-        self.s.run(blocking=True)
         
         self.level = 0
         self.money = {'money':0, 'gold':0, 'energy':0}
@@ -85,6 +84,6 @@ class User:
     def __del__(self):
         if self.driver:
             self.driver.quit()
-        self.wait = None
-        self.s = None
-        self.driver = None
+        while not self.s.empty():
+            self.s.cancel(self.s.queue[0])
+        self.s.run(blocking=False)

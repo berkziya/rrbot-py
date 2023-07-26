@@ -1,3 +1,4 @@
+import atexit
 import concurrent.futures
 import configparser
 import os
@@ -84,25 +85,22 @@ def main():
 
     # Start sessions
     futures = []
-    try:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = [executor.submit(session, user) for user in users]
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    result = future.result()
-                except Exception as e:
-                    print(f'Exception: {e}')
-                else:
-                    print(f'Result: {result}')
-    except KeyboardInterrupt:
-        print('KeyboardInterrupt received. Cancelling futures...')
-        for user in users:
-            if user is not None:
-                del user
-        for future in futures:
-            if future is not None:
-                future.cancel()
-        print('Futures cancelled. Exiting...')
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(session, user) for user in users]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                result = future.result()
+            except Exception as e:
+                print(f'Exception: {e}')
+            else:
+                print(f'Result: {result}')
+
+def cleanup():
+    for user in users:
+        if user is not None:
+            del user
 
 if __name__ == '__main__':
     main()
+    atexit.register(cleanup)
+    exit()
