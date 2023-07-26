@@ -2,6 +2,7 @@ import atexit
 import concurrent.futures
 import configparser
 import os
+import subprocess
 import sys
 
 from misc.logger import alert, log
@@ -30,10 +31,10 @@ minlvl4gold = 30 ; any perks below this level will be upgraded with money
 
 users = []
 
-headless = True
-binary = None
+def create_user_from_config(config, general):
+    headless = general.getboolean('headless', fallback=True)
+    binary = general.get('binary', fallback=None)
 
-def create_user_from_config(config):
     email = config.get('email')
     password = config.get('password')
     is_headless = config.getboolean('headless', fallback=headless) or not binary
@@ -65,18 +66,15 @@ def main():
     config = configparser.ConfigParser()
     config.read('config.ini')
 
-    headless = config.getboolean('general', 'headless', fallback=True)
-    binary = config.get('general', 'binary', fallback=None)
-
     # Create users from config
     for section in config.sections():
         if section == 'general': continue
         if config.getboolean(section, 'enabled') == False: continue
 
-        user = create_user_from_config(config[section])
+        user = create_user_from_config(config[section], config['general'])
 
         if not user.start():
-            alert(user, 'Login failed. Exiting...')
+            alert(user, 'Login failed. Aborting...}')
             del user
             continue
         
@@ -86,6 +84,7 @@ def main():
     # Start sessions
     futures = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
+        caffeinate = subprocess.Popen(['caffeinate', '-i'])
         futures = [executor.submit(session, user) for user in users]
         for future in concurrent.futures.as_completed(futures):
             try:
@@ -94,6 +93,7 @@ def main():
                 print(f'Exception: {e}')
             else:
                 print(f'Result: {result}')
+        caffeinate.terminate()
 
 def cleanup():
     for user in users:
