@@ -2,14 +2,15 @@ import sched
 import time
 
 from selenium.webdriver import Firefox
+from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 
 from misc.logger import log
+
 
 class User:
     def __init__(self, name, email, password):
@@ -23,16 +24,20 @@ class User:
 
         self.s = sched.scheduler(time.time, time.sleep)
         
+        self.id = 0
         self.level = 0
         self.money = {'money':0, 'gold':0, 'energy':0}
         self.perks = {'str':0, 'edu':0, 'end':0}
 
         self.perkoptions = {'goldperks': '', 'eduweight':0, 'goldweight':0, 'minlvl4gold':999}
 
-        self.regionvalues = {'residency': 0, 'state': 0, 'region': 0}
+        self.regionvalues = {'region':0, 'residency': 0, 'state': 4455}
 
     def set_driveroptions(self, element, value):
         self.driveroptions[element] = value
+
+    def set_id(self, value):
+        self.id = value
 
     def set_level(self, value):
         self.level = value

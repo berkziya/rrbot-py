@@ -1,29 +1,66 @@
 import time
+import urllib.parse
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from actions.status import isResidency, setRegion
-from misc.utils import *
+from actions.status import setAll, setMoney, setPerks
+from misc.logger import log
 
 
-def militaryAcademy(user, fucked=0):
-    fucked+=1
-    if not isResidency(user): return False
-    if not setRegion(user): return False
-    url = f"https://rivalregions.com/#slide/academy/{user.region['residency']}"
-    print(url)
-    user.driver.get(url)
-    time.sleep(4)
-    try:
-        timer = user.driver.find_element(By.CSS_SELECTOR, '.hasCountdown').text()
-        print(timer)
-        total_seconds = timetosecs(timer) + 20
-        return total_seconds
-    except NoSuchElementException:
-        button = user.driver.find_element(By.XPATH , "//*[contains(text(), 'Build')]").click()
-        time.sleep(1)
-    user.driver.get('https://rivalregions.com/')
-    time.sleep(1)
-    if fucked == 3: return False
-    return militaryAcademy(user, fucked=fucked+1)
+def buildMA(user):
+    if not setAll(user): return False
+    if (user.regionvalues['region'] != user.regionvalues['residency']) or user.level < 40: return False
+
+    js_ajax = """
+    $.ajax({
+        url: 'slide/academy_do/',
+        data: { c: c_html },
+        type: 'POST',
+        success: function (data) {
+            location.reload();
+        },
+    });"""
+    user.driver.execute_script(js_ajax)
+    time.sleep(3)
+    return True
+
+def workStateDept(user, dept):
+    state = user.regionvalues['state']
+    if not state: return False
+
+    depts = {
+        'building': 1,
+        'gold': 2,
+        'oil': 3,
+        'ore': 4,
+        'diamonds': 5,
+        'uranium': 6,
+        'liquid_oxygen': 7,
+        'helium3': 8,
+        'tanks': 9,
+        'spacestations': 10,
+        'battleships': 11,
+    }
+
+    what_dict = {'state': state}
+    for key, value in depts.items():
+        if key == dept:
+            what_dict[f'w{value}'] = 10
+        else:
+            what_dict[f'w{value}'] = 0
+    what = urllib.parse.quote_plus(str(what_dict).replace("'", '"'))
+    js_ajax = """
+        var what = arguments[0];
+
+        $.ajax({
+            url: '/rival/instwork',
+            data: { c: c_html , what: what},
+            type: 'POST',
+            success: function (data) {
+                location.reload();
+            },
+        });"""
+    user.driver.execute_script(js_ajax, what)
+    time.sleep(2)
+    return True

@@ -6,8 +6,11 @@ from actions.status import setMoney, setPerks
 from misc.logger import log
 from misc.utils import *
 
+
 # isTraining(user) returns False if not training, otherwise returns time left in seconds
 def isTraining(user):
+    user.driver.refresh()
+    time.sleep(2)
     try:
         perk_counter = user.driver.find_element(By.ID, 'perk_counter_2')
         perk_counter = perk_counter.text
@@ -19,7 +22,7 @@ def isTraining(user):
 # upgradePerk(user) returns True if successful, False otherwise
 def upgradePerk(user):
     try:
-        if not (setPerks(user) and setMoney(user)):
+        if not (setPerks(user) and setMoney(user, energy=True)):
             return False
         
         perkurl = {'str': '1', 'edu': '2', 'end': '3'}
@@ -41,28 +44,28 @@ def upgradePerk(user):
         elif strtime <= edutime: perk = 'str'
         else: perk = 'end'
 
-        goldprice = (user.perks[perk]+6)//10*10
+        goldprice = (user.perks[perk]+6)//10*10+10
 
         currency = 'gold'
-        if goldprice > user.money['gold']:
-            log(user, 'not enough gold')
-            currency = 'money'
-        elif perk not in user.perkoptions['goldperks']:
+        if perk not in user.perkoptions['goldperks']:
             log(user, '{perk} is not in goldperks')
             currency = 'money'
         elif (10-user.perkoptions['goldweight']) > (user.perks[perk]+6)%10:
             currency = 'money'
-            log(user, 'goldweight')
+            log(user, 'goldweight barrier')
         elif user.perks[perk] < user.perkoptions['minlvl4gold']:
-            log(user, 'minlvl4gold')
+            log(user, 'minlvl4gold barrier')
             currency = 'money'
         elif int(user.money['energy']/10) + user.money['gold'] < 10000:
             log(user, 'not enough gold+energy')
             currency = 'money'
+        elif goldprice > user.money['gold']:
+            log(user, 'not enough gold')
+            currency = 'money'
 
         log(user, 'Upgrading perk: ' + perk + ' with currency: ' + currency)
 
-        javascript_code = """
+        js_ajax = """
         var perk = arguments[0];
         var currency = arguments[1];
 
@@ -74,8 +77,8 @@ def upgradePerk(user):
                 location.reload();
             },
         });"""
-        user.driver.execute_script(javascript_code, perkurl[perk], currencyurl[currency])
-        time.sleep(3)
+        user.driver.execute_script(js_ajax, perkurl[perk], currencyurl[currency])
+        time.sleep(2)
         return True
     except:
         return False

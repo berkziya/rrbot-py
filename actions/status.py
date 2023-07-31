@@ -1,3 +1,4 @@
+import re
 import time
 
 from selenium.common.exceptions import NoSuchElementException
@@ -7,7 +8,42 @@ from selenium.webdriver.support import expected_conditions as EC
 from misc.utils import *
 
 
+def setAll(user):
+    try:
+        id = user.driver.execute_script("return id")
+        user.set_id(id)
+        user.driver.get(f'https://rivalregions.com/slide/profile/{user.id}')
+        time.sleep(1)
+
+        level_text = user.driver.find_element(By.CSS_SELECTOR, "div.oil > div:nth-child(2)").text
+        level = re.search(r'\d+', level_text).group()
+        user.set_level(dotless(level))
+
+        str = user.driver.find_element(By.CSS_SELECTOR, "span[title='Strength']").text
+        edu = user.driver.find_element(By.CSS_SELECTOR, "span[title='Education']").text
+        end = user.driver.find_element(By.CSS_SELECTOR, "span[title='Endurance']").text
+
+        user.set_perk('str', dotless(str))
+        user.set_perk('edu', dotless(edu))
+        user.set_perk('end', dotless(end))
+
+        region = user.driver.find_element(By.CSS_SELECTOR, ".p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(7) > td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1]
+        residency = user.driver.find_element(By.CSS_SELECTOR, ".p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(8) > td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1]
+
+        user.set_regionvalues('region', dotless(region))
+        user.set_regionvalues('residency', dotless(residency))
+
+        user.driver.get('https://rivalregions.com')
+        time.sleep(2)
+        return True
+    except:
+        user.driver.get('https://rivalregions.com')
+        time.sleep(2)
+        return False
+
 def setPerks(user):
+    user.driver.refresh()
+    time.sleep(2)
     try:
         str = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2").text
         edu = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(5) > .perk_source_2").text
@@ -21,6 +57,8 @@ def setPerks(user):
         return False
 
 def setLevel(user):
+    user.driver.refresh()
+    time.sleep(2)
     try:
         level = user.driver.find_element(By.CSS_SELECTOR, "#header_my_expbar_big > div:nth-child(2)").text
         user.set_level(dotless(level))
@@ -28,7 +66,9 @@ def setLevel(user):
     except:
         return False
 
-def setMoney(user):
+def setMoney(user, energy=False):
+    user.driver.refresh()
+    time.sleep(2)
     try:
         money = user.driver.find_element(By.CSS_SELECTOR, "#m").text
         gold = user.driver.find_element(By.CSS_SELECTOR, "#g").text
@@ -36,21 +76,20 @@ def setMoney(user):
         user.set_money('money', dotless(money))
         user.set_money('gold', dotless(gold))
 
-        user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(6)").click()
-        time.sleep(1)
-
-        energy = user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.storage_item:nth-child(11) > .storage_number > .storage_number_change"))).text
-        user.set_money('energy', dotless(energy))
-
-        user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(5)").click()
-        time.sleep(1)
+        if energy:
+            user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(6)").click()
+            time.sleep(1)
+            energy = user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.storage_item:nth-child(11) > .storage_number > .storage_number_change"))).text
+            user.set_money('energy', dotless(energy))
+            user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(5)").click()
+            time.sleep(1)
         return True
     except:
         return False
 
 def isTraveling(user):
     user.driver.refresh()
-    time.sleep(1)
+    time.sleep(2)
     try:
         user.driver.find_element(By.CSS_SELECTOR, '.gototravel')
         return True
@@ -60,20 +99,3 @@ def isTraveling(user):
             return True
         except NoSuchElementException:
             return False
-
-def isResidency(user):
-    if isTraveling(user): return False
-    button = user.driver.find_element(By.CSS_SELECTOR, '.index_registartion_home').text
-    if button == 'Your residency': return True
-    return False
-
-def setRegion(user):
-    try:
-        state = int(user.driver.find_element(By.CSS_SELECTOR, "div.index_case_50:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])
-        region = int(user.driver.find_element(By.CSS_SELECTOR, "div.index_case_50:nth-child(3) > div:nth-child(1) > span:nth-child(1)").get_attribute('action').split('/')[-1])
-        user.set_region('state', state)
-        user.set_region('region', region)
-        if isResidency(user): user.set_region('residency', region)
-        return True
-    except:
-        return False
