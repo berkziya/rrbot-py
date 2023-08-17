@@ -48,19 +48,19 @@ def upgradePerk(user):
 
         currency = 'gold'
         if perk not in user.perkoptions['goldperks']:
-            log(user, '{perk} is not in goldperks')
+            log(user, f'{perk} is not in goldperks')
             currency = 'money'
         elif (10-user.perkoptions['goldweight']) > (user.perks[perk]+6)%10:
             currency = 'money'
-            log(user, 'goldweight barrier')
+            log(user, f'goldweight barrier')
         elif user.perks[perk] < user.perkoptions['minlvl4gold']:
-            log(user, 'minlvl4gold barrier')
+            log(user, f'minlvl4gold barrier: {user.perks[perk]} < {user.perkoptions["minlvl4gold"]}')
             currency = 'money'
-        elif int(user.money['energy']/10) + user.money['gold'] < 10000:
-            log(user, 'you are running low on energy and gold')
+        elif user.money['energy']//10 + user.money['gold'] < 10000 :
+            log(user, 'you are running low on energy and gold: TOTAL GOLD < 10000')
             currency = 'money'
         elif goldprice > user.money['gold']:
-            log(user, 'not enough gold')
+            log(user, f'not enough gold: gold({user.money["gold"]} < {goldprice}')
             currency = 'money'
 
         log(user, 'Upgrading perk: ' + perk + ' with currency: ' + currency)
