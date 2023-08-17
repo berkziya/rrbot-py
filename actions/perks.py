@@ -57,7 +57,7 @@ def upgradePerk(user):
             log(user, 'minlvl4gold barrier')
             currency = 'money'
         elif int(user.money['energy']/10) + user.money['gold'] < 10000:
-            log(user, 'not enough gold+energy')
+            log(user, 'you are running low on energy and gold')
             currency = 'money'
         elif goldprice > user.money['gold']:
             log(user, 'not enough gold')

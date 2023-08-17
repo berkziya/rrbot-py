@@ -12,7 +12,8 @@ events = [perks, militaryAcademy, energy,
 
 def session(user):
     time.sleep(4)
-    log(user, f"Gold weight: {user.perkoptions['goldweight']*10}% | Edu Weight: {user.perkoptions['eduweight']}")
+
+    log(user, f"ID: {user.id}")
 
     if setAll(user):
         log(user, f"ID: {user.id} | Level: {user.level}")

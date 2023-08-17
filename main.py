@@ -10,8 +10,11 @@ from session import session
 from user import User
 
 DEFAULT_CONFIG = '''
+[general]
+debug = false
+
 [user1]
-enabled = True
+enabled = true
 email = user1@example.com
 password = password1
 goldperks = edu str end
@@ -20,7 +23,7 @@ goldweight = 10
 minlvl4gold = 666
 
 [user2]
-enabled = False
+enabled = false
 email = user2@example.com
 password = password2
 goldperks = edu ; perks to upgrade with gold

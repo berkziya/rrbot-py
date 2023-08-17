@@ -7,6 +7,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from misc.utils import *
 
+def setAll(user):
+    pass
 
 def setAll(user):
     try:

@@ -15,6 +15,7 @@ from misc.logger import log
 class User:
     def __init__(self, name, email, password):
         self.name = name
+        self.id = 0
 
         self.email = email
         self.password = password
@@ -32,6 +33,9 @@ class User:
         self.perkoptions = {'goldperks': '', 'eduweight':0, 'goldweight':0, 'minlvl4gold':999}
 
         self.regionvalues = {'region':0, 'residency': 0, 'state': 4455}
+
+    def set_id(self, value):
+        self.id = value
 
     def set_driveroptions(self, element, value):
         self.driveroptions[element] = value
@@ -81,6 +85,9 @@ class User:
         try:
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#g")))
             time.sleep(1)
+
+            id = self.driver.execute_script("return id;")
+            self.set_id(id)
             return True
         except:
             log(self, "Error logging in. Check your credentials.")
