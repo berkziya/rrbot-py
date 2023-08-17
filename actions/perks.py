@@ -60,10 +60,10 @@ def upgradePerk(user):
             log(user, 'you are running low on energy and gold: TOTAL GOLD < 10000')
             currency = 'money'
         elif goldprice > user.money['gold']:
-            log(user, f'not enough gold: gold({user.money["gold"]} < {goldprice}')
+            log(user, f'not enough gold: gold < {goldprice}')
             currency = 'money'
 
-        log(user, 'Upgrading perk: ' + perk + ' with currency: ' + currency)
+        log(user, f'Upgrading {perk} with {currency}...')
 
         js_ajax = """
         var perk = arguments[0];
