@@ -26,10 +26,10 @@ minlvl4gold = 666
 enabled = false
 email = user2@example.com
 password = password2
-goldperks = edu ; perks to upgrade with gold
-eduweight = 100 ; 0-100, 100 = only education, 0 = only war damage
-goldweight = 5 ; 0-10, 10 = only gold, 5 = half gold
-minlvl4gold = 30 ; any perks below this level will be upgraded with money
+goldperks = edu
+eduweight = 100
+goldweight = 5
+minlvl4gold = 30
 '''
 
 users = []
@@ -62,7 +62,7 @@ def main():
     if not os.path.exists('config.ini'):
         with open('config.ini', 'w') as f:
             f.write(DEFAULT_CONFIG)
-        print('Default config file created. Please edit config.ini and run the script again.')
+        print('Created a config file. Please edit config.ini and run the program again.')
         sys.exit()
     
     # Read config
