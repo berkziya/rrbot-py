@@ -8,19 +8,22 @@ from actions.status import setAll, setMoney, setPerks
 from misc.logger import log
 
 def refillGold(user):
-    js_ajax = """
-        $.ajax({
-            url: '/parliament/donew/42/0/0',
-            data: { tmp_gov: "'0'", c: c_html },
-            type: 'POST',
-            success: function (data) {
-                location.reload();
-            },
-        });"""
-    user.driver.execute_script(js_ajax)
+    try:
+        js_ajax = """
+            $.ajax({
+                url: '/parliament/donew/42/0/0',
+                data: { tmp_gov: "'0'", c: c_html },
+                type: 'POST',
+                success: function (data) {
+                    location.reload();
+                },
+            });"""
+        user.driver.execute_script(js_ajax)
 
-    time.sleep(1)
-    acceptLaw(user, 'Resources exploration: state, gold resources')
+        time.sleep(1)
+        return acceptLaw(user, 'Resources exploration: state, gold resources')
+    except:
+        return False
 
 def acceptLaw(user, text):
     user.driver.get('https://rivalregions.com/parliament')
@@ -45,7 +48,7 @@ def acceptLaw(user, text):
         return False
 
     user.driver.get('https://rivalregions.com/')
-    time.sleep(1)
+    time.sleep(2)
 
     js_ajax = """
         var law = arguments[0];
