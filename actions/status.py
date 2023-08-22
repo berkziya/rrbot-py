@@ -8,9 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from misc.utils import *
 
 def setAll(user):
-    pass
-
-def setAll(user):
     try:
         id = user.driver.execute_script("return id")
         user.set_id(id)
@@ -34,6 +31,25 @@ def setAll(user):
 
         user.set_regionvalues('region', dotless(region))
         user.set_regionvalues('residency', dotless(residency))
+
+        #work permits .p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(9)
+
+        #governor minister and party
+        i = 10
+        while i < 13:
+            title = user.driver.find_element(By.CSS_SELECTOR, f".p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child({i}) > td:nth-child(1)").text
+            try:
+                thingy = user.driver.find_element(By.CSS_SELECTOR, f".p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child({i}) > td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1]
+            except Exception as e:
+                print(e)
+                break
+            thing = 'governor' if 'Governor' in title else 'economics' if 'economics' in title else 'foreign' if 'Foreign' in title else 'party'
+            if thing == 'party':
+                user.set_party(thingy)
+                break
+            else:
+                user.set_ministers(thing, thingy)
+            i += 1
 
         user.driver.get('https://rivalregions.com')
         time.sleep(2)

@@ -32,7 +32,11 @@ class User:
 
         self.perkoptions = {'goldperks': '', 'eduweight':0, 'goldweight':0, 'minlvl4gold':999}
 
+        self.party = 0
+
         self.regionvalues = {'region':0, 'residency': 0, 'state': 4455}
+
+        self.ministers = {'governor': 0, 'economics': 0, 'foreign': 0}
 
     def set_id(self, value):
         self.id = value
@@ -55,8 +59,14 @@ class User:
     def set_perkoptions(self, element, value):
         self.perkoptions[element] = value
 
+    def set_party(self, value):
+        self.party = value
+
     def set_regionvalues(self, element, value):
         self.regionvalues[element] = value
+
+    def set_ministers(self, element, value):
+        self.ministers[element] = value
 
     def start(self):
         options = FirefoxOptions()

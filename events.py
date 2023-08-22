@@ -1,6 +1,7 @@
 import datetime
 import time
 
+from actions.ministry import refillGold
 from actions.perks import isTraining, upgradePerk
 from actions.regions import buildMA, workStateDept
 from actions.status import setAll
@@ -57,6 +58,10 @@ def militaryAcademy(user):
     user.s.enter(36000, 1, militaryAcademy, (user,))
     return True
 
+def refilldaGold(user):
+    if refillGold(user): log(user, f"Refilled the state gold")
+    else: log(user, "Failed to refill state gold, will try again in an hour")
+    user.s.enter(3600, 1, refilldaGold, (user,))
 
 def goldfarm(user, region=False):
     pass
