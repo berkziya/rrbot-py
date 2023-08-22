@@ -22,10 +22,6 @@ def session(user):
         log(user, f"Strength: {user.perks['str']} | Education: {user.perks['edu']} | Endurance: {user.perks['end']}")
         log(user, f"Governor: {user.ministers['governor']} | Economics: {user.ministers['economics']} | Foreign: {user.ministers['foreign']}")
         log(user, f"Party: {user.party}")
-
-        if user.ministers['economics']:
-            print('refilling gold')
-            refillGold(user)
             
     else:
         user.s.enter(10, 1, setAll, (user,))
@@ -44,6 +40,6 @@ def session(user):
     for event in events:
         event(user)
     
-    if user.ministry['economics']: refilldaGold(user)
+    if user.ministers['economics']: refilldaGold(user)
 
     user.s.run(blocking=True)
