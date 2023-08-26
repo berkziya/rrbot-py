@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ddbbdfdde69a34d526550d8b415be82db0a62cbcc951183215d8ee4317fd4ce4"
+            "sha256": "baf822aba4ea199536dd8f1bb12b28499f94e6b7c7669cee9f3d91faac72e065"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -115,11 +115,11 @@
         },
         "exceptiongroup": {
             "hashes": [
-                "sha256:12c3e887d6485d16943a309616de20ae5582633e0a2eda17f4e10fd61c1e8af5",
-                "sha256:e346e69d186172ca7cf029c8c1d16235aa0e04035e5750b4b95039e65204328f"
+                "sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9",
+                "sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==1.1.2"
+            "version": "==1.1.3"
         },
         "h11": {
             "hashes": [
@@ -179,11 +179,12 @@
         },
         "selenium": {
             "hashes": [
-                "sha256:40241b9d872f58959e9b34e258488bf11844cd86142fd68182bd41db9991fc5c",
-                "sha256:871bf800c4934f745b909c8dfc7d15c65cf45bd2e943abd54451c810ada395e3"
+                "sha256:98e72117b194b3fa9c69b48998f44bf7dd4152c7bd98544911a1753b9f03cc7d",
+                "sha256:9f9a5ed586280a3594f7461eb1d9dab3eac9d91e28572f365e9b98d9d03e02b5"
             ],
             "index": "pypi",
-            "version": "==4.10.0"
+            "markers": "python_version >= '3.7'",
+            "version": "==4.11.2"
         },
         "sniffio": {
             "hashes": [
@@ -199,6 +200,14 @@
                 "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"
             ],
             "version": "==2.4.0"
+        },
+        "tqdm": {
+            "hashes": [
+                "sha256:d302b3c5b53d47bce91fea46679d9c3c6508cf6332229aa1e7d8653723793386",
+                "sha256:d88e651f9db8d8551a62556d3cff9e3034274ca5d66e93197cf2490e2dcb69c7"
+            ],
+            "markers": "python_version >= '3.7'",
+            "version": "==4.66.1"
         },
         "trio": {
             "hashes": [
@@ -229,11 +238,12 @@
         },
         "webdriver-manager": {
             "hashes": [
-                "sha256:1dfc29a786abb97ba28076d4766d931064eeeac71a9685a3e8d46f5d363fcbe3",
-                "sha256:cd1f49ebb325a98b4dc3c41056f5b645e82fff3f83e346607844ec0bdf561c0b"
+                "sha256:3af0a5ce6d6273c70f57d211cf433b9347804dfea3afa3e69e99be22acb9af2d",
+                "sha256:7592579ab5d13fde3c5ee11a2bad2cf143cddbfac276db042b187ceb5fe48275"
             ],
             "index": "pypi",
-            "version": "==3.9.1"
+            "markers": "python_version >= '3.7'",
+            "version": "==3.9.0"
         },
         "wsproto": {
             "hashes": [

@@ -11,7 +11,7 @@ from user import User
 
 DEFAULT_CONFIG = '''
 [general]
-debug = false
+browser = firefox
 
 [user1]
 enabled = true
@@ -35,6 +35,7 @@ minlvl4gold = 30
 users = []
 
 def create_user_from_config(config, general):
+    browser = general.get('browser', fallback=None)
     headless = general.getboolean('headless', fallback=True)
     binary = general.get('binary', fallback=None)
 
@@ -43,6 +44,7 @@ def create_user_from_config(config, general):
     is_headless = config.getboolean('headless', fallback=headless) or not binary
 
     user = User(config.name, email, password)
+    user.set_driveroptions('browser', browser)
     user.set_driveroptions('binary_location', binary)
     user.set_driveroptions('headless', is_headless)
 

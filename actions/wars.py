@@ -1,14 +1,16 @@
 import time
-import urllib.parse
+import json
 
 from selenium.webdriver.common.by import By
 
-from actions.status import setLevel
+from actions.status import set_level
 
 
-def attack(user, link=None, max=False, drones=False):
-    if not setLevel(user): return False
-    if link == None: link = 'traininglink'
+def attack(user, link=None, max=False, drones=False, region_id=None):
+    if not set_level(user): return False
+    if link == None or region_id == None:
+        link = get_training_link(user)
+        side = 0
     # "free_ene": "1", hourly
 	# "c": "3f116409cf4c01f2c853d9a17591b061",
 	# "n": "{\"t1\":+\"3698\",\"t2\":+\"15\",\"t16\":+\"0\",\"t27\":+\"0\"}",
@@ -19,20 +21,24 @@ def attack(user, link=None, max=False, drones=False):
 
     troops = {
         "t27": 6000, # laserdrones
-        "t1": 75, # aircraft
+        "t1": 150, # aircraft
         "t2": 10, # tanks
         "t16": 800, # bombers
     }
 
-    free_ene = 1 if max else 0
+    hourly = 1 if max else 0
 
-    n_dict = {}
-    for key, value in troops.items():
-        if key == 't27' and not drones: continue
-        count = alpha//value//2*2
-        n_dict[key] = count
-        alpha -= count * value
-    n = urllib.parse.quote_plus(str().replace("'", '"'))
+    n = {}
+
+    for troop in troops:
+        if troop == 't27' and not drones: continue
+        count = alpha // troops[troop]
+        alpha -= count * troops[troop]
+        if troop == 't1': count = count * 2
+        n[troop] = str(count)
+        if alpha == 0: break
+    
+    n_json = json.dumps(n)
 
     side = 0
 
@@ -50,9 +56,9 @@ def attack(user, link=None, max=False, drones=False):
             location.reload();
         },
     });"""
-    user.driver.execute_script(js_ajax, free_ene, n, side, link)
+    user.driver.execute_script(js_ajax, hourly, n_json, side, link)
 
-def stateWars(user):
+def get_state_wars(user, state):
     states = {}
     if user.state: states[user.state] = []
     if user.region['state']: states[user.region['state']] = []
@@ -72,3 +78,6 @@ def stateWars(user):
     time.sleep(2)
     print(states)
     return states
+
+def get_training_link(user):
+    pass

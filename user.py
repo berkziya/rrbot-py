@@ -1,12 +1,15 @@
 import sched
 import time
 
-from selenium.webdriver import Firefox
+from selenium.webdriver import Chrome, Firefox
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
 from misc.logger import log
@@ -20,7 +23,7 @@ class User:
         self.email = email
         self.password = password
 
-        self.driveroptions = {'headless': True, 'binary_location': None}
+        self.driveroptions = {'browser': None, 'headless': True, 'binary_location': None}
         self.driver = None
 
         self.s = sched.scheduler(time.time, time.sleep)
@@ -69,14 +72,23 @@ class User:
         self.ministers[element] = value
 
     def start(self):
-        options = FirefoxOptions()
-        if self.driveroptions['headless'] or not self.driveroptions['binary_location']:
-            options.add_argument('--headless')
-        else:
-            options.binary_location = self.driveroptions['binary_location']
-        options.add_argument('--lang=en-US')
-        options.set_preference('intl.accept_languages', 'en-US')
-        self.driver = Firefox(options=options, service=FirefoxService(GeckoDriverManager().install()))
+        match self.driveroptions['browser']:
+            case 'firefox' | None:
+                options = FirefoxOptions()
+                if self.driveroptions['headless'] or not self.driveroptions['binary_location']:
+                    options.add_argument('--headless')
+                else:
+                    options.binary_location = self.driveroptions['binary_location']
+                
+                self.driver = Firefox(options=options, service=FirefoxService(GeckoDriverManager().install()))
+            case 'chrome':
+                options = ChromeOptions()
+                if self.driveroptions['headless'] or not self.driveroptions['binary_location']:
+                    options.add_argument('--headles=new')
+                else:
+                    options.binary_location = self.driveroptions['binary_location']
+
+                self.driver = Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
 
         self.wait = WebDriverWait(self.driver, 10)
         self.driver.get('https://rivalregions.com')
@@ -106,6 +118,3 @@ class User:
     def __del__(self):
         if self.driver:
             self.driver.quit()
-        while not self.s.empty():
-            self.s.cancel(self.s.queue[0])
-        self.s.run(blocking=False)

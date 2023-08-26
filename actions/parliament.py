@@ -4,28 +4,11 @@ import urllib.parse
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from actions.status import setAll, setMoney, setPerks
+from actions.status import set_all_status, set_money, set_perks
 from misc.logger import log
 
-def refillGold(user):
-    try:
-        js_ajax = """
-            $.ajax({
-                url: '/parliament/donew/42/0/0',
-                data: { tmp_gov: "'0'", c: c_html },
-                type: 'POST',
-                success: function (data) {
-                    location.reload();
-                },
-            });"""
-        user.driver.execute_script(js_ajax)
-
-        time.sleep(1)
-        return acceptLaw(user, 'Resources exploration: state, gold resources')
-    except:
-        return False
-
-def acceptLaw(user, text):
+# Accepts a law with the given text in its title
+def accept_law(user, text):
     user.driver.get('https://rivalregions.com/parliament')
     time.sleep(1)
     try:
@@ -64,3 +47,28 @@ def acceptLaw(user, text):
     user.driver.execute_script(js_ajax, law_action)
     time.sleep(1)
     return True
+
+# Explores the given resource
+def explore_resource(user, resource='gold'):
+    resources = {'gold': 0, 'oil': 3, 'ore': 4, 'uranium': 11, 'diamonds': 15}
+
+    try:
+        user.driver.get('https://rivalregions.com/')
+        time.sleep(2)
+        js_ajax = """
+            var resource = arguments[0];
+
+            $.ajax({
+                url: '/parliament/donew/42/' + resource + '/0',
+                data: { tmp_gov: "'0'", c: c_html },
+                type: 'POST',
+                success: function (data) {
+                    location.reload();
+                },
+            });"""
+        user.driver.execute_script(js_ajax, resources[resource])
+
+        time.sleep(1)
+        return accept_law(user, 'Resources exploration: state, gold resources')
+    except:
+        return False

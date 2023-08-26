@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from misc.utils import *
 
-def setAll(user):
+def set_all_status(user):
     try:
         id = user.driver.execute_script("return id")
         user.set_id(id)
@@ -59,7 +59,7 @@ def setAll(user):
         time.sleep(2)
         return False
 
-def setPerks(user):
+def set_perks(user):
     user.driver.refresh()
     time.sleep(2)
     try:
@@ -74,7 +74,7 @@ def setPerks(user):
     except:
         return False
 
-def setLevel(user):
+def set_level(user):
     user.driver.refresh()
     time.sleep(2)
     try:
@@ -84,7 +84,7 @@ def setLevel(user):
     except:
         return False
 
-def setMoney(user, energy=False):
+def set_money(user, energy=False):
     user.driver.refresh()
     time.sleep(2)
     try:
@@ -105,7 +105,8 @@ def setMoney(user, energy=False):
     except:
         return False
 
-def isTraveling(user):
+# NOT COMPLETE
+def check_traveling_status(user):
     user.driver.refresh()
     time.sleep(2)
     try:

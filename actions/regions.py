@@ -1,15 +1,15 @@
 import time
-import urllib.parse
+import json
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from actions.status import setAll, setMoney, setPerks
+from actions.status import set_all_status, set_money, set_perks
 from misc.logger import log
 
 
-def buildMA(user):
-    if not setAll(user): return False
+def build_military_academy(user):
+    if not set_all_status(user): return False
     if (user.regionvalues['region'] != user.regionvalues['residency']) or user.level < 40: return False
 
     js_ajax = """
@@ -25,7 +25,7 @@ def buildMA(user):
     time.sleep(3)
     return True
 
-def workStateDept(user, dept):
+def work_state_department(user, dept):
     state = user.regionvalues['state']
     if not state: return False
 
@@ -49,18 +49,18 @@ def workStateDept(user, dept):
             what_dict[f'w{value}'] = 10
         else:
             what_dict[f'w{value}'] = 0
-    what = urllib.parse.quote_plus(str(what_dict).replace("'", '"'))
+    what_json = json.dumps(what_dict)
     js_ajax = """
-        var what = arguments[0];
+        var what_json = arguments[0];
 
         $.ajax({
             url: '/rival/instwork',
-            data: { c: c_html , what: what},
+            data: { c: c_html , what: what_json},
             type: 'POST',
             success: function (data) {
                 location.reload();
             },
         });"""
-    user.driver.execute_script(js_ajax, what)
+    user.driver.execute_script(js_ajax, what_json)
     time.sleep(2)
     return True

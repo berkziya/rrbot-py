@@ -1,11 +1,11 @@
 import time
 
-from actions.status import setMoney
+from actions.status import set_money
 from misc.logger import log
 
 
-def produceEnergy(user):
-    if not setMoney(user, energy=True): return False
+def produce_energy(user):
+    if not set_money(user, energy=True): return False
     energy, gold = user.money['energy'], user.money['gold']
     if energy >= 100000: return False
     

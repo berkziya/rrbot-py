@@ -1,12 +1,12 @@
 import datetime
 import time
 
-from actions.ministry import refillGold
-from actions.perks import isTraining, upgradePerk
-from actions.regions import buildMA, workStateDept
-from actions.status import setAll
-from actions.storage import produceEnergy
-from actions.wars import stateWars
+from actions.parliament import explore_resource
+from actions.perks import check_training_status, upgrade_perk
+from actions.regions import build_military_academy, work_state_department
+from actions.status import set_all_status
+from actions.storage import produce_energy
+from actions.wars import get_state_wars
 from misc.logger import alert, log
 
 
@@ -34,9 +34,9 @@ def upcoming_events(user):
     user.s.enter(600, 1, upcoming_events, (user,))
 
 def perks(user):
-    training_time = isTraining(user)
+    training_time = check_training_status(user)
     if not training_time:
-        upgradePerk(user)
+        upgrade_perk(user)
         user.s.enter(5, 1, perks, (user,))
         return True
     else:
@@ -49,7 +49,7 @@ def perks(user):
         return False
 
 def militaryAcademy(user):
-    if not buildMA:
+    if not build_military_academy:
         log(user, "Failed to build military academy, will try again in an hour")
         user.s.enter(3600, 1, militaryAcademy, (user,))
         return False
@@ -58,10 +58,10 @@ def militaryAcademy(user):
     user.s.enter(36000, 1, militaryAcademy, (user,))
     return True
 
-def refilldaGold(user):
-    if refillGold(user): log(user, f"Refilled the state gold")
+def hourly_state_gold_refill(user):
+    if explore_resource(user, 'gold'): log(user, f"Refilled the state gold")
     else: log(user, "Failed to refill state gold, will try again in an hour")
-    user.s.enter(3600, 1, refilldaGold, (user,))
+    user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
 
 def goldfarm(user, region=False):
     pass
@@ -70,7 +70,7 @@ def autoWar(user, link=False, max=False):
     pass
 
 def energy(user):
-    if not produceEnergy(user): 
+    if not produce_energy(user): 
         user.s.enter(600, 1, energy, (user,))
         return False
     user.s.enter(3600, 1, energy, (user,))

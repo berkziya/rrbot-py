@@ -2,13 +2,13 @@ import time
 
 from selenium.webdriver.common.by import By
 
-from actions.status import setMoney, setPerks
+from actions.status import set_money, set_perks
 from misc.logger import log
 from misc.utils import *
 
 
 # isTraining(user) returns False if not training, otherwise returns time left in seconds
-def isTraining(user):
+def check_training_status(user):
     user.driver.refresh()
     time.sleep(2)
     try:
@@ -20,13 +20,13 @@ def isTraining(user):
         return False
 
 # upgradePerk(user) returns True if successful, False otherwise
-def upgradePerk(user):
+def upgrade_perk(user):
     try:
-        if not (setPerks(user) and setMoney(user, energy=True)):
+        if not (set_perks(user) and set_money(user, energy=True)):
             return False
         
-        perkurl = {'str': '1', 'edu': '2', 'end': '3'}
-        currencyurl = {'money': '1', 'gold': '2'}
+        perkurl = {'str': 1, 'edu': 2, 'end': 3}
+        currencyurl = {'money': 1, 'gold': 2}
 
         str = user.perks['str']
         edu = user.perks['edu']
