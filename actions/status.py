@@ -7,56 +7,88 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from misc.utils import *
 
-def set_all_status(user):
+def get_all_status(user, id=None):
     try:
-        id = user.driver.execute_script("return id")
-        user.set_id(id)
+        if not id: id = user.driver.execute_script("return id")
         user.driver.get(f'https://rivalregions.com/slide/profile/{user.id}')
         time.sleep(1)
 
+        user_status = {'id':id,
+                       'level':0,
+                        'state_leader':0,
+                        'rating':0,
+                        'perks': {'str':0, 'edu':0, 'end':0},
+                        'region':0,
+                        'residency':0,
+                        'workpermits':{},
+                        'governor':0,
+                        'economics':0,
+                        'foreign':0,
+                        'party':0,
+                       }
+
         level_text = user.driver.find_element(By.CSS_SELECTOR, "div.oil > div:nth-child(2)").text
         level = re.search(r'\d+', level_text).group()
-        user.set_level(dotless(level))
+        user_status['level'] = dotless(level)
 
-        str = user.driver.find_element(By.CSS_SELECTOR, "span[title='Strength']").text
-        edu = user.driver.find_element(By.CSS_SELECTOR, "span[title='Education']").text
-        end = user.driver.find_element(By.CSS_SELECTOR, "span[title='Endurance']").text
+        data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
 
-        user.set_perk('str', dotless(str))
-        user.set_perk('edu', dotless(edu))
-        user.set_perk('end', dotless(end))
-
-        region = user.driver.find_element(By.CSS_SELECTOR, ".p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(7) > td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1]
-        residency = user.driver.find_element(By.CSS_SELECTOR, ".p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(8) > td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1]
-
-        user.set_regionvalues('region', dotless(region))
-        user.set_regionvalues('residency', dotless(residency))
-
-        #work permits .p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(9)
-
-        #governor minister and party
-        i = 10
-        while i < 13:
-            title = user.driver.find_element(By.CSS_SELECTOR, f".p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child({i}) > td:nth-child(1)").text
+        for tr in data:
             try:
-                thingy = user.driver.find_element(By.CSS_SELECTOR, f".p_sa_h > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child({i}) > td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1]
-            except Exception as e:
-                print(e)
-                break
-            thing = 'governor' if 'Governor' in title else 'economics' if 'economics' in title else 'foreign' if 'Foreign' in title else 'party'
-            if thing == 'party':
-                user.set_party(thingy)
-                break
-            else:
-                user.set_ministers(thing, thingy)
-            i += 1
+                if tr.find_element(By.CSS_SELECTOR, "div.leader_link"):
+                    user_status['state_leader'] = dotless(tr.find_element(By.CSS_SELECTOR, "h2").get_attribute('action').split('/')[-1])
+                if 'commander' in tr.find_element(By.CSS_SELECTOR, "h2").get_attribute('title'):
+                    user_status['commander'] = user_status['state_leader']
+            except: pass
+            if 'Rating place:' in tr.text:
+                user_status['rating'] = dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2)").text)
+            elif 'Perks:' in tr.text:
+                user_status['perks']['str'] = dotless(tr.find_element(By.CSS_SELECTOR, "span[title='Strength']").text)
+                user_status['perks']['edu'] = dotless(tr.find_element(By.CSS_SELECTOR, "span[title='Education']").text)
+                user_status['perks']['end'] = dotless(tr.find_element(By.CSS_SELECTOR, "span[title='Endurance']").text)
+            elif 'Region:' in tr.text:
+                user_status['region'] = dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])
+            elif 'Residency:' in tr.text:
+                user_status['residency'] = dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])
+            elif 'Work permit:' in tr.text:
+                for div in tr.find_elements(By.CSS_SELECTOR, "span[state]"):
+                    user_status['workpermits'][div.get_attribute('state')] = div.get_attribute('region')
+            elif 'Governor:' in tr.text:
+                user_status['governor'] = dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])
+            elif 'Minister of economics:' in tr.text:
+                user_status['economics'] = dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])
+            elif 'Foreign minister:' in tr.text:
+                user_status['foreign'] = dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])
+            elif 'Party' in tr.text:
+                user_status['party'] = dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])
 
         user.driver.get('https://rivalregions.com')
         time.sleep(2)
-        return True
-    except:
+        return user_status
+    except Exception as e:
+        print(e)
+        print(user_status)
         user.driver.get('https://rivalregions.com')
         time.sleep(2)
+        return False
+
+def set_all_status(user):
+    data = get_all_status(user)
+    if data:
+        user.set_id(data['id'])
+        user.set_level(data['level'])
+        user.set_stateaffairs('leader', data['state_leader'])
+        user.set_rating(data['rating'])
+        user.set_perks(data['perks']['str'], data['perks']['edu'], data['perks']['end'])
+        user.set_regionvalues('region', data['region'])
+        user.set_regionvalues('residency', data['residency'])
+        user.set_workpermits(data['workpermits'])
+        user.set_stateaffairs('governor', data['governor'])
+        user.set_stateaffairs('economics', data['economics'])
+        user.set_stateaffairs('foreign', data['foreign'])
+        user.set_party('party', data['party'])
+        return True
+    else:
         return False
 
 def set_perks(user):
@@ -67,9 +99,7 @@ def set_perks(user):
         edu = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(5) > .perk_source_2").text
         end = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(6) > .perk_source_2").text
 
-        user.set_perk('str', dotless(str))
-        user.set_perk('edu', dotless(edu))
-        user.set_perk('end', dotless(end))
+        user.set_perks(dotless(str), dotless(edu), dotless(end))
         return True
     except:
         return False

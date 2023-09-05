@@ -7,6 +7,31 @@ from selenium.webdriver.common.by import By
 from actions.status import set_all_status, set_money, set_perks
 from misc.logger import log
 
+class State:
+    def __init__(self, user, id):
+        self.user = user
+        self.id = 0
+        self.stateaffairs = {'leader': 0, 'commander': 0, 'governors': {}, 'economics': 0, 'foreign': 0}
+        self.regions_and_gold = {}
+        self.resources = {'money': 0, 'gold': 0, 'oil': 0, 'ore': 0, 'uranium': 0, 'diamonds': 0}
+        self.wars = {}
+        self.borders = 'opened'
+
+        def set_stateaffairs(self, element, value):
+            self.stateaffairs[element] = value
+        
+        def set_regions_and_gold(self, element, value):
+            self.regions_and_gold[element] = value
+
+        def set_resources(self, element, value):
+            self.resources[element] = value
+
+        def set_wars(self, element, value):
+            self.wars[element] = value
+
+        def set_borders(self, value):
+            self.borders = value
+
 # Accepts a law with the given text in its title
 def accept_law(user, text):
     user.driver.get('https://rivalregions.com/parliament')
@@ -70,5 +95,35 @@ def explore_resource(user, resource='gold'):
 
         time.sleep(1)
         return accept_law(user, 'Resources exploration: state, gold resources')
+    except:
+        return False
+
+def border_control(user, border='opened'):
+    # https://rivalregions.com/parliament/donew/23/0/0 same for both
+    # tmp_gov: '0'
+    pass
+
+def set_minister(user, ministry, player_id=0):
+    try:
+        position = 'set_econom'
+        if ministry == 'foreign':
+            position = 'set_mid'
+        
+        js_ajax = """
+                var position = arguments[0];
+                var user = arguments[1];
+
+                $.ajax({
+                    url: '/leader/' + position,
+                    data: { c: c_html, u: user},
+                    type: 'POST',
+                    success: function (data) {
+                        location.reload();
+                    },
+                });"""
+        
+        user.driver.execute_script(js_ajax, position, player_id)
+        time.sleep(1)
+        return True
     except:
         return False

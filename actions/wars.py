@@ -2,15 +2,22 @@ import time
 import json
 
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 
 from actions.status import set_level
+from misc.utils import *
+from misc.logger import log
 
 
 def attack(user, link=None, max=False, drones=False, region_id=None):
     if not set_level(user): return False
-    if link == None or region_id == None:
+    if not link or not region_id:
         link = get_training_link(user)
         side = 0
+        if not link:
+            log(user, "No training link found")
+            return False
+        
     # "free_ene": "1", hourly
 	# "c": "3f116409cf4c01f2c853d9a17591b061",
 	# "n": "{\"t1\":+\"3698\",\"t2\":+\"15\",\"t16\":+\"0\",\"t27\":+\"0\"}",
@@ -31,16 +38,17 @@ def attack(user, link=None, max=False, drones=False, region_id=None):
     n = {}
 
     for troop in troops:
-        if troop == 't27' and not drones: continue
         count = alpha // troops[troop]
+        if troop == 't27' and not drones: count = 0
         alpha -= count * troops[troop]
         if troop == 't1': count = count * 2
         n[troop] = str(count)
-        if alpha == 0: break
     
-    n_json = json.dumps(n)
+    n_json = json.dumps(n).replace('"', '\"').replace(' ', '')
 
     side = 0
+
+    log(user, f"Attacking {region_id} with {n_json} troops, {hourly} hourly, {side} side")
 
     js_ajax = """
     var free_ene = arguments[0];
@@ -58,26 +66,33 @@ def attack(user, link=None, max=False, drones=False, region_id=None):
     });"""
     user.driver.execute_script(js_ajax, hourly, n_json, side, link)
 
-def get_state_wars(user, state):
-    states = {}
-    if user.state: states[user.state] = []
-    if user.region['state']: states[user.region['state']] = []
-    for state in states:
-        try:
-            url = f"https://rivalregions.com/listed/statewars/{state}"
-            user.driver.get(url)
-            time.sleep(1)
-            tbody = user.driver.find_element(By.CSS_SELECTOR, "#list_tbody")
-            wars = tbody.find_elements(By.CSS_SELECTOR, "tr")
-            for war in wars:
-                war_id = int(war.find_element(By.CSS_SELECTOR, 'td:nth-child(7) > div:nth-child(1)').text())
-                states[state].append(war_id)
-        except:
-            continue
-    user.driver.get('https://rivalregions.com/')
-    time.sleep(2)
-    print(states)
-    return states
+def get_wars(user, id=None):
+    if not id: id = user.regionvalues['state']
+    if not id: return False
+    wars = []
+    try:
+        url = f"https://rivalregions.com/listed/statewars/{id}"
+        user.driver.get(url)
+        time.sleep(1)
+        tbody = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
+        for tr in tbody:
+            war_id = dotless(tr.find_element(By.CSS_SELECTOR, 'div[url]').get_attribute('url'))
+            wars.append(war_id)
+        user.driver.get('https://rivalregions.com/')
+        time.sleep(2)
+        return (wars if wars else False)
+    except NoSuchElementException:
+        return None
+    except Exception as e:
+        print(e)
+        return False
+
 
 def get_training_link(user):
-    pass
+    time.sleep(2)
+    user.driver.find_element(By.CSS_SELECTOR, "div.ib.war_index_war > div:nth-child(2)").click()
+    time.sleep(1)
+    link = user.driver.current_url.split('/')[-1]
+    user.driver.get('https://rivalregions.com/')
+    time.sleep(2)
+    return link

@@ -1,5 +1,8 @@
+import re
+
 def dotless(number):
-    return int(number.strip().replace('.', ''))
+    numbers = re.findall(r'\d+', number)
+    return int(''.join(numbers)) if numbers else 0
 
 def k(number):
     if number < 1e3: return number

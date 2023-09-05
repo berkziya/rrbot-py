@@ -1,12 +1,12 @@
 import datetime
 import time
 
-from actions.parliament import explore_resource
+from actions.state import explore_resource, set_minister
 from actions.perks import check_training_status, upgrade_perk
 from actions.regions import build_military_academy, work_state_department
 from actions.status import set_all_status
 from actions.storage import produce_energy
-from actions.wars import get_state_wars
+from actions.wars import get_wars
 from misc.logger import alert, log
 
 
@@ -75,3 +75,8 @@ def energy(user):
         return False
     user.s.enter(3600, 1, energy, (user,))
     return True
+
+def close_borders_if_not_safe(user):
+    if not user.stateaffairs['leader'] or not user.stateaffairs['foreign']: return False
+    # if not is_there_a_war_in_my_state(user): return True
+    pass
