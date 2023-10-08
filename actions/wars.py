@@ -9,9 +9,9 @@ from misc.utils import *
 from misc.logger import log
 
 
-def attack(user, link=None, max=False, drones=False, region_id=None):
+def attack(user, link=None, max=False, drones=False, region=None):
     if not set_level(user): return False
-    if not link or not region_id:
+    if not link or not region:
         link = get_training_link(user)
         side = 0
         if not link:
@@ -48,7 +48,7 @@ def attack(user, link=None, max=False, drones=False, region_id=None):
 
     side = 0
 
-    log(user, f"Attacking {region_id} with {n_json} troops, {hourly} hourly, {side} side")
+    log(user, f"Attacking {region.id} with {n_json} troops, {hourly} hourly, {side} side")
 
     js_ajax = """
     var free_ene = arguments[0];
@@ -67,7 +67,7 @@ def attack(user, link=None, max=False, drones=False, region_id=None):
     user.driver.execute_script(js_ajax, hourly, n_json, side, link)
 
 def get_wars(user, id=None):
-    if not id: id = user.regionvalues['state']
+    if not id: id = user.player.state
     if not id: return False
     wars = []
     try:

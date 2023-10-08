@@ -7,30 +7,20 @@ from selenium.webdriver.common.by import By
 from actions.status import set_all_status, set_money, set_perks
 from misc.logger import log
 
-class State:
-    def __init__(self, user, id):
-        self.user = user
-        self.id = 0
-        self.stateaffairs = {'leader': 0, 'commander': 0, 'governors': {}, 'economics': 0, 'foreign': 0}
-        self.regions_and_gold = {}
-        self.resources = {'money': 0, 'gold': 0, 'oil': 0, 'ore': 0, 'uranium': 0, 'diamonds': 0}
-        self.wars = {}
-        self.borders = 'opened'
 
-        def set_stateaffairs(self, element, value):
-            self.stateaffairs[element] = value
-        
-        def set_regions_and_gold(self, element, value):
-            self.regions_and_gold[element] = value
-
-        def set_resources(self, element, value):
-            self.resources[element] = value
-
-        def set_wars(self, element, value):
-            self.wars[element] = value
-
-        def set_borders(self, value):
-            self.borders = value
+def remove_self_law(user):
+    js_ajax = """
+        $.ajax({
+            url: '/parliament/removelaw',
+            data: { c: c_html },
+            type: 'POST',
+            success: function (data) {
+                location.reload();
+            },
+        });"""
+    user.driver.execute_script(js_ajax)
+    time.sleep(2)
+    return True
 
 # Accepts a law with the given text in its title
 def accept_law(user, text):
@@ -78,8 +68,8 @@ def explore_resource(user, resource='gold'):
     resources = {'gold': 0, 'oil': 3, 'ore': 4, 'uranium': 11, 'diamonds': 15}
 
     try:
-        user.driver.get('https://rivalregions.com/')
-        time.sleep(2)
+        remove_self_law(user)
+
         js_ajax = """
             var resource = arguments[0];
 
@@ -103,7 +93,7 @@ def border_control(user, border='opened'):
     # tmp_gov: '0'
     pass
 
-def set_minister(user, ministry, player_id=0):
+def set_minister(user, ministry, id):
     try:
         position = 'set_econom'
         if ministry == 'foreign':
@@ -122,7 +112,7 @@ def set_minister(user, ministry, player_id=0):
                     },
                 });"""
         
-        user.driver.execute_script(js_ajax, position, player_id)
+        user.driver.execute_script(js_ajax, position, id)
         time.sleep(1)
         return True
     except:

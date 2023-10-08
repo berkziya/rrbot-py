@@ -6,7 +6,7 @@ from misc.logger import log
 
 def produce_energy(user):
     if not set_money(user, energy=True): return False
-    energy, gold = user.money['energy'], user.money['gold']
+    energy, gold = user.player.money['energy'], user.player.money['gold']
     if energy >= 100000: return False
     
     if gold < 2000:

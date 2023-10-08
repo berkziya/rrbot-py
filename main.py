@@ -7,10 +7,9 @@ import sys
 
 from misc.logger import alert, log
 from session import session
-from user import User
+from user import Client
 
-DEFAULT_CONFIG = '''
-[general]
+DEFAULT_CONFIG = '''[general]
 browser = firefox
 
 [user1]
@@ -32,7 +31,7 @@ goldweight = 5
 minlvl4gold = 30
 '''
 
-users = []
+users = [] 
 
 def create_user_from_config(config, general):
     browser = general.get('browser', fallback=None)
@@ -43,7 +42,7 @@ def create_user_from_config(config, general):
     password = config.get('password')
     is_headless = config.getboolean('headless', fallback=headless) or not binary
 
-    user = User(config.name, email, password)
+    user = Client(config.name, email, password)
     user.set_driveroptions('browser', browser)
     user.set_driveroptions('binary_location', binary)
     user.set_driveroptions('headless', is_headless)

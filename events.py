@@ -77,6 +77,6 @@ def energy(user):
     return True
 
 def close_borders_if_not_safe(user):
-    if not user.stateaffairs['leader'] or not user.stateaffairs['foreign']: return False
+    if not user.player.state_leader or not user.player.foreign: return False
     # if not is_there_a_war_in_my_state(user): return True
     pass
