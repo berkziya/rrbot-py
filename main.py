@@ -101,6 +101,7 @@ def main():
 
 def cleanup():
     for user in users:
+        user.driver.quit()
         if user is not None:
             del user
 

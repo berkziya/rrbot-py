@@ -1,4 +1,5 @@
 import time
+import schedule
 
 from actions.state import explore_resource, set_minister
 from actions.regions import work_state_department, get_citizens
@@ -9,8 +10,15 @@ import events
 from misc.logger import alert, log
 from misc.utils import *
 
-eventsToBeDone = [events.perks, events.energy,
-                  events.upcoming_events]
+eventsToBeDone = [
+    {'desc': 'upgrade perks', 'event': events.perks},
+    {'desc': 'energy drink refill', 'event': events.energy},
+    {'desc': 'factory work', 'event': events.factory_work},
+    {'desc': 'economics work', 'event': events.hourly_state_gold_refill},
+    {'desc': 'set money', 'event': set_money},
+    {'desc': 'set status', 'event': set_all_status},
+    {'desc': 'upcoming_events', 'event': events.upcoming_events},
+    ]
 
 def session(user):
     time.sleep(4)
@@ -32,9 +40,13 @@ def session(user):
         user.s.enter(10, 1, set_money, (user,))
         alert(user, "Error setting money, will try again in 10 seconds.")
     
-    for event in eventsToBeDone:
-        event(user)
-    
-    if user.player.economics: events.hourly_state_gold_refill(user)
+    events.initiate_all_events(user, eventsToBeDone)
+    schedule.every().day.at("20:50").do(events.initiate_all_events, user, eventsToBeDone)
+    schedule.every().day.at("21:10").do(events.initiate_all_events, user, eventsToBeDone)
 
-    user.s.run(blocking=True)
+    def activate_scheduler():
+        schedule.run_pending()
+        user.s.enter(1, 1, activate_scheduler, ())
+    
+    activate_scheduler()
+    user.s.run(blocking = True)

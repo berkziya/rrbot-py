@@ -7,8 +7,13 @@ from actions.regions import build_military_academy, work_state_department
 from actions.status import set_all_status
 from actions.storage import produce_energy
 from actions.wars import get_wars
+from actions.work import auto_work_factory, cancel_auto_work
 from misc.logger import alert, log
 
+def initiate_all_events(user, events):
+    user.s.queue.clear()
+    for event in events:
+        user.s.enter(1, 1, event['event'], (user, *event['args']) if 'args' in event else (user,))
 
 def upcoming_events(user):
     now = datetime.datetime.now()
@@ -26,7 +31,7 @@ def upcoming_events(user):
     if upcoming:
         log(user, "Upcoming events:", False)
         for event_time, event in upcoming:
-            if event.action.__name__ in ['energy']: continue
+            if event.action.__name__ in ['energy', 'activate_scheduler']: continue
             log(user, f"{event_time.strftime('%Y-%m-%d %H:%M:%S')} - {event.action.__name__}", False)
     else:
         log(user, "No upcoming events.", False)
@@ -55,16 +60,18 @@ def militaryAcademy(user):
         return False
     
     log(user, "Building military academy")
-    user.s.enter(36000, 1, militaryAcademy, (user,))
     return True
 
 def hourly_state_gold_refill(user):
+    if not user.player.state_leader or not user.player.economics: return False
     if explore_resource(user, 'gold'): log(user, f"Refilled the state gold")
     else: log(user, "Failed to refill state gold, will try again in an hour")
     user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
 
-def goldfarm(user, region=False):
-    pass
+def factory_work(user):
+    cancel_auto_work(user)
+    auto_work_factory(user)
+    user.s.enter(3600, 1, factory_work, (user,))
 
 def autoWar(user, link=False, max=False):
     pass
