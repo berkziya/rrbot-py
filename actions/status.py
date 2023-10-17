@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from models import get_player, get_state, get_region, get_autonomy, get_party
 from misc.utils import *
+from misc.logger import log, alert
 
 def get_all_status(user, id=None):
     try:
@@ -80,6 +81,7 @@ def set_all_status(user):
         return True
     except Exception as e:
         print(e)
+        alert(user, f"Error setting status: {e}")
         return False
 
 def set_perks(user):
@@ -89,10 +91,11 @@ def set_perks(user):
         str = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2").text
         edu = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(5) > .perk_source_2").text
         end = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(6) > .perk_source_2").text
-
         user.player.set_perks(dotless(str), dotless(edu), dotless(end))
         return True
-    except:
+    except Exception as e:
+        print(e)
+        alert(user, f"Error setting perks: {e}")
         return False
 
 def set_level(user):
@@ -102,7 +105,9 @@ def set_level(user):
         level = user.driver.find_element(By.CSS_SELECTOR, "#header_my_expbar_big > div:nth-child(2)").text
         user.player.set_level(dotless(level))
         return True
-    except:
+    except Exception as e:
+        print(e)
+        alert(user, f"Error setting level: {e}")
         return False
 
 def set_money(user, energy=False):
@@ -117,13 +122,15 @@ def set_money(user, energy=False):
 
         if energy:
             user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(6)").click()
-            time.sleep(1)
+            time.sleep(2)
             energy = user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.storage_item:nth-child(11) > .storage_number > .storage_number_change"))).text
             user.player.set_money('energy', dotless(energy))
-            user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(5)").click()
-            time.sleep(1)
+            user.driver.get('https://rivalregions.com')
+            time.sleep(2)
         return True
-    except:
+    except Exception as e:
+        print(e)
+        alert(user, f"Error setting money: {e}")
         return False
 
 # NOT COMPLETE

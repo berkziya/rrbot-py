@@ -28,5 +28,5 @@ def timetosecs(time):
         hours = int(time.pop(0))
     minutes = int(time[0])
     seconds = int(time[1])
-    total_seconds = days*86400 + hours*3600 + minutes*60 + seconds + 1
+    total_seconds = days*86400 + hours*3600 + minutes*60 + seconds + 3
     return total_seconds

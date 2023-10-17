@@ -29,10 +29,8 @@ def accept_law(user, text):
     try:
         parliament_div = user.driver.find_element(By.CSS_SELECTOR, '#parliament_active_laws')
         law_divs = parliament_div.find_elements(By.CSS_SELECTOR, 'div')
-
         for law_div in law_divs:
             law_title = law_div.text
-            
             if text in law_title:
                 law_action = law_div.get_attribute('action')
                 law_action = law_action.removeprefix('parliament/law/')
@@ -44,13 +42,10 @@ def accept_law(user, text):
     except Exception as e:
         print(e)
         return False
-
     user.driver.get('https://rivalregions.com/')
     time.sleep(2)
-
     js_ajax = """
         var law = arguments[0];
-
         $.ajax({
             url: '/parliament/votelaw/' + law + '/pro',
             data: { c: c_html },
@@ -60,19 +55,16 @@ def accept_law(user, text):
             },
         });"""
     user.driver.execute_script(js_ajax, law_action)
-    time.sleep(1)
+    time.sleep(2)
     return True
 
 # Explores the given resource
 def explore_resource(user, resource='gold'):
     resources = {'gold': 0, 'oil': 3, 'ore': 4, 'uranium': 11, 'diamonds': 15}
-
     try:
         remove_self_law(user)
-
         js_ajax = """
             var resource = arguments[0];
-
             $.ajax({
                 url: '/parliament/donew/42/' + resource + '/0',
                 data: { tmp_gov: "'0'", c: c_html },
@@ -82,8 +74,7 @@ def explore_resource(user, resource='gold'):
                 },
             });"""
         user.driver.execute_script(js_ajax, resources[resource])
-
-        time.sleep(1)
+        time.sleep(2)
         return accept_law(user, 'Resources exploration: state, gold resources')
     except:
         return False
@@ -93,12 +84,10 @@ def border_control(user, border='opened'):
     # tmp_gov: '0'
     pass
 
-def set_minister(user, ministry, id):
+def set_minister(user, id, ministry='economic'):
     try:
         position = 'set_econom'
-        if ministry == 'foreign':
-            position = 'set_mid'
-        
+        if ministry == 'foreign': position = 'set_mid'
         js_ajax = """
                 var position = arguments[0];
                 var user = arguments[1];
@@ -111,7 +100,6 @@ def set_minister(user, ministry, id):
                         location.reload();
                     },
                 });"""
-        
         user.driver.execute_script(js_ajax, position, id)
         time.sleep(1)
         return True

@@ -12,7 +12,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
-from misc.logger import log
+from misc.logger import log, alert
 from models import Player
 
 class Client:
@@ -37,9 +37,8 @@ class Client:
     def set_perkoptions(self, element, value):
         self.perkoptions[element] = value
 
-    def start(self):
-        self.s = sched.scheduler(time.time, time.sleep)
-
+    def boot_browser(self):
+        print(f"Booting browser for {self.name}...")
         match self.driveroptions['browser']:
             case 'firefox' | None:
                 options = FirefoxOptions()
@@ -58,30 +57,39 @@ class Client:
 
                 self.driver = Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
 
-        self.wait = WebDriverWait(self.driver, 10)
-        self.driver.get('https://rivalregions.com')
-        time.sleep(1)
-
-        log(self, 'Logging in...')
-        email_input = self.driver.find_element(By.CSS_SELECTOR, "input[name='mail']")
-        email_input.send_keys(self.email)
-
-        password_input = self.driver.find_element(By.CSS_SELECTOR, "input[name='p']")
-        password_input.send_keys(self.password)
-
-        submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[name='s']")
-        submit_button.click()
 
         try:
-            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#g")))
+            self.wait = WebDriverWait(self.driver, 10)
+            self.driver.get('https://rivalregions.com')
             time.sleep(1)
 
-            id = self.driver.execute_script("return id;")
-            self.player = Player(id)
+            log(self, 'Logging in...')
+            email_input = self.driver.find_element(By.CSS_SELECTOR, "input[name='mail']")
+            email_input.send_keys(self.email)
+
+            password_input = self.driver.find_element(By.CSS_SELECTOR, "input[name='p']")
+            password_input.send_keys(self.password)
+
+            submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[name='s']")
+            submit_button.click()
+
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#g")))
+            time.sleep(4)
             return True
-        except:
-            log(self, "Error logging in. Check your credentials.")
+        except Exception as e:
+            alert(self, f"Error logging in: {e}")
+            self.driver.quit()
+            time.sleep(2)
+            self.wait = None
+            self.driver = None
             return False
+    
+    def initiate_session(self):
+        self.s = sched.scheduler(time.time, time.sleep)
+        if self.boot_browser():
+            self.id = self.driver.execute_script("return id;")
+            self.player = Player(self.id)
+            return True
 
     def __del__(self):
         if self.driver:

@@ -4,28 +4,35 @@ import json
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from misc.logger import log
+from misc.logger import log, alert
 from misc.utils import dotless
-from models import get_state
+from models import get_state, get_region, get_autonomy, get_player
 
 
 def build_military_academy(user):
-    # todo
-    js_ajax = """
-    $.ajax({
-        url: '/slide/academy_do/',
-        data: { c: c_html },
-        type: 'POST',
-        success: function (data) {
-            location.reload();
-        },
-    });"""
+    try:
+        js_ajax = """
+        $.ajax({
+            url: '/slide/academy_do/',
+            data: { c: c_html },
+            type: 'POST',
+            success: function (data) {
+                location.reload();
+            },
+        });"""
+        user.driver.execute_script(js_ajax)
+        time.sleep(2)
+        return True
+    except Exception as e:
+        print(e)
+        alert(user, f"Error building military academy: {e}")
+        return False
 
-    pass
-
-def work_state_department(user, dept, id):
-    if not id: id = user.player.state.id
-    if not id: return False
+def work_state_department(user, id, dept='building'):
+    if not id: id = user.player.region.state.id
+    if not id:
+        log(user, "No state id found")
+        return False
 
     dept_ids = {
         'building':1,
@@ -40,7 +47,6 @@ def work_state_department(user, dept, id):
         'spacestations':10,
         'battleships':11,
     }
-
     what_dict = {'state': id}
     for key, value in dept_ids.items():
         if key == dept:
@@ -48,34 +54,95 @@ def work_state_department(user, dept, id):
         else:
             what_dict[f'w{value}'] = 0
     what_json = json.dumps(what_dict)
-    js_ajax = """
-        var what_json = arguments[0];
-
-        $.ajax({
-            url: '/rival/instwork',
-            data: { c: c_html , what: what_json},
-            type: 'POST',
-            success: function (data) {
-                location.reload();
-            },
-        });"""
-    user.driver.execute_script(js_ajax, what_json)
-    time.sleep(2)
-    return True
+    try:
+        js_ajax = """
+            var what_json = arguments[0];
+            $.ajax({
+                url: '/rival/instwork',
+                data: { c: c_html , what: what_json},
+                type: 'POST',
+                success: function (data) {
+                    location.reload();
+                },
+            });"""
+        user.driver.execute_script(js_ajax, what_json)
+        log(user, f"Worked for | state: {id}, department: {dept}")
+        time.sleep(2)
+        return True
+    except Exception as e:
+        print(e)
+        alert(user, f"Error working state department: {e}")
+        return False
 
 def get_region_info(user, id):
-    user.driver.get(f"https://rivalregions.com/map/details/{id}")
-    pass
+    try:
+        user.driver.get(f"https://rivalregions.com/map/details/{id}")
+        time.sleep(1)
+
+        region = get_region(id)
+        region.set_state(get_state(user.driver.find_element(By.CSS_SELECTOR, "div.margin > h1 > span").get_attribute('action').split('/')[-1]))
+        data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll")
+        
+        for div in data:
+            if "Governor:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                autonomy = get_autonomy(id)
+                autonomy.set_governor(get_player(dotless(div.find_element(By.CSS_SELECTOR, "div.slide_profile_data > div").get_attribute('action').split('/')[-1])))
+                autonomy.set_regions([region])
+                region.set_autonomy(autonomy)
+            elif "Rating place:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_rating(dotless(div.find_element(By.CSS_SELECTOR, "span").text.split('/')[0]))
+            elif "Number of citizens:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_num_of_citizens(dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Residents:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_num_of_residents(dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Initial attack damage:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_initial_attack_damage(dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Initial defend damage:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_initial_defend_damage(dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Tax rate:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_tax(dotless(div.find_element(By.CSS_SELECTOR, "span").text.split(' ')[0]))
+            elif "Market taxes:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_market_tax(dotless(div.find_element(By.CSS_SELECTOR, "span").text.split(' ')[0]))
+            elif "Sea access:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_sea_access(True if div.find_element(By.CSS_SELECTOR, "span").text == 'Yes' else False)
+            elif "Gold resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_resources('gold', dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Oil resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_resources('oil', dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Ore resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_resources('ore', dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Uranium resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_resources('uranium', dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Diamonds resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_resources('diamonds', dotless(div.find_element(By.CSS_SELECTOR, "span").text))
+            elif "Health index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_indexes('health', dotless(div.find_element(By.CSS_SELECTOR, "span").text.split('/')[0]))
+            elif "Military index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_indexes('military', dotless(div.find_element(By.CSS_SELECTOR, "span").text.split('/')[0]))
+            elif "Education index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_indexes('education', dotless(div.find_element(By.CSS_SELECTOR, "span").text.split('/')[0]))
+            elif "Development index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                region.set_indexes('development', dotless(div.find_element(By.CSS_SELECTOR, "span").text.split('/')[0]))
+            elif "Border regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                border_regions = []
+                for region_ in div.find_elements(By.CSS_SELECTOR, "slide_profile_data"):
+                    border_regions.append(get_region(dotless(region_.get_attribute('action').split('/')[-1])))
+                region.set_border_regions(border_regions)
+
+        user.driver.get('https://rivalregions.com')
+        time.sleep(2)
+        return region
+    except Exception as e:
+        print(e)
+        alert(user, f"Error getting region info: {e}")
+        return False
 
 def get_all_state_status(user, id):
     try:
         user.driver.get(f'https://rivalregions.com/map/state_details/{id}')
         time.sleep(1)
-
         state = get_state(id)
-
         data = user.driver.find_elements(By.CSS_SELECTOR, "div.hide_from_inst")
-
         for div in data:
             if "Number of citizens:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 state.set_num_of_citizens(dotless(div.find_element(By.CSS_SELECTOR, "span").text))
@@ -101,12 +168,12 @@ def get_all_state_status(user, id):
                 state.set_economics(dotless(div.find_element(By.CSS_SELECTOR, "div.short_details").get_attribute('action').split('/')[-1]))
             elif "minister:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 state.set_foreign(dotless(div.find_element(By.CSS_SELECTOR, "div.short_details").get_attribute('action').split('/')[-1]))
-
         user.driver.get('https://rivalregions.com')
         time.sleep(2)
         return True
     except Exception as e:
         print(e)
+        alert(user, f"Error getting state status: {e}")
         user.driver.get('https://rivalregions.com')
         time.sleep(2)
         return False
@@ -146,6 +213,7 @@ def get_citizens(user, id, is_state=False, get_residents=False):
     except Exception as e:
         print(e)
         print(citizens)
+        alert(user, f"Error getting citizens: {e}")
         user.driver.get('https://rivalregions.com')
         time.sleep(2)
         return False

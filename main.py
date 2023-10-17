@@ -77,7 +77,7 @@ def main():
 
         user = create_user_from_config(config[section], config['general'])
 
-        if not user.start():
+        if not user.initiate_session():
             alert(user, 'Login failed. Aborting...}')
             del user
             continue

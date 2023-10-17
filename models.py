@@ -92,7 +92,14 @@ class State:
         self.num_of_citizens = 0
         self.residents = []
         self.num_of_residents = 0
-        self.budget = {'money': 0, 'gold': 0, 'oil': 0, 'ore': 0, 'uranium': 0, 'diamonds': 0}
+        self.budget = {
+            'money': 0,
+            'gold': 0,
+            'oil': 0,
+            'ore': 0,
+            'uranium': 0,
+            'diamonds': 0,
+            }
         self.wars = []
         self.borders = ''
 
@@ -111,13 +118,8 @@ class State:
     def set_government_form(self, value):
         self.government_form = value
     
-    def set_budget(self, money, gold, oil, ore, uranium, diamonds):
-        self.budget['money'] = money
-        self.budget['gold'] = gold
-        self.budget['oil'] = oil
-        self.budget['ore'] = ore
-        self.budget['uranium'] = uranium
-        self.budget['diamonds'] = diamonds
+    def set_budget(self, element, value):
+        self.budget[element] = value
     
     def set_borders(self, value):
         self.borders = value
@@ -157,7 +159,14 @@ class Autonomy:
         self.id = id
         self.governor = players[0]
         self.regions = []
-        self.budget = {'money': 0, 'gold': 0, 'oil': 0, 'ore': 0, 'uranium': 0, 'diamonds': 0}
+        self.budget = {
+            'money': 0,
+            'gold': 0,
+            'oil': 0,
+            'ore': 0,
+            'uranium': 0,
+            'diamonds': 0,
+            }
     
     def set_governor(self, value):
         self.governor = value
@@ -165,13 +174,8 @@ class Autonomy:
     def set_regions(self, value):
         self.regions = value
     
-    def set_budget(self, money, gold, oil, ore, uranium, diamonds):
-        self.budget['money'] = money
-        self.budget['gold'] = gold
-        self.budget['oil'] = oil
-        self.budget['ore'] = ore
-        self.budget['uranium'] = uranium
-        self.budget['diamonds'] = diamonds
+    def set_budget(self, element, value):
+        self.budget[element] = value
     
     def __str__(self):
         return str(self.id)
@@ -181,10 +185,49 @@ class Region:
         self.id = id
         self.state = None
         self.autonomy = None
+        self.buildings = {
+            'military academy': 0,
+            'hospital': 0,
+            'military base': 0,
+            'school': 0,
+            'missile system': 0,
+            'sea port': 0,
+            'power plant': 0,
+            'space port': 0,
+            'airport': 0,
+            'house fund': 0
+        }
+        self.rating = 0
         self.residents = []
         self.num_of_residents = 0
         self.citizens = []
         self.num_of_citizens = 0
+        self.initial_attack_damage = 0
+        self.initial_defend_damage = 0
+        self.tax = 0
+        self.market_tax = 0
+        self.sea_access = False
+        self.resources = {
+            'gold': 0,
+            'oil': 0,
+            'ore': 0,
+            'uranium': 0,
+            'diamonds': 0,
+        }
+        self.deep_resources = {
+            'gold': 0,
+            'oil': 0,
+            'ore': 0,
+            'uranium': 0,
+            'diamonds': 0,
+        }
+        self.indexes = {
+            'health': 0,
+            'military': 0,
+            'education': 0,
+            'development': 0,
+        }
+        self.border_regions = []
     
     def set_state(self, value):
         self.state = value
@@ -192,6 +235,12 @@ class Region:
     def set_autonomy(self, value):
         self.autonomy = value
     
+    def set_buildings(self, element, value):
+        self.buildings[element] = value
+    
+    def set_rating(self, value):
+        self.rating = value
+
     def set_residents(self, value):
         self.residents = value
     
@@ -203,6 +252,33 @@ class Region:
     
     def set_num_of_citizens(self, value):
         self.num_of_citizens = value
+    
+    def set_initial_attack_damage(self, value):
+        self.initial_attack_damage = value
+    
+    def set_initial_defend_damage(self, value):
+        self.initial_defend_damage = value
+    
+    def set_tax(self, value):
+        self.tax = value
+
+    def set_market_tax(self, value):
+        self.market_tax = value
+
+    def set_sea_access(self, value):
+        self.sea_access = value
+
+    def set_resources(self, element, value):
+        self.resources[element] = value
+
+    def set_deep_resources(self, element, value):
+        self.deep_resources[element] = value
+
+    def set_indexes(self, element, value):
+        self.indexes[element] = value
+    
+    def set_border_regions(self, value):
+        self.border_regions = value
     
     def __str__(self):
         return str(self.id)

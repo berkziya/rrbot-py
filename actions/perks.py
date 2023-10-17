@@ -1,9 +1,10 @@
 import time
 
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 
 from actions.status import set_money, set_perks
-from misc.logger import log
+from misc.logger import log, alert
 from misc.utils import *
 
 
@@ -16,15 +17,18 @@ def check_training_status(user):
         perk_counter = perk_counter.text
         total_seconds = timetosecs(perk_counter)
         return total_seconds
-    except:
+    except NoSuchElementException:
+        return None
+    except Exception as e:
+        print(e)
+        alert(user, f"Error checking training status: {e}")
         return False
 
 # upgradePerk(user) returns True if successful, False otherwise
 def upgrade_perk(user):
     try:
-        if not (set_perks(user) and set_money(user, energy=True)):
-            return False
-        
+        if not (set_perks(user) and set_money(user, energy=True)): return False
+
         perkurl = {'str': 1, 'edu': 2, 'end': 3}
         currencyurl = {'money': 1, 'gold': 2}
 
@@ -43,21 +47,17 @@ def upgrade_perk(user):
         def isgoldperk(perk):
             goldprice = (user.player.perks[perk]+6)//10*10+10
             currency = 'gold'
-            if perk not in user.perkoptions['goldperks']:
-                log(user, f'{perk} is not in goldperks')
-                currency = 'money'
-            elif (10-user.perkoptions['goldweight']) > (user.player.perks[perk]+6)%10:
-                currency = 'money'
-                log(user, f'goldweight barrier')
-            elif user.player.perks[perk] < user.perkoptions['minlvl4gold']:
-                log(user, f'minlvl4gold barrier: {user.player.perks[perk]} < {user.perkoptions["minlvl4gold"]}')
-                currency = 'money'
-            elif user.player.money['energy']//10 + user.player.money['gold'] < 10000 :
-                log(user, 'you are running low on energy and gold: TOTAL GOLD < 10000')
-                currency = 'money'
-            elif goldprice > user.player.money['gold']:
-                log(user, f'not enough gold: gold < {goldprice}')
-                currency = 'money'
+            conditions = [
+                perk not in user.perkoptions['goldperks'],
+                (10-user.perkoptions['goldweight']) > (user.player.perks[perk]+6)%10,
+                user.player.perks[perk] < user.perkoptions['minlvl4gold'],
+                user.player.money['energy']//10 + user.player.money['gold'] < 10000,
+                goldprice > user.player.money['gold']
+            ]
+            for condition in conditions:
+                if condition:
+                    currency = 'money'
+                    break
             return currency
         
         educurrency = isgoldperk('edu')
@@ -69,21 +69,15 @@ def upgrade_perk(user):
         if endcurrency == 'gold': endtime *= 0.075
 
         if edutime <= strtime and edutime <= endtime:
-            perk = 'edu'
-            currency = educurrency
+            perk, currency = 'edu', educurrency
         elif strtime <= edutime:
-            perk = 'str'
-            currency = strcurrency
+            perk, currency = 'str', strcurrency
         else:
-            perk = 'end'
-            currency = endcurrency
-
-        log(user, f'Upgrading {perk} with {currency}...')
+            perk, currency = 'end', endcurrency
 
         js_ajax = """
         var perk = arguments[0];
         var currency = arguments[1];
-
         $.ajax({
             url: '/perks/up/' + perk + '/' + currency,
             data: { c: c_html },
@@ -93,7 +87,10 @@ def upgrade_perk(user):
             },
         });"""
         user.driver.execute_script(js_ajax, perkurl[perk], currencyurl[currency])
+        log(user, f'Upgrading {perk} with {currency}')
         time.sleep(2)
         return True
-    except:
+    except Exception as e:
+        print(e)
+        alert(user, f"Error upgrading perk: {e}")
         return False
