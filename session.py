@@ -3,11 +3,9 @@ import schedule
 
 from selenium.webdriver.common.by import By
 
-from actions.state import explore_resource, set_minister
-from actions.regions import work_state_department, get_citizens, build_military_academy, get_region_info
+from actions.regions import get_region_info
 from actions.status import set_all_status, set_money
-from actions.storage import produce_energy
-from actions.wars import attack, get_wars
+from actions.wars import attack
 import events
 from misc.logger import alert, log
 from misc.utils import *
