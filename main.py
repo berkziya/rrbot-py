@@ -4,8 +4,9 @@ import configparser
 import platform
 import subprocess
 import sys
+import os
 
-from misc.logger import alert, log
+from misc.logger import log, alert
 from session import session
 from user import Client
 
@@ -86,10 +87,11 @@ def main():
         log(user, 'Login successful.')
 
     # Start sessions
-    os = platform.system().lower()
+    my_os = platform.system().lower()
     futures = []
+    caffeinate = None
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        if os is not 'windows': caffeinate = subprocess.Popen(['caffeinate', '-i'])
+        if my_os != 'windows': caffeinate = subprocess.Popen(['caffeinate', '-i'])
         futures = [executor.submit(session, user) for user in users]
         for future in concurrent.futures.as_completed(futures):
             try:
@@ -98,7 +100,7 @@ def main():
                 print(f'Exception: {e}')
             else:
                 print(f'Result: {result}')
-        if os is not 'windows': caffeinate.terminate()
+        if caffeinate and my_os != 'windows': caffeinate.terminate()
 
 def cleanup():
     for user in users:

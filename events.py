@@ -18,10 +18,15 @@ def internet_on():
     command = ['ping', param, '1', 'rivalregions.com']
     return subprocess.call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
 
+is_resetting = False
 def reset_browser(user):
+    global is_resetting
+    if is_resetting: return False
+    is_resetting = True
     if not internet_on():
         # no internet connection, will retry in 10 minutes
         user.s.enter(600, 1, reset_browser, (user,))
+        is_resetting = False
         return False
     if user.driver: user.driver.quit()
     time.sleep(2)
@@ -30,7 +35,9 @@ def reset_browser(user):
     if not user.boot_browser():
         alert(user, "Browser failed to reset, will try again in 10 minutes.")
         user.s.enter(600, 1, reset_browser, (user,))
+        is_resetting = False
         return False
+    is_resetting = False
     return True
 
 def initiate_all_events(user, events):

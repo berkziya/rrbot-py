@@ -11,10 +11,10 @@ def produce_energy(user):
     if gold < 2000:
         log(user, "Not enough gold to produce energy")
         return False
-    energy = 100000 - energy
+    energy = 90000 - energy
     gold = gold - 2000
     howmany = min(energy//10, gold)
-    if howmany == 0: return False
+    if howmany <= 0: return False
     try:
         log(user, f"Producing energy for {howmany} gold")
         js_ajax = """

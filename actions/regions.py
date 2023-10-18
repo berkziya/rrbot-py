@@ -28,7 +28,7 @@ def build_military_academy(user):
         alert(user, f"Error building military academy: {e}")
         return False
 
-def work_state_department(user, id, dept='building'):
+def work_state_department(user, id=None, dept='building'):
     if not id: id = user.player.region.state.id
     if not id:
         log(user, "No state id found")
@@ -47,13 +47,16 @@ def work_state_department(user, id, dept='building'):
         'spacestations':10,
         'battleships':11,
     }
+
     what_dict = {'state': id}
     for key, value in dept_ids.items():
         if key == dept:
             what_dict[f'w{value}'] = 10
         else:
             what_dict[f'w{value}'] = 0
-    what_json = json.dumps(what_dict)
+    
+    what_json = json.dumps(what_dict).replace('"', '\"').replace(' ', '')
+
     try:
         js_ajax = """
             var what_json = arguments[0];

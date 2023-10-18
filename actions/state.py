@@ -1,11 +1,13 @@
 import time
 import urllib.parse
+from requests import get
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from actions.status import set_all_status, set_money, set_perks
-from misc.logger import log
+from actions.regions import get_state
+from misc.logger import alert, log
 
 
 def remove_self_law(user):
@@ -78,9 +80,39 @@ def explore_resource(user, resource='gold'):
         return False
 
 def border_control(user, border='opened'):
+    if not user.player.foreign:
+        log(user, "Not a foreign minister")
+        return False
+    get_state(user, user.player.region.state.id)
+    if user.player.foreign != user.player.region.state.id:
+        log(user, "Not in home state or not the foreign minister")
+        return False
+    get_state(user, user.player.foreign)
+
+    if user.player.foreign.borders == border:
+        log(user, f"Borders are already {border}")
+        return False
+    
     # https://rivalregions.com/parliament/donew/23/0/0 same for both
     # tmp_gov: '0'
-    pass
+
+    try:
+        js_ajax = """
+                $.ajax({
+                    url: '/leader/' + position,
+                    data: { c: c_html, tmp_gov: '0'},
+                    type: 'POST',
+                    success: function (data) {
+                        location.reload();
+                    },
+                });"""
+        user.driver.execute_script(js_ajax)
+
+        accept_law(user, 'Border control')
+    except Exception as e:
+        print(e)
+        alert(user, f"Error setting borders: {e}")
+        return False
 
 def set_minister(user, id, ministry='economic'):
     try:

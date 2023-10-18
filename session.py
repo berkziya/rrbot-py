@@ -1,24 +1,21 @@
-import time
 import schedule
 
-from selenium.webdriver.common.by import By
-
-from actions.regions import get_region_info
+from actions.regions import get_region_info, work_state_department
 from actions.status import set_all_status, set_money
 from actions.wars import attack
 import events
 from misc.logger import alert, log
 from misc.utils import *
 
+
 eventsToBeDone = [
-    {'desc': 'upgradea perks', 'event': events.perks},
+    {'desc': 'upgrade perks', 'event': events.perks},
     {'desc': 'energy drink refill', 'event': events.energy},
     {'desc': 'attack training', 'event': attack},
     {'desc': 'factory work', 'event': events.factory_work},
     {'desc': 'economics work', 'event': events.hourly_state_gold_refill},
-    {'desc': 'set money', 'event': set_money},
-    {'desc': 'set status', 'event': set_all_status},
     {'desc': 'build military academy', 'event': events.militaryAcademy},
+    {'desc': 'work state department', 'event': work_state_department, 'args': (None, 'gold',)},
     {'desc': 'upcoming_events', 'event': events.upcoming_events},
     ]
 
@@ -43,10 +40,8 @@ def session(user):
         alert(user, "Error setting money, will try again in 10 seconds.")
     
     events.initiate_all_events(user, eventsToBeDone)
-    schedule.every().day.at("20:50").do(events.initiate_all_events, user, eventsToBeDone)
-    schedule.every().day.at("21:10").do(events.initiate_all_events, user, eventsToBeDone)
-    schedule.every().day.at("06:00").do(events.reset_browser, user)
-    schedule.every().day.at("18:00").do(events.reset_browser, user)
+    schedule.every(3).to(5).hours.do(events.initiate_all_events, user, eventsToBeDone)
+    schedule.every(4).to(6).hours.do(events.reset_browser, user)
 
     def activate_scheduler():
         schedule.run_pending()

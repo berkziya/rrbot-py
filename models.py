@@ -101,6 +101,7 @@ class State:
             'diamonds': 0,
             }
         self.wars = []
+        self.num_of_wars = 0
         self.borders = ''
 
     def set_leader(self, value):
@@ -129,6 +130,9 @@ class State:
     
     def add_war(self, value):
         self.wars.append(value)
+    
+    def set_num_of_wars(self, value):
+        self.num_of_wars = value
     
     def set_regions(self, value):
         self.regions = value
