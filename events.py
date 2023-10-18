@@ -19,7 +19,6 @@ def internet_on():
     return subprocess.call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
 
 def reset_browser(user):
-    user.s.cancel(reset_browser)
     if not internet_on():
         # no internet connection, will retry in 10 minutes
         user.s.enter(600, 1, reset_browser, (user,))
