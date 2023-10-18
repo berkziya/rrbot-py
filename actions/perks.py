@@ -8,7 +8,6 @@ from misc.logger import log, alert
 from misc.utils import *
 
 
-# isTraining(user) returns False if not training, otherwise returns time left in seconds
 def check_training_status(user):
     user.driver.refresh()
     time.sleep(2)
@@ -24,7 +23,6 @@ def check_training_status(user):
         alert(user, f"Error checking training status: {e}")
         return False
 
-# upgradePerk(user) returns True if successful, False otherwise
 def upgrade_perk(user):
     try:
         if not (set_perks(user) and set_money(user, energy=True)): return False

@@ -57,7 +57,6 @@ class Client:
 
                 self.driver = Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
 
-
         try:
             self.wait = WebDriverWait(self.driver, 10)
             self.driver.get('https://rivalregions.com')

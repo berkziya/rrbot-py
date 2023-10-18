@@ -22,7 +22,6 @@ def remove_self_law(user):
     time.sleep(2)
     return True
 
-# Accepts a law with the given text in its title
 def accept_law(user, text):
     user.driver.get('https://rivalregions.com/parliament')
     time.sleep(1)
@@ -58,7 +57,6 @@ def accept_law(user, text):
     time.sleep(2)
     return True
 
-# Explores the given resource
 def explore_resource(user, resource='gold'):
     resources = {'gold': 0, 'oil': 3, 'ore': 4, 'uranium': 11, 'diamonds': 15}
     try:

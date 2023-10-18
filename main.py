@@ -1,7 +1,7 @@
 import atexit
 import concurrent.futures
 import configparser
-import os
+import platform
 import subprocess
 import sys
 
@@ -86,9 +86,10 @@ def main():
         log(user, 'Login successful.')
 
     # Start sessions
+    os = platform.system().lower()
     futures = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        caffeinate = subprocess.Popen(['caffeinate', '-i'])
+        if os is not 'windows': caffeinate = subprocess.Popen(['caffeinate', '-i'])
         futures = [executor.submit(session, user) for user in users]
         for future in concurrent.futures.as_completed(futures):
             try:
@@ -97,7 +98,7 @@ def main():
                 print(f'Exception: {e}')
             else:
                 print(f'Result: {result}')
-        caffeinate.terminate()
+        if os is not 'windows': caffeinate.terminate()
 
 def cleanup():
     for user in users:

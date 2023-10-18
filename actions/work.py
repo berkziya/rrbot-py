@@ -2,6 +2,7 @@ import time
 
 from misc.logger import log, alert
 
+
 def cancel_auto_work(user):
     try:
         js_ajax = """
