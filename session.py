@@ -13,7 +13,7 @@ from misc.logger import alert, log
 from misc.utils import *
 
 eventsToBeDone = [
-    {'desc': 'upgrade perks', 'event': events.perks},
+    {'desc': 'upgradea perks', 'event': events.perks},
     {'desc': 'energy drink refill', 'event': events.energy},
     {'desc': 'attack training', 'event': attack},
     {'desc': 'factory work', 'event': events.factory_work},
@@ -25,7 +25,6 @@ eventsToBeDone = [
     ]
 
 def session(user):
-    print(events.internet_on())
     if set_all_status(user):
         get_region_info(user, user.player.region.id)
         get_region_info(user, user.player.residency.id)
