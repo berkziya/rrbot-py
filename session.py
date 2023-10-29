@@ -6,20 +6,22 @@ from actions.wars import attack
 import events
 from misc.logger import alert, log
 from misc.utils import *
+from butler import reset_browser
 
-
-eventsToBeDone = [
-    {'desc': 'upgrade perks', 'event': events.perks},
-    {'desc': 'energy drink refill', 'event': events.energy},
-    {'desc': 'attack training', 'event': attack},
-    {'desc': 'factory work', 'event': events.factory_work},
-    {'desc': 'economics work', 'event': events.hourly_state_gold_refill},
-    {'desc': 'build military academy', 'event': events.militaryAcademy},
-    {'desc': 'work state department', 'event': work_state_department, 'args': (None, 'gold',)},
-    {'desc': 'upcoming_events', 'event': events.upcoming_events},
-    ]
 
 def session(user):
+
+    eventsToBeDone = [
+        {'desc': 'upgrade perks', 'event': events.perks},
+        {'desc': 'energy drink refill', 'event': events.energy_drink_refill},
+        {'desc': 'attack training', 'event': attack},
+        {'desc': 'factory work', 'event': events.factory_work},
+        {'desc': 'economics work', 'event': events.hourly_state_gold_refill},
+        {'desc': 'build military academy', 'event': events.militaryAcademy},
+        {'desc': 'work state department', 'event': work_state_department, 'args': (None, user.statedept,) if user.statedept else (None,)},
+        {'desc': 'upcoming_events', 'event': events.upcoming_events},
+    ]
+
     if set_all_status(user):
         get_region_info(user, user.player.region.id)
         get_region_info(user, user.player.residency.id)
@@ -41,7 +43,7 @@ def session(user):
     
     events.initiate_all_events(user, eventsToBeDone)
     schedule.every(3).to(5).hours.do(events.initiate_all_events, user, eventsToBeDone)
-    schedule.every(4).to(6).hours.do(events.reset_browser, user)
+    schedule.every(4).to(6).hours.do(reset_browser, user)
 
     def activate_scheduler():
         schedule.run_pending()

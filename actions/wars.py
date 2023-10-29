@@ -4,35 +4,20 @@ import json
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
-from actions.status import set_level
+from actions.status import set_all_status
 from misc.utils import *
 from misc.logger import log, alert
+from butler import error, ajax
 
 
 def cancel_autoattack(user):
-    try:
-        ajax_js = """
-            $.ajax({
-                url: '/war/autoset_cancel/',
-                data: { c: c_html },
-                type: 'POST',
-                success: function (data) {
-                    location.reload();
-                },
-            });"""
-        user.driver.execute_script(ajax_js)
-        time.sleep(2)
-        return True
-    except Exception as e:
-        print(e)
-        alert(user, f"Error canceling auto attack: {e}")
-        return False
+    return ajax(user, '/war/autoset_cancel/', '', '', 'Error cancelling autoattack')
 
 def attack(user, id=None, max=False, drones=False):
     warname = id
     stringified_troops = ''
 
-    if not set_level(user): return False
+    if not set_all_status(user): return False
     if not id:
         id = get_training_link(user)
         side = 0
@@ -51,8 +36,8 @@ def attack(user, id=None, max=False, drones=False):
 
     troop_admg = {
         "t27": 6000, # laserdrones
-        "t1": 150, # aircraft
         "t2": 10, # tanks
+        "t1": 150, # aircraft
         "t16": 800, # bombers
     }
 
@@ -63,7 +48,7 @@ def attack(user, id=None, max=False, drones=False):
         "t16": "bombers",
     }
 
-    hourly = 1 if max else 0
+    hourly = 0 if max else 1
 
     n = {}
 
@@ -82,28 +67,29 @@ def attack(user, id=None, max=False, drones=False):
 
     side = 0
     if not cancel_autoattack(user): return False
+    time.sleep(2)
     try:
         js_ajax = """
-        var free_ene = arguments[0];
+        var hourly = arguments[0];
         var n = arguments[1];
         var side = arguments[2];
         var link = arguments[3];
         $.ajax({
             url: '/war/autoset/',
-            data: { free_ene: 1, c: c_html, n: n, aim: side, edit: link},
+            data: { free_ene: hourly, c: c_html, n: n, aim: side, edit: link},
             type: 'POST',
             success: function (data) {
                 location.reload();
             },
         });"""
         user.driver.execute_script(js_ajax, hourly, n_json, side, id)
-        log(user, f"{'Defending' if side else 'Attacking'} {warname}{' hourly' if not hourly else ''} with {stringified_troops.removesuffix(', ')}")
+        log(user, f"{'Defending' if side else 'Attacking'} {warname} {'hourly' if hourly else 'at max'} with {stringified_troops.removesuffix(', ')}")
         time.sleep(2)
         return True
     except Exception as e:
-        print(e)
-        alert(user, f"Error attacking: {e}")
-        return False
+        return error(user, e, 'Error attacking')
+    # log(user, f"{'Defending' if side else 'Attacking'} {warname}{' hourly' if hourly else ''} with {stringified_troops.removesuffix(', ')}")
+    # return ajax(user, '/war/autoset/', f'free_ene: {hourly},', f'n: {n_json}, aim: {side}, edit: {id}', 'Error attacking')
 
 def get_wars(user, id=None):
     if not id: id = user.player.region.state.id
@@ -125,14 +111,18 @@ def get_wars(user, id=None):
     except NoSuchElementException:
         return None
     except Exception as e:
-        print(e)
-        alert(user, f"Error getting wars: {e}")
-        return False
+        return error(user, e, 'Error getting wars')
 
 def get_training_link(user):
-    user.driver.find_element(By.CSS_SELECTOR, "div.war_index_war > div:nth-child(1) > span.pointer.index_training.hov2.dot").click()
-    time.sleep(2)
-    link = user.driver.current_url.split('/')[-1]
-    user.driver.get('https://rivalregions.com/')
-    time.sleep(2)
-    return link
+    try:
+        user.driver.get('https://rivalregions.com')
+        time.sleep(2)
+        element = user.driver.find_element(By.CSS_SELECTOR, "div.war_index_war > div:nth-child(1) > span.pointer.index_training.hov2.dot")
+        user.driver.execute_script("arguments[0].click();", element)
+        time.sleep(2)
+        link = user.driver.current_url.split('/')[-1]
+        user.driver.get('https://rivalregions.com/')
+        time.sleep(2)
+        return link
+    except Exception as e:
+        return error(user, e, 'Error getting training link')

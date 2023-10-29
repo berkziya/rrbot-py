@@ -14,6 +14,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 from misc.logger import log, alert
 from models import Player
+from butler import error
 
 class Client:
     def __init__(self, name, email, password):
@@ -31,11 +32,16 @@ class Client:
 
         self.perkoptions = {'goldperks': None, 'eduweight':0, 'goldweight':0, 'minlvl4gold':999}
 
+        self.statedept = None
+
     def set_driveroptions(self, element, value):
         self.driveroptions[element] = value
 
     def set_perkoptions(self, element, value):
         self.perkoptions[element] = value
+
+    def set_statedept(self, value):
+        self.statedept = value
 
     def boot_browser(self):
         print(f"Booting browser for {self.name}...")
@@ -76,7 +82,7 @@ class Client:
             time.sleep(4)
             return True
         except Exception as e:
-            alert(self, f"Error logging in: {e}")
+            error(self, e, 'Error booting browser')
             self.driver.quit()
             time.sleep(2)
             self.wait = None

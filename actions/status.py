@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from models import get_player, get_state, get_region, get_autonomy, get_party
 from misc.utils import *
 from misc.logger import log, alert
+from butler import error
 
 def get_all_status(user, id=None):
     try:
@@ -58,10 +59,7 @@ def get_all_status(user, id=None):
         time.sleep(2)
         return player
     except Exception as e:
-        print(e)
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
-        return False
+        return error(user, e, 'Error getting status')
 
 def set_all_status(user):
     player = get_all_status(user)
@@ -80,40 +78,24 @@ def set_all_status(user):
         user.player.set_party(player.party)
         return True
     except Exception as e:
-        print(e)
-        alert(user, f"Error setting status: {e}")
-        return False
+        return error(user, e, 'Error setting status')
 
 def set_perks(user):
-    user.driver.refresh()
-    time.sleep(2)
     try:
+        user.driver.get('https://rivalregions.com')
+        time.sleep(2)
         str = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2").text
         edu = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(5) > .perk_source_2").text
         end = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(6) > .perk_source_2").text
         user.player.set_perks(dotless(str), dotless(edu), dotless(end))
         return True
     except Exception as e:
-        print(e)
-        alert(user, f"Error setting perks: {e}")
-        return False
-
-def set_level(user):
-    user.driver.refresh()
-    time.sleep(2)
-    try:
-        level = user.driver.find_element(By.CSS_SELECTOR, "#header_my_expbar_big > div:nth-child(2)").text
-        user.player.set_level(dotless(level))
-        return True
-    except Exception as e:
-        print(e)
-        alert(user, f"Error setting level: {e}")
-        return False
+        return error(user, e, 'Error setting perks')
 
 def set_money(user, energy=False):
-    user.driver.refresh()
-    time.sleep(2)
     try:
+        user.driver.get('https://rivalregions.com')
+        time.sleep(2)
         money = user.driver.find_element(By.CSS_SELECTOR, "#m").text
         gold = user.driver.find_element(By.CSS_SELECTOR, "#g").text
 
@@ -121,7 +103,8 @@ def set_money(user, energy=False):
         user.player.set_money('gold', dotless(gold))
 
         if energy:
-            user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(6)").click()
+            storage_button = user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(6)")
+            user.driver.execute_script("arguments[0].click();", storage_button)
             time.sleep(2)
             energy = user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.storage_item:nth-child(11) > .storage_number > .storage_number_change"))).text
             user.player.set_money('energy', dotless(energy))
@@ -129,15 +112,13 @@ def set_money(user, energy=False):
             time.sleep(2)
         return True
     except Exception as e:
-        print(e)
-        alert(user, f"Error setting money: {e}")
-        return False
+        return error(user, e, 'Error setting money')
 
 # NOT COMPLETE
 def check_traveling_status(user):
-    user.driver.refresh()
-    time.sleep(2)
     try:
+        user.driver.get('https://rivalregions.com')
+        time.sleep(2)
         user.driver.find_element(By.CSS_SELECTOR, '.gototravel')
         return True
     except NoSuchElementException:

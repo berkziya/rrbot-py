@@ -7,28 +7,13 @@ from selenium.webdriver.common.by import By
 from misc.logger import log, alert
 from misc.utils import dotless
 from models import get_state, get_region, get_autonomy, get_player
+from butler import ajax, error
 
 
 def build_military_academy(user):
-    try:
-        js_ajax = """
-        $.ajax({
-            url: '/slide/academy_do/',
-            data: { c: c_html },
-            type: 'POST',
-            success: function (data) {
-                location.reload();
-            },
-        });"""
-        user.driver.execute_script(js_ajax)
-        time.sleep(2)
-        return True
-    except Exception as e:
-        print(e)
-        alert(user, f"Error building military academy: {e}")
-        return False
+    return ajax(user, '/slide/academy_do/', '', '', 'Error building military academy')
 
-def work_state_department(user, id=None, dept='building'):
+def work_state_department(user, id=None, dept='gold'):
     if not id: id = user.player.region.state.id
     if not id:
         log(user, "No state id found")
@@ -56,26 +41,23 @@ def work_state_department(user, id=None, dept='building'):
             what_dict[f'w{value}'] = 0
     
     what_json = json.dumps(what_dict).replace('"', '\"').replace(' ', '')
-
     try:
         js_ajax = """
-            var what_json = arguments[0];
-            $.ajax({
-                url: '/rival/instwork',
-                data: { c: c_html , what: what_json},
-                type: 'POST',
-                success: function (data) {
-                    location.reload();
-                },
-            });"""
+        var what_json = arguments[0];
+        $.ajax({
+            url: '/rival/instwork',
+            data: { c: c_html, what: what_json},
+            type: 'POST',
+            success: function (data) {
+                location.reload();
+            },
+        });"""
         user.driver.execute_script(js_ajax, what_json)
-        log(user, f"Worked for | state: {id}, department: {dept}")
+        log(user, f"Worked for state department: {dept}")
         time.sleep(2)
         return True
     except Exception as e:
-        print(e)
-        alert(user, f"Error working state department: {e}")
-        return False
+        return error(user, e, 'Error working for state department')
 
 def get_region_info(user, id):
     try:
@@ -136,9 +118,7 @@ def get_region_info(user, id):
         time.sleep(2)
         return region
     except Exception as e:
-        print(e)
-        alert(user, f"Error getting region info: {e}")
-        return False
+        return error(user, e, 'Error getting region info')
 
 def get_all_state_status(user, id):
     try:
@@ -175,11 +155,7 @@ def get_all_state_status(user, id):
         time.sleep(2)
         return True
     except Exception as e:
-        print(e)
-        alert(user, f"Error getting state status: {e}")
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
-        return False
+        return error(user, e, 'Error getting state status')
     
 def get_citizens(user, id, is_state=False, get_residents=False):
     # https://rivalregions.com/listed/state_population/4600
@@ -214,9 +190,4 @@ def get_citizens(user, id, is_state=False, get_residents=False):
     except NoSuchElementException:
         return None
     except Exception as e:
-        print(e)
-        print(citizens)
-        alert(user, f"Error getting citizens: {e}")
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
-        return False
+        return error(user, e, 'Error getting citizens')

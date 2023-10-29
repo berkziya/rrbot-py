@@ -1,28 +1,15 @@
 import time
-import urllib.parse
-from requests import get
 
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from actions.status import set_all_status, set_money, set_perks
 from actions.regions import get_state
-from misc.logger import alert, log
+from butler import ajax
+from misc.logger import log, alert
+from butler import error
 
 
 def remove_self_law(user):
-    js_ajax = """
-        $.ajax({
-            url: '/parliament/removelaw',
-            data: { c: c_html },
-            type: 'POST',
-            success: function (data) {
-                location.reload();
-            },
-        });"""
-    user.driver.execute_script(js_ajax)
-    time.sleep(2)
-    return True
+    return ajax(user, '/parliament/removelaw', '', 'Error removing self law')
 
 def accept_law(user, text):
     user.driver.get('https://rivalregions.com/parliament')
@@ -41,97 +28,30 @@ def accept_law(user, text):
             print('No matching law found')
             return False
     except Exception as e:
-        print(e)
-        return False
+        return error(user, e, 'Error accepting law')
     user.driver.get('https://rivalregions.com/')
     time.sleep(2)
-    js_ajax = """
-        var law = arguments[0];
-        $.ajax({
-            url: '/parliament/votelaw/' + law + '/pro',
-            data: { c: c_html },
-            type: 'POST',
-            success: function (data) {
-                location.reload();
-            },
-        });"""
-    user.driver.execute_script(js_ajax, law_action)
-    time.sleep(2)
-    return True
+    return ajax(user, f'/parliament/votelaw/{law_action}/pro', '', 'Error accepting law')
 
 def explore_resource(user, resource='gold'):
     resources = {'gold': 0, 'oil': 3, 'ore': 4, 'uranium': 11, 'diamonds': 15}
-    try:
-        remove_self_law(user)
-        js_ajax = """
-            var resource = arguments[0];
-            $.ajax({
-                url: '/parliament/donew/42/' + resource + '/0',
-                data: { tmp_gov: "'0'", c: c_html },
-                type: 'POST',
-                success: function (data) {
-                    location.reload();
-                },
-            });"""
-        user.driver.execute_script(js_ajax, resources[resource])
-        time.sleep(2)
-        return accept_law(user, 'Resources exploration: state, gold resources')
-    except:
-        return False
+    return ajax(user, f'/parliament/donew/42/{resources[resource]}/0', '', 'Error exploring resource') and accept_law(user, 'Resources exploration: state, gold resources')
 
 def border_control(user, border='opened'):
     if not user.player.foreign:
         log(user, "Not a foreign minister")
         return False
     get_state(user, user.player.region.state.id)
-    if user.player.foreign != user.player.region.state.id:
+    if user.player.foreign != user.player.region.state:
         log(user, "Not in home state or not the foreign minister")
         return False
-    get_state(user, user.player.foreign)
-
+    get_state(user, user.player.foreign.id)
     if user.player.foreign.borders == border:
         log(user, f"Borders are already {border}")
         return False
-    
-    # https://rivalregions.com/parliament/donew/23/0/0 same for both
-    # tmp_gov: '0'
-
-    try:
-        js_ajax = """
-                $.ajax({
-                    url: '/leader/' + position,
-                    data: { c: c_html, tmp_gov: '0'},
-                    type: 'POST',
-                    success: function (data) {
-                        location.reload();
-                    },
-                });"""
-        user.driver.execute_script(js_ajax)
-
-        accept_law(user, 'Border control')
-    except Exception as e:
-        print(e)
-        alert(user, f"Error setting borders: {e}")
-        return False
+    return ajax(user, '/parliament/donew/23/0/0', 'tmp_gov: \'0\'', 'Error setting border control') and accept_law(user, f'{"Open" if border == "opened" else "Close"} borders:')
 
 def set_minister(user, id, ministry='economic'):
-    try:
-        position = 'set_econom'
-        if ministry == 'foreign': position = 'set_mid'
-        js_ajax = """
-                var position = arguments[0];
-                var user = arguments[1];
-
-                $.ajax({
-                    url: '/leader/' + position,
-                    data: { c: c_html, u: user},
-                    type: 'POST',
-                    success: function (data) {
-                        location.reload();
-                    },
-                });"""
-        user.driver.execute_script(js_ajax, position, id)
-        time.sleep(1)
-        return True
-    except:
-        return False
+    position = 'set_econom'
+    if ministry == 'foreign': position = 'set_mid'
+    return ajax(user, f'/leader/{position}', '', 'u: {id}', 'Error setting minister')

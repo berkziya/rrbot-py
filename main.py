@@ -26,8 +26,8 @@ minlvl4gold = 666
 enabled = false
 email = user2@example.com
 password = password2
-goldperks = edu
-eduweight = 100
+goldperks = str
+eduweight = 0
 goldweight = 5
 minlvl4gold = 30
 '''
@@ -58,6 +58,8 @@ def create_user_from_config(config, general):
     user.set_perkoptions('goldweight', goldweight)
     user.set_perkoptions('minlvl4gold', minlvl4gold)
 
+    statedept = config.get('statedept', fallback=None)
+    user.set_statedept(statedept)
     return user
 
 def main():

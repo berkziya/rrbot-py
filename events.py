@@ -1,9 +1,6 @@
 import datetime
 import time
 
-import platform
-import subprocess
-
 from actions.state import explore_resource, set_minister
 from actions.perks import check_training_status, upgrade_perk
 from actions.regions import build_military_academy, work_state_department
@@ -11,34 +8,9 @@ from actions.status import set_all_status
 from actions.storage import produce_energy
 from actions.wars import get_wars
 from actions.work import auto_work_factory, cancel_auto_work
-from misc.logger import alert, log
+from misc.logger import log, alert
+from butler import error
 
-def internet_on():
-    param = '-n' if platform.system().lower()=='windows' else '-c'
-    command = ['ping', param, '1', 'rivalregions.com']
-    return subprocess.call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
-
-is_resetting = False
-def reset_browser(user):
-    global is_resetting
-    if is_resetting: return False
-    is_resetting = True
-    if not internet_on():
-        # no internet connection, will retry in 10 minutes
-        user.s.enter(600, 1, reset_browser, (user,))
-        is_resetting = False
-        return False
-    if user.driver: user.driver.quit()
-    time.sleep(2)
-    user.wait = None
-    user.driver = None
-    if not user.boot_browser():
-        alert(user, "Browser failed to reset, will try again in 10 minutes.")
-        user.s.enter(600, 1, reset_browser, (user,))
-        is_resetting = False
-        return False
-    is_resetting = False
-    return True
 
 def initiate_all_events(user, events):
     list(map(user.s.cancel, user.s.queue))
@@ -57,11 +29,10 @@ def upcoming_events(user):
     if upcoming:
         log(user, "Upcoming events:", False)
         for event_time, event in upcoming:
-            if event.action.__name__ in ['energy', 'activate_scheduler', 'factory_work']: continue
+            if event.action.__name__ in ['energy_drink_refill', 'activate_scheduler', 'factory_work']: continue
             log(user, f"{event_time.strftime('%Y-%m-%d %H:%M:%S')} - {event.action.__name__}", False)
     else:
         log(user, "No upcoming events.", False)
-    user.s.enter(600, 1, upcoming_events, (user,))
 
 def perks(user):
     training_time = check_training_status(user)
@@ -78,21 +49,21 @@ def perks(user):
             user.s.enter(5, 1, perks, (user,))
         else:
             user.s.enter(training_time+5, 1, perks, (user,))
-            log(user, f'Training in progress. Time remaining: {datetime.timedelta(seconds=training_time)}')
+            log(user, f'Perk upgrade in progress. Time remaining: {datetime.timedelta(seconds=training_time)}')
         return False
 
 def militaryAcademy(user):
     try:
         build_military_academy(user)
-        log(user, "Tried to build military academy")
+        log(user, "Built military academy")
         return True
-    except:
-        log(user, "Something went wrong when building the military academy, will again try in an hour")
+    except Exception as e:
+        error(user, e, 'Error building military academy')
         user.s.enter(3600, 1, militaryAcademy, (user,))
 
 def hourly_state_gold_refill(user):
     if not user.player.state_leader or not user.player.economics: return False
-    if explore_resource(user, 'gold'): log(user, f"Refilled the state gold")
+    if explore_resource(user, 'gold'): log(user, f"Refilled the state gold reserves")
     else: log(user, "Failed to refill state gold, will try again in an hour")
     user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
 
@@ -102,11 +73,11 @@ def factory_work(user):
     auto_work_factory(user)
     user.s.enter(3600, 1, factory_work, (user,))
 
-def energy(user):
+def energy_drink_refill(user):
     if not produce_energy(user): 
-        user.s.enter(600, 1, energy, (user,))
+        user.s.enter(600, 1, energy_drink_refill, (user,))
         return False
-    user.s.enter(3600, 1, energy, (user,))
+    user.s.enter(3600, 1, energy_drink_refill, (user,))
     return True
 
 def close_borders_if_not_safe(user):
