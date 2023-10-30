@@ -25,7 +25,7 @@ class Client:
         self.email = email
         self.password = password
 
-        self.driveroptions = {'browser': None, 'headless': True, 'binary_location': None}
+        self.driveroptions = {'headless': True, 'binary_location': None}
         self.s = None
         self.driver = None
         self.wait = None
@@ -44,33 +44,25 @@ class Client:
         self.statedept = value
 
     def boot_browser(self):
-        print(f"Booting browser for {self.name}...")
-        match self.driveroptions['browser']:
-            case 'firefox' | None:
-                options = FirefoxOptions()
-                if self.driveroptions['headless'] or not self.driveroptions['binary_location']:
-                    options.add_argument('--headless')
-                else:
-                    options.binary_location = self.driveroptions['binary_location']
-                
-                self.driver = Firefox(options=options, service=FirefoxService(GeckoDriverManager().install()))
-            case 'chrome':
-                options = ChromeOptions()
-                if self.driveroptions['headless'] or not self.driveroptions['binary_location']:
-                    options.add_argument('--headles=new')
-                else:
-                    options.binary_location = self.driveroptions['binary_location']
-
-                self.driver = Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
+        try:
+            print(f"Booting browser for {self.name}...")
+            options = FirefoxOptions()
+            if self.driveroptions['headless'] or not self.driveroptions['binary_location']:
+                options.add_argument('--headless')
+            else:
+                options.binary_location = self.driveroptions['binary_location']
+            self.driver = Firefox(options=options, service=FirefoxService(GeckoDriverManager().install()))
+        except Exception as e:
+            error(self, e, 'Error setting up Firefox driver')
+            return False
 
         try:
-            self.wait = WebDriverWait(self.driver, 10)
+            self.wait = WebDriverWait(self.driver, 20)
             self.driver.get('https://rivalregions.com')
-            time.sleep(1)
 
-            log(self, 'Logging in...')
-            email_input = self.driver.find_element(By.CSS_SELECTOR, "input[name='mail']")
+            email_input = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[name='mail']")))
             email_input.send_keys(self.email)
+            log(self, 'Logging in...')
 
             password_input = self.driver.find_element(By.CSS_SELECTOR, "input[name='p']")
             password_input.send_keys(self.password)
@@ -78,11 +70,11 @@ class Client:
             submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[name='s']")
             submit_button.click()
 
-            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#g")))
-            time.sleep(4)
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
+            time.sleep(1)
             return True
         except Exception as e:
-            error(self, e, 'Error booting browser')
+            error(self, e, 'Error logging in, check your credentials')
             self.driver.quit()
             time.sleep(2)
             self.wait = None

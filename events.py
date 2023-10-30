@@ -1,13 +1,10 @@
 import datetime
 import time
 
-from actions.state import explore_resource, set_minister
+from actions.state import explore_resource
 from actions.perks import check_training_status, upgrade_perk
-from actions.regions import build_military_academy, work_state_department
-from actions.status import set_all_status
+from actions.regions import build_military_academy
 from actions.storage import produce_energy
-from actions.wars import get_wars
-from actions.work import auto_work_factory, cancel_auto_work
 from misc.logger import log, alert
 from butler import error
 
@@ -29,7 +26,7 @@ def upcoming_events(user):
     if upcoming:
         log(user, "Upcoming events:", False)
         for event_time, event in upcoming:
-            if event.action.__name__ in ['energy_drink_refill', 'activate_scheduler', 'factory_work']: continue
+            if event.action.__name__ in ['energy_drink_refill', 'activate_scheduler']: continue
             log(user, f"{event_time.strftime('%Y-%m-%d %H:%M:%S')} - {event.action.__name__}", False)
     else:
         log(user, "No upcoming events.", False)
@@ -66,12 +63,6 @@ def hourly_state_gold_refill(user):
     if explore_resource(user, 'gold'): log(user, f"Refilled the state gold reserves")
     else: log(user, "Failed to refill state gold, will try again in an hour")
     user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
-
-def factory_work(user):
-    cancel_auto_work(user)
-    time.sleep(4)
-    auto_work_factory(user)
-    user.s.enter(3600, 1, factory_work, (user,))
 
 def energy_drink_refill(user):
     if not produce_energy(user): 

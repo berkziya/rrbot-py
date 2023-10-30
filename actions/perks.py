@@ -6,13 +6,12 @@ from selenium.common.exceptions import NoSuchElementException
 from actions.status import set_money, set_perks
 from misc.logger import log, alert
 from misc.utils import *
-from butler import error, ajax
+from butler import return_to_mainpage, error, ajax
 
 
 def check_training_status(user):
     try:
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         perk_counter = user.driver.find_element(By.ID, 'perk_counter_2')
         perk_counter = perk_counter.text
         total_seconds = timetosecs(perk_counter)

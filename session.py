@@ -3,6 +3,7 @@ import schedule
 from actions.regions import get_region_info, work_state_department
 from actions.status import set_all_status, set_money
 from actions.wars import attack
+from actions.work import auto_work_factory
 import events
 from misc.logger import alert, log
 from misc.utils import *
@@ -15,7 +16,7 @@ def session(user):
         {'desc': 'upgrade perks', 'event': events.perks},
         {'desc': 'energy drink refill', 'event': events.energy_drink_refill},
         {'desc': 'attack training', 'event': attack},
-        {'desc': 'factory work', 'event': events.factory_work},
+        {'desc': 'factory work', 'event': auto_work_factory},
         {'desc': 'economics work', 'event': events.hourly_state_gold_refill},
         {'desc': 'build military academy', 'event': events.militaryAcademy},
         {'desc': 'work state department', 'event': work_state_department, 'args': (None, user.statedept,) if user.statedept else (None,)},

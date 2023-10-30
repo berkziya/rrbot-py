@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from actions.regions import get_state
 from butler import ajax
 from misc.logger import log, alert
-from butler import error
+from butler import return_to_mainpage, error
 
 
 def remove_self_law(user):
@@ -28,9 +28,8 @@ def accept_law(user, text):
             print('No matching law found')
             return False
     except Exception as e:
-        return error(user, e, 'Error accepting law')
-    user.driver.get('https://rivalregions.com/')
-    time.sleep(2)
+        return error(user, e, 'Something went wrong while accepting a law')
+    return_to_mainpage(user)
     return ajax(user, f'/parliament/votelaw/{law_action}/pro', '', 'Error accepting law')
 
 def explore_resource(user, resource='gold'):

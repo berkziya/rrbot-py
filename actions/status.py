@@ -8,9 +8,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from models import get_player, get_state, get_region, get_autonomy, get_party
 from misc.utils import *
 from misc.logger import log, alert
-from butler import error
+from butler import return_to_mainpage, error
 
-def get_all_status(user, id=None):
+def get_player_info(user, id=None):
     try:
         if not id: id = user.player.id
         user.driver.get(f'https://rivalregions.com/slide/profile/{id}')
@@ -54,15 +54,13 @@ def get_all_status(user, id=None):
                 player.set_foreign(get_state(dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])))
             elif 'Party' in tr.text:
                 player.set_party(get_party(dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])))
-
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         return player
     except Exception as e:
-        return error(user, e, 'Error getting status')
+        return error(user, e, 'Error getting player info')
 
 def set_all_status(user):
-    player = get_all_status(user)
+    player = get_player_info(user)
     if not player: return False
     try:
         user.player.set_level(player.level)
@@ -82,8 +80,7 @@ def set_all_status(user):
 
 def set_perks(user):
     try:
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         str = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2").text
         edu = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(5) > .perk_source_2").text
         end = user.driver.find_element(By.CSS_SELECTOR, "div.perk_item:nth-child(6) > .perk_source_2").text
@@ -94,8 +91,7 @@ def set_perks(user):
 
 def set_money(user, energy=False):
     try:
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         money = user.driver.find_element(By.CSS_SELECTOR, "#m").text
         gold = user.driver.find_element(By.CSS_SELECTOR, "#g").text
 
@@ -106,10 +102,9 @@ def set_money(user, energy=False):
             storage_button = user.driver.find_element(By.CSS_SELECTOR, "div.item_menu:nth-child(6)")
             user.driver.execute_script("arguments[0].click();", storage_button)
             time.sleep(2)
-            energy = user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.storage_item:nth-child(11) > .storage_number > .storage_number_change"))).text
+            energy = user.driver.find_element(By.CSS_SELECTOR, "div.storage_item:nth-child(11) > .storage_number > .storage_number_change").text
             user.player.set_money('energy', dotless(energy))
-            user.driver.get('https://rivalregions.com')
-            time.sleep(2)
+            return_to_mainpage(user)
         return True
     except Exception as e:
         return error(user, e, 'Error setting money')
@@ -117,8 +112,7 @@ def set_money(user, energy=False):
 # NOT COMPLETE
 def check_traveling_status(user):
     try:
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         user.driver.find_element(By.CSS_SELECTOR, '.gototravel')
         return True
     except NoSuchElementException:

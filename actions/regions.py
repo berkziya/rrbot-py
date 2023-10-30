@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from misc.logger import log, alert
 from misc.utils import dotless
 from models import get_state, get_region, get_autonomy, get_player
-from butler import ajax, error
+from butler import return_to_mainpage, ajax, error
 
 
 def build_military_academy(user):
@@ -54,7 +54,6 @@ def work_state_department(user, id=None, dept='gold'):
         });"""
         user.driver.execute_script(js_ajax, what_json)
         log(user, f"Worked for state department: {dept}")
-        time.sleep(2)
         return True
     except Exception as e:
         return error(user, e, 'Error working for state department')
@@ -113,9 +112,7 @@ def get_region_info(user, id):
                 for region_ in div.find_elements(By.CSS_SELECTOR, "slide_profile_data"):
                     border_regions.append(get_region(dotless(region_.get_attribute('action').split('/')[-1])))
                 region.set_border_regions(border_regions)
-
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         return region
     except Exception as e:
         return error(user, e, 'Error getting region info')
@@ -151,11 +148,10 @@ def get_all_state_status(user, id):
                 state.set_economics(dotless(div.find_element(By.CSS_SELECTOR, "div.short_details").get_attribute('action').split('/')[-1]))
             elif "minister:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 state.set_foreign(dotless(div.find_element(By.CSS_SELECTOR, "div.short_details").get_attribute('action').split('/')[-1]))
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         return True
     except Exception as e:
-        return error(user, e, 'Error getting state status')
+        return error(user, e, 'Error getting state info')
     
 def get_citizens(user, id, is_state=False, get_residents=False):
     # https://rivalregions.com/listed/state_population/4600
@@ -177,15 +173,14 @@ def get_citizens(user, id, is_state=False, get_residents=False):
                 case False:
                     link = f'https://rivalregions.com/listed/region/{id}'
     user.driver.get(link)
-    time.sleep(2)
+    time.sleep(1)
 
     citizens = []
     try:
         data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in data:
             citizens.append(dotless(tr.get_attribute('user')))
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         return (citizens if citizens else False)
     except NoSuchElementException:
         return None

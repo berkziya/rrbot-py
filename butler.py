@@ -3,6 +3,19 @@ import platform
 import subprocess
 
 from misc.logger import log, alert
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
+
+def return_to_mainpage(user):
+    try:
+        user.driver.get('https://rivalregions.com')
+        user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
+        time.sleep(0.5)
+        return True
+    except Exception as e:
+        return error(user, e, 'Error returning to mainpage')
+
 
 def delay_tasks(scheduler, delay):
     now = time.time()
@@ -29,15 +42,15 @@ def reset_browser(user):
         is_resetting = False
         return False
     try:
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         id = user.driver.execute_script("return id;")
         if id == user.id:
             is_resetting = False
             return False
     except: pass
-    if user.driver: user.driver.quit()
-    time.sleep(2)
+    if user.driver:
+        user.driver.quit()
+        time.sleep(2)
     user.wait = None
     user.driver = None
     if not user.boot_browser():
@@ -53,11 +66,11 @@ def error(user, error, text=None):
     print(f'[{user.name}] {error}')
     alert(user, f'{text}: {error}')
     try:
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
+        return_to_mainpage(user)
         id = user.driver.execute_script("return id;")
         if not id == user.id: raise Exception('Not logged in')
-    except:
+    except Exception as e:
+        alert(user, f'Browser error: {e}')
         reset_browser(user)
     return False
 
@@ -73,7 +86,7 @@ def ajax(user, url, data1, data2, text=None):
             }},
         }});"""
         user.driver.execute_script(js_ajax)
-        time.sleep(2)
+        user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
         return True
     except Exception as e:
         return error(user, e, text)

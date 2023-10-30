@@ -7,7 +7,7 @@ from selenium.common.exceptions import NoSuchElementException
 from actions.status import set_all_status
 from misc.utils import *
 from misc.logger import log, alert
-from butler import error, ajax
+from butler import return_to_mainpage, error, ajax
 
 
 def cancel_autoattack(user):
@@ -84,7 +84,7 @@ def attack(user, id=None, max=False, drones=False):
         });"""
         user.driver.execute_script(js_ajax, hourly, n_json, side, id)
         log(user, f"{'Defending' if side else 'Attacking'} {warname} {'hourly' if hourly else 'at max'} with {stringified_troops.removesuffix(', ')}")
-        time.sleep(2)
+        time.sleep(0.5)
         return True
     except Exception as e:
         return error(user, e, 'Error attacking')
@@ -105,8 +105,7 @@ def get_wars(user, id=None):
         for tr in tbody:
             war_id = dotless(tr.find_element(By.CSS_SELECTOR, 'div[url]').get_attribute('url'))
             wars.append(war_id)
-        user.driver.get('https://rivalregions.com/')
-        time.sleep(2)
+        return_to_mainpage(user)
         return (wars if wars else False)
     except NoSuchElementException:
         return None
@@ -115,14 +114,11 @@ def get_wars(user, id=None):
 
 def get_training_link(user):
     try:
-        user.driver.get('https://rivalregions.com')
-        time.sleep(2)
-        element = user.driver.find_element(By.CSS_SELECTOR, "div.war_index_war > div:nth-child(1) > span.pointer.index_training.hov2.dot")
+        element = user.driver.find_element(By.CSS_SELECTOR, "span.pointer.index_training.hov2.dot")
         user.driver.execute_script("arguments[0].click();", element)
         time.sleep(2)
         link = user.driver.current_url.split('/')[-1]
-        user.driver.get('https://rivalregions.com/')
-        time.sleep(2)
+        return_to_mainpage(user)
         return link
     except Exception as e:
         return error(user, e, 'Error getting training link')

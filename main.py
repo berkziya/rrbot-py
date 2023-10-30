@@ -35,7 +35,6 @@ minlvl4gold = 30
 users = [] 
 
 def create_user_from_config(config, general):
-    browser = general.get('browser', fallback=None)
     headless = general.getboolean('headless', fallback=True)
     binary = general.get('binary', fallback=None)
 
@@ -44,7 +43,6 @@ def create_user_from_config(config, general):
     is_headless = config.getboolean('headless', fallback=headless) or not binary
 
     user = Client(config.name, email, password)
-    user.set_driveroptions('browser', browser)
     user.set_driveroptions('binary_location', binary)
     user.set_driveroptions('headless', is_headless)
 
@@ -76,7 +74,7 @@ def main():
     # Create users from config
     for section in config.sections():
         if section == 'general': continue
-        if config.getboolean(section, 'enabled') == False: continue
+        if not config.getboolean(section, 'enabled'): continue
 
         user = create_user_from_config(config[section], config['general'])
 
