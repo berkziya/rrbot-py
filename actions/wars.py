@@ -11,7 +11,7 @@ from butler import return_to_mainpage, error, ajax
 
 
 def cancel_autoattack(user):
-    return ajax(user, '/war/autoset_cancel/', '', '', 'Error cancelling autoattack')
+    return ajax(user, '/war/autoset_cancel/', '', 'Error cancelling autoattack')
 
 def attack(user, id=None, max=False, drones=False):
     warname = id
@@ -66,17 +66,17 @@ def attack(user, id=None, max=False, drones=False):
     n_json = json.dumps(n).replace('"', '\"').replace(' ', '')
 
     side = 0
-    if not cancel_autoattack(user): return False
+    cancel_autoattack(user)
     time.sleep(2)
     try:
         js_ajax = """
         var hourly = arguments[0];
-        var n = arguments[1];
+        var n_json = arguments[1];
         var side = arguments[2];
         var link = arguments[3];
         $.ajax({
             url: '/war/autoset/',
-            data: { free_ene: hourly, c: c_html, n: n, aim: side, edit: link},
+            data: { free_ene: hourly, c: c_html, n: n_json, aim: side, edit: link},
             type: 'POST',
             success: function (data) {
                 location.reload();
@@ -88,8 +88,6 @@ def attack(user, id=None, max=False, drones=False):
         return True
     except Exception as e:
         return error(user, e, 'Error attacking')
-    # log(user, f"{'Defending' if side else 'Attacking'} {warname}{' hourly' if hourly else ''} with {stringified_troops.removesuffix(', ')}")
-    # return ajax(user, '/war/autoset/', f'free_ene: {hourly},', f'n: {n_json}, aim: {side}, edit: {id}', 'Error attacking')
 
 def get_wars(user, id=None):
     if not id: id = user.player.region.state.id

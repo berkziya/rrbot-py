@@ -63,14 +63,14 @@ def upgrade_perk(user):
     if strcurrency == 'gold': strtime *= 0.075
     if endcurrency == 'gold': endtime *= 0.075
 
-    if edutime <= strtime and edutime <= endtime:
+    if (edutime <= strtime) and (edutime <= endtime):
         perk, currency = 'edu', educurrency
-    elif strtime <= edutime:
+    elif (strtime <= endtime):
         perk, currency = 'str', strcurrency
     else:
         perk, currency = 'end', endcurrency
 
-    if ajax(user, f'/perks/up/{perkurl[perk]}/{currencyurl[currency]}', '', '', 'Error upgrading perk'):
+    if ajax(user, f'/perks/up/{perkurl[perk]}/{currencyurl[currency]}', '', 'Error upgrading perk'):
         log(user, f'Upgrading {perk.upper()} with {currency.upper()}')
         time.sleep(2)
         return True

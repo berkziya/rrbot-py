@@ -16,7 +16,6 @@ def return_to_mainpage(user):
     except Exception as e:
         return error(user, e, 'Error returning to mainpage')
 
-
 def delay_tasks(scheduler, delay):
     now = time.time()
     events = list(scheduler.queue)
@@ -55,8 +54,8 @@ def reset_browser(user):
     user.driver = None
     if not user.boot_browser():
         alert(user, "Browser failed to reset, will try again in 10 minutes.")
-        user.s.enter(600, 1, reset_browser, (user,))
         delay_tasks(user.s, 666)
+        user.s.enter(600, 1, reset_browser, (user,))
         is_resetting = False
         return False
     is_resetting = False
@@ -74,12 +73,12 @@ def error(user, error, text=None):
         reset_browser(user)
     return False
 
-def ajax(user, url, data1, data2, text=None):
+def ajax(user, url, data, text=None):
     try:
         js_ajax = f"""
         $.ajax({{
             url: '{url}',
-            data: {{ {data1} c: c_html, {data2} }},
+            data: {{ c: c_html, {data} }},
             type: 'POST',
             success: function (data) {{
                 location.reload();

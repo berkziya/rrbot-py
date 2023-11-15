@@ -66,17 +66,6 @@ class Player:
     def __str__(self):
         return str(self.id)
 
-players = {0: Player(0)}
-
-def get_player(id):
-    if id in players:
-        return players[id]
-    else:
-        player = Player(id)
-        players[id] = player
-        return player
-
-
 class State:
     def __init__(self, id):
         self.id = id
@@ -161,7 +150,8 @@ class State:
 class Autonomy:
     def __init__(self, id):
         self.id = id
-        self.governor = players[0]
+        self.state = None
+        self.governor = None
         self.regions = []
         self.budget = {
             'money': 0,
@@ -172,6 +162,9 @@ class Autonomy:
             'diamonds': 0,
             }
     
+    def set_state(self, value):
+        self.state = value
+
     def set_governor(self, value):
         self.governor = value
     
@@ -287,35 +280,6 @@ class Region:
     def __str__(self):
         return str(self.id)
 
-states = {0: State(0)}
-autonomies = {0: Autonomy(0)}
-regions = {0: Region(0)}
-
-def get_state(id):
-    if id in states:
-        return states[id]
-    else:
-        state = State(id)
-        states[id] = state
-        return state
-
-def get_region(id):
-    if id in regions:
-        return regions[id]
-    else:
-        region = Region(id)
-        regions[id] = region
-        return region
-
-def get_autonomy(id):
-    if id in autonomies:
-        return autonomies[id]
-    else:
-        autonomy = Autonomy(id)
-        autonomies[id] = autonomy
-        return autonomy
-
-
 class Party:
     def __init__(self, id):
         self.id = id
@@ -339,12 +303,43 @@ class Party:
     def __str__(self):
         return str(self.id)
 
-parties = {0: Party(0)}
+players = {}
+states = {}
+autonomies = {}
+regions = {}
+parties = {}
+
+def get_player(id):
+    if id in players:
+        return players[id]
+    else:
+        players[id] = Player(id)
+        return players[id]
+
+def get_state(id):
+    if id in states:
+        return states[id]
+    else:
+        states[id] = State(id)
+        return states[id]
+
+def get_autonomy(id):
+    if id in autonomies:
+        return autonomies[id]
+    else:
+        autonomies[id] = Autonomy(id)
+        return autonomies[id]
+
+def get_region(id):
+    if id in regions:
+        return regions[id]
+    else:
+        regions[id] = Region(id)
+        return regions[id]
 
 def get_party(id):
     if id in parties:
         return parties[id]
     else:
-        party = Party(id)
-        parties[id] = party
-        return party
+        parties[id] = Party(id)
+        return parties[id]

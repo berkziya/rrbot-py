@@ -13,13 +13,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
 from misc.logger import log, alert
-from models import Player
+from models import get_player
 from butler import error
 
 class Client:
     def __init__(self, name, email, password):
         self.name = name
 
+        self.id = 0
         self.player = None
 
         self.email = email
@@ -33,6 +34,7 @@ class Client:
         self.perkoptions = {'goldperks': None, 'eduweight':0, 'goldweight':0, 'minlvl4gold':999}
 
         self.statedept = None
+        self.factory = None
 
     def set_driveroptions(self, element, value):
         self.driveroptions[element] = value
@@ -42,6 +44,9 @@ class Client:
 
     def set_statedept(self, value):
         self.statedept = value
+
+    def set_factory(self, value):
+        self.factory = value
 
     def boot_browser(self):
         try:
@@ -68,7 +73,7 @@ class Client:
             password_input.send_keys(self.password)
 
             submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[name='s']")
-            submit_button.click()
+            self.driver.execute_script("arguments[0].click();", submit_button)
 
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
             time.sleep(1)
@@ -85,7 +90,7 @@ class Client:
         self.s = sched.scheduler(time.time, time.sleep)
         if self.boot_browser():
             self.id = self.driver.execute_script("return id;")
-            self.player = Player(self.id)
+            self.player = get_player(self.id)
             return True
 
     def __del__(self):

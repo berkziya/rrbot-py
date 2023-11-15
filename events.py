@@ -59,7 +59,7 @@ def militaryAcademy(user):
         user.s.enter(3600, 1, militaryAcademy, (user,))
 
 def hourly_state_gold_refill(user):
-    if not user.player.state_leader or not user.player.economics: return False
+    if not user.player.state_leader and not user.player.economics: return False
     if explore_resource(user, 'gold'): log(user, f"Refilled the state gold reserves")
     else: log(user, "Failed to refill state gold, will try again in an hour")
     user.s.enter(3600, 1, hourly_state_gold_refill, (user,))

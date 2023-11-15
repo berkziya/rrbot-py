@@ -5,7 +5,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from models import get_player, get_state, get_region, get_autonomy, get_party
+from models import get_player, get_state, get_autonomy, get_region, get_party
 from misc.utils import *
 from misc.logger import log, alert
 from butler import return_to_mainpage, error
@@ -48,7 +48,7 @@ def get_player_info(user, id=None):
                 player.set_workpermits(permits)
             elif 'Governor:' in tr.text:
                 player.set_governor(get_autonomy(dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])))
-            elif 'Minister of economics:' in tr.text:
+            elif 'conomic' in tr.text:
                 player.set_economics(get_state(dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])))
             elif 'Foreign minister:' in tr.text:
                 player.set_foreign(get_state(dotless(tr.find_element(By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)").get_attribute('action').split('/')[-1])))

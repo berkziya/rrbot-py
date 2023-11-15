@@ -2,7 +2,7 @@ import time
 
 from selenium.webdriver.common.by import By
 
-from actions.regions import get_state
+from actions.regions import get_state_info
 from butler import ajax
 from misc.logger import log, alert
 from butler import return_to_mainpage, error
@@ -26,6 +26,7 @@ def accept_law(user, text):
         else:
             # Handle case where no matching law was found
             print('No matching law found')
+            return_to_mainpage(user)
             return False
     except Exception as e:
         return error(user, e, 'Something went wrong while accepting a law')
@@ -34,17 +35,21 @@ def accept_law(user, text):
 
 def explore_resource(user, resource='gold'):
     resources = {'gold': 0, 'oil': 3, 'ore': 4, 'uranium': 11, 'diamonds': 15}
-    return ajax(user, f'/parliament/donew/42/{resources[resource]}/0', '', 'Error exploring resource') and accept_law(user, 'Resources exploration: state, gold resources')
+    law = ajax(user, f'/parliament/donew/42/{resources[resource]}/0', '', 'Error exploring resource')
+    if law:
+        time.sleep(2)
+        result = accept_law(user, 'Resources exploration: state, gold resources')
+    return result
 
 def border_control(user, border='opened'):
     if not user.player.foreign:
         log(user, "Not a foreign minister")
         return False
-    get_state(user, user.player.region.state.id)
+    get_state_info(user, user.player.region.state.id)
     if user.player.foreign != user.player.region.state:
         log(user, "Not in home state or not the foreign minister")
         return False
-    get_state(user, user.player.foreign.id)
+    get_state_info(user, user.player.foreign.id)
     if user.player.foreign.borders == border:
         log(user, f"Borders are already {border}")
         return False
@@ -53,4 +58,4 @@ def border_control(user, border='opened'):
 def set_minister(user, id, ministry='economic'):
     position = 'set_econom'
     if ministry == 'foreign': position = 'set_mid'
-    return ajax(user, f'/leader/{position}', '', 'u: {id}', 'Error setting minister')
+    return ajax(user, f'/leader/{position}', 'u: {id}', 'Error setting minister')

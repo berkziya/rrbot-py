@@ -10,6 +10,7 @@ from misc.logger import log, alert
 from session import session
 from user import Client
 
+
 DEFAULT_CONFIG = '''[general]
 browser = firefox
 
@@ -21,6 +22,8 @@ goldperks = edu str end
 eduweight = 55
 goldweight = 10
 minlvl4gold = 666
+statedept = building
+factory = 45763
 
 [user2]
 enabled = false
@@ -58,6 +61,9 @@ def create_user_from_config(config, general):
 
     statedept = config.get('statedept', fallback=None)
     user.set_statedept(statedept)
+
+    factory = config.get('factory', fallback=None)
+    user.set_factory(factory)
     return user
 
 def main():
@@ -66,7 +72,7 @@ def main():
             f.write(DEFAULT_CONFIG)
         print('Created a config file. Please edit config.ini and run the program again.')
         sys.exit()
-    
+
     # Read config
     config = configparser.ConfigParser()
     config.read('config.ini')
@@ -82,7 +88,7 @@ def main():
             alert(user, 'Login failed. Aborting...}')
             del user
             continue
-        
+
         users.append(user)
         log(user, 'Login successful.')
 
@@ -90,8 +96,9 @@ def main():
     my_os = platform.system().lower()
     futures = []
     caffeinate = None
+    if my_os != 'windows': caffeinate = subprocess.Popen(['caffeinate', '-i'])
+
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        if my_os != 'windows': caffeinate = subprocess.Popen(['caffeinate', '-i'])
         futures = [executor.submit(session, user) for user in users]
         for future in concurrent.futures.as_completed(futures):
             try:
@@ -100,12 +107,12 @@ def main():
                 print(f'Exception: {e}')
             else:
                 print(f'Result: {result}')
-        if caffeinate and my_os != 'windows': caffeinate.terminate()
+
+    if caffeinate and my_os != 'windows': caffeinate.terminate()
 
 def cleanup():
     for user in users:
-        user.driver.quit()
-        if user is not None:
+        if user:
             del user
 
 if __name__ == '__main__':
