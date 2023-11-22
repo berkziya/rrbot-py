@@ -1,17 +1,16 @@
 import atexit
 import concurrent.futures
 import configparser
+import os
 import platform
 import subprocess
 import sys
-import os
 
-from misc.logger import log, alert
+from misc.logger import alert, log
 from session import session
 from user import Client
 
-
-DEFAULT_CONFIG = '''[general]
+DEFAULT_CONFIG = """[general]
 browser = firefox
 
 [user1]
@@ -33,70 +32,77 @@ goldperks = str
 eduweight = 0
 goldweight = 5
 minlvl4gold = 30
-'''
+"""
 
-users = [] 
+users = []
+
 
 def create_user_from_config(config, general):
-    headless = general.getboolean('headless', fallback=True)
-    binary = general.get('binary', fallback=None)
+    headless = general.getboolean("headless", fallback=True)
+    binary = general.get("binary", fallback=None)
 
-    email = config.get('email')
-    password = config.get('password')
-    is_headless = config.getboolean('headless', fallback=headless) or not binary
+    email = config.get("email")
+    password = config.get("password")
+    is_headless = config.getboolean("headless", fallback=headless) or not binary
 
     user = Client(config.name, email, password)
-    user.set_driveroptions('binary_location', binary)
-    user.set_driveroptions('headless', is_headless)
+    user.set_driveroptions("binary_location", binary)
+    user.set_driveroptions("headless", is_headless)
 
-    goldperks = str.lower(config.get('goldperks', fallback='')).strip()
-    eduweight = config.getint('eduweight', fallback=0)
-    goldweight = config.getint('goldweight', fallback=10)
-    minlvl4gold = config.getint('minlvl4gold', fallback=0)
+    goldperks = str.lower(config.get("goldperks", fallback="")).strip()
+    eduweight = config.getint("eduweight", fallback=0)
+    goldweight = config.getint("goldweight", fallback=10)
+    minlvl4gold = config.getint("minlvl4gold", fallback=0)
 
-    user.set_perkoptions('goldperks', goldperks)
-    user.set_perkoptions('eduweight', eduweight)
-    user.set_perkoptions('goldweight', goldweight)
-    user.set_perkoptions('minlvl4gold', minlvl4gold)
+    user.set_perkoptions("goldperks", goldperks)
+    user.set_perkoptions("eduweight", eduweight)
+    user.set_perkoptions("goldweight", goldweight)
+    user.set_perkoptions("minlvl4gold", minlvl4gold)
 
-    statedept = config.get('statedept', fallback=None)
+    statedept = config.get("statedept", fallback=None)
     user.set_statedept(statedept)
 
-    factory = config.get('factory', fallback=None)
+    factory = config.get("factory", fallback=None)
     user.set_factory(factory)
     return user
 
+
 def main():
-    if not os.path.exists('config.ini'):
-        with open('config.ini', 'w') as f:
+    if not os.path.exists("config.ini"):
+        with open("config.ini", "w") as f:
             f.write(DEFAULT_CONFIG)
-        print('Created a config file. Please edit config.ini and run the program again.')
+        print(
+            "Created a config file. Please edit config.ini and run the program again."
+        )
         sys.exit()
 
     # Read config
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config.read("config.ini")
 
     # Create users from config
     for section in config.sections():
-        if section == 'general': continue
-        if not config.getboolean(section, 'enabled'): continue
+        if section == "general":
+            continue
+        if not config.getboolean(section, "enabled"):
+            continue
 
-        user = create_user_from_config(config[section], config['general'])
+        user = create_user_from_config(config[section], config["general"])
 
         if not user.initiate_session():
-            alert(user, 'Login failed. Aborting...}')
+            alert(user, "Login failed. Aborting...}")
             del user
             continue
 
         users.append(user)
-        log(user, 'Login successful.')
+        log(user, "Login successful.")
 
-    # Start sessions
+    # Start sessionŵ
     my_os = platform.system().lower()
     futures = []
     caffeinate = None
-    if my_os != 'windows': caffeinate = subprocess.Popen(['caffeinate', '-i'])
+    if my_os != "windows":
+        caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i"])
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(session, user) for user in users]
@@ -104,18 +110,21 @@ def main():
             try:
                 result = future.result()
             except Exception as e:
-                print(f'Exception: {e}')
+                print(f"Exception: {e}")
             else:
-                print(f'Result: {result}')
+                print(f"Result: {result}")
 
-    if caffeinate and my_os != 'windows': caffeinate.terminate()
+    if caffeinate and my_os != "windows":
+        caffeinate.terminate()
+
 
 def cleanup():
     for user in users:
         if user:
             del user
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
     atexit.register(cleanup)
     exit()

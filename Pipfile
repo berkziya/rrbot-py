@@ -9,7 +9,7 @@ selenium = "*"
 webdriver-manager = "*"
 
 [dev-packages]
-pyinstaller = "*"
+ipykernel = "*"
 
 [requires]
 python_version = "3.12"
