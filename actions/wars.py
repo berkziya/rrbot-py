@@ -3,9 +3,10 @@ import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
-from actions.status import set_all_status
-from butler import ajax, error, return_to_mainpage
+from actions.status import get_player_info
+from butler import ajax, return_to_the_mainpage, error, get_page, reload_the_mainpage, wait_some_time
 from misc.logger import log
 
 
@@ -17,7 +18,7 @@ def attack(user, id=None, max=False, drones=False):
     warname = id
     stringified_troops = ""
 
-    if not set_all_status(user):
+    if not get_player_info(user):
         return False
     if not id:
         id = get_training_link(user)
@@ -69,7 +70,7 @@ def attack(user, id=None, max=False, drones=False):
             troop + ",", troop_names[troop] + ","
         )
 
-    n_json = json.dumps(n).replace('"', '"').replace(" ", "")
+    n_json = json.dumps(n).replace("'", '"').replace(" ", "")
 
     side = 0
     cancel_autoattack(user)
@@ -88,12 +89,13 @@ def attack(user, id=None, max=False, drones=False):
                 location.reload();
             },
         });"""
+        wait_some_time(user)
         user.driver.execute_script(js_ajax, hourly, n_json, side, id)
         log(
             user,
             f"{'Defending' if side else 'Attacking'} {warname} {'hourly' if hourly else 'at max'} with {stringified_troops.removesuffix(', ')}",
         )
-        time.sleep(1)
+        user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
         return True
     except Exception as e:
         return error(user, e, "Error attacking")
@@ -107,8 +109,7 @@ def get_wars(user, id=None):
         return False
     wars = []
     try:
-        url = f"https://rivalregions.com/listed/statewars/{id}"
-        user.driver.get(url)
+        get_page(user, f"listed/statewars/{id}")
         time.sleep(1)
         tbody = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in tbody:
@@ -116,9 +117,10 @@ def get_wars(user, id=None):
                 tr.find_element(By.CSS_SELECTOR, "div[url]").get_attribute("url")
             )
             wars.append(war_id)
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return wars if wars else False
     except NoSuchElementException:
+        return_to_the_mainpage(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting wars")
@@ -132,7 +134,7 @@ def get_training_link(user):
         user.driver.execute_script("arguments[0].click();", element)
         time.sleep(2)
         link = int(user.driver.current_url.split("/")[-1])
-        return_to_mainpage(user)
+        reload_the_mainpage(user)
         return link
     except Exception as e:
         return error(user, e, "Error getting training link")

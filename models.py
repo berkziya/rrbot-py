@@ -187,16 +187,15 @@ class Region:
         self.autonomy = None
         self.location = (0, 0)
         self.buildings = {
-            "military academy": 0,
             "hospital": 0,
-            "military base": 0,
+            "military": 0,
             "school": 0,
             "missile system": 0,
             "sea port": 0,
             "power plant": 0,
             "space port": 0,
             "airport": 0,
-            "house fund": 0,
+            "homes": 0,
         }
         self.rating = 0
         self.residents = []

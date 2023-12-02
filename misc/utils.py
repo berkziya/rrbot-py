@@ -39,3 +39,21 @@ def timetosecs(time):
     seconds = int(time[1])
     total_seconds = days * 86400 + hours * 3600 + minutes * 60 + seconds + 3
     return total_seconds
+
+
+def sum_costs(cost1, cost2):
+    costs = {
+        key: cost1.get(key, 0) + cost2.get(key, 0) for key in set(cost1) | set(cost2)
+    }
+    if not costs == {}:
+        costs = {key: value for key, value in costs.items() if value > 0}
+    return costs
+
+
+def subtract_costs(cost1, cost2):
+    costs = {
+        key: cost1.get(key, 0) - cost2.get(key, 0) for key in set(cost1) | set(cost2)
+    }
+    if not costs == {}:
+        costs = {key: value for key, value in costs.items() if value > 0}
+    return costs

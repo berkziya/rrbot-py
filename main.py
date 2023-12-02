@@ -97,7 +97,7 @@ def main():
         users.append(user)
         log(user, "Login successful.")
 
-    # Start sessionŵ
+    # Start session
     my_os = platform.system().lower()
     futures = []
     caffeinate = None

@@ -1,13 +1,8 @@
 import schedule
 
 import events
-from actions.regions import (
-    get_autonomy_info,
-    get_region_info,
-    get_state_info,
-    work_state_department,
-)
-from actions.status import set_all_status, set_money
+from actions.regions import get_autonomy_info, get_state_info, work_state_department
+from actions.status import get_player_info, set_money
 from actions.wars import attack
 from actions.work import auto_work_factory
 from butler import reset_browser
@@ -18,6 +13,7 @@ from misc.utils import numba
 def session(user):
     eventsToBeDone = [
         {"desc": "upgrade perks", "event": events.perks},
+        {"desc": "build military academy", "event": events.militaryAcademy},
         {"desc": "energy drink refill", "event": events.energy_drink_refill},
         {"desc": "attack training", "event": attack},
         {
@@ -26,7 +22,6 @@ def session(user):
             "args": (user.factory,) if user.factory else (None,),
         },
         {"desc": "economics work", "event": events.hourly_state_gold_refill},
-        {"desc": "build military academy", "event": events.militaryAcademy},
         {
             "desc": "work state department",
             "event": work_state_department,
@@ -40,16 +35,14 @@ def session(user):
         {"desc": "upcoming_events", "event": events.upcoming_events},
     ]
 
-    if set_all_status(user):
-        get_region_info(user, user.player.region.id)
-        get_region_info(user, user.player.residency.id)
+    if get_player_info(user):
         log(
             user,
             f"ID: {user.player} | Level: {user.player.level} | Rating: {user.player.rating}",
         )
         log(
             user,
-            f"Region: {user.player.region} of {user.player.region.state} | Residency: {user.player.residency} of {user.player.residency.state}",
+            f"Region: {user.player.region} | Residency: {user.player.residency}",
         )
         log(
             user,
@@ -61,7 +54,7 @@ def session(user):
         )
         log(user, f"Party: {user.player.party}")
     else:
-        user.s.enter(10, 1, set_all_status, (user,))
+        user.s.enter(10, 1, get_player_info, (user,))
         alert(user, "Error setting status, will try again in 10 seconds.")
 
     if set_money(user, energy=True):

@@ -4,7 +4,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, return_to_mainpage
+from butler import return_to_the_mainpage, error, get_page, reload_the_mainpage
 from misc.utils import dotless
 from models import get_autonomy, get_party, get_player, get_region, get_state
 
@@ -13,7 +13,7 @@ def get_player_info(user, id=None):
     try:
         if not id:
             id = user.player.id
-        user.driver.get(f"https://rivalregions.com/slide/profile/{id}")
+        get_page(user, f"slide/profile/{id}")
         time.sleep(1)
 
         player = get_player(id)
@@ -133,38 +133,18 @@ def get_player_info(user, id=None):
                         .split("/")[-1]
                     )
                 )
-        return_to_mainpage(user)
-        return player
+        return_to_the_mainpage(user)
+        return True
+    except NoSuchElementException:
+        return_to_the_mainpage(user)
+        return None
     except Exception as e:
         return error(user, e, "Error getting player info")
 
 
-def set_all_status(user):
-    player = get_player_info(user)
-    if not player:
-        return False
-    try:
-        user.player.set_level(player.level)
-        user.player.set_state_leader(player.state_leader)
-        user.player.set_rating(player.rating)
-        user.player.set_perks(
-            player.perks["str"], player.perks["edu"], player.perks["end"]
-        )
-        user.player.set_region(player.region)
-        user.player.set_residency(player.residency)
-        user.player.set_workpermits(player.workpermits)
-        user.player.set_governor(player.governor)
-        user.player.set_economics(player.economics)
-        user.player.set_foreign(player.foreign)
-        user.player.set_party(player.party)
-        return True
-    except Exception as e:
-        return error(user, e, "Error setting status")
-
-
 def set_perks(user):
     try:
-        return_to_mainpage(user)
+        reload_the_mainpage(user)
         str = user.driver.find_element(
             By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2"
         ).text
@@ -182,7 +162,7 @@ def set_perks(user):
 
 def set_money(user, energy=False):
     try:
-        return_to_mainpage(user)
+        reload_the_mainpage(user)
         money = user.driver.find_element(By.CSS_SELECTOR, "#m").text
         gold = user.driver.find_element(By.CSS_SELECTOR, "#g").text
 
@@ -200,7 +180,7 @@ def set_money(user, energy=False):
                 "div.storage_item:nth-child(11) > .storage_number > .storage_number_change",
             ).text
             user.player.set_money("energy", dotless(energy))
-            return_to_mainpage(user)
+            reload_the_mainpage(user)
         return True
     except Exception as e:
         return error(user, e, "Error setting money")
@@ -209,7 +189,7 @@ def set_money(user, energy=False):
 # NOT COMPLETE
 def check_traveling_status(user):
     try:
-        return_to_mainpage(user)
+        reload_the_mainpage(user)
         user.driver.find_element(By.CSS_SELECTOR, ".gototravel")
         return True
     except NoSuchElementException:

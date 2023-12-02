@@ -3,8 +3,9 @@ import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
-from butler import ajax, error, return_to_mainpage
+from butler import ajax, return_to_the_mainpage, error, get_page, wait_some_time
 from misc.logger import log
 from misc.utils import dotless
 from models import get_autonomy, get_player, get_region, get_state
@@ -16,6 +17,7 @@ def build_military_academy(user):
 
 def work_state_department(user, id=None, dept="gold"):
     if not id:
+        get_region_info(user, user.player.region.id)
         id = user.player.region.state.id
     if not id:
         log(user, "No state id found")
@@ -42,7 +44,7 @@ def work_state_department(user, id=None, dept="gold"):
         else:
             what_dict[f"w{value}"] = 0
 
-    what_json = json.dumps(what_dict).replace('"', '"').replace(" ", "")
+    what_json = json.dumps(what_dict).replace("'", '"').replace(" ", "")
     try:
         js_ajax = """
         var what_json = arguments[0];
@@ -54,8 +56,10 @@ def work_state_department(user, id=None, dept="gold"):
                 location.reload();
             },
         });"""
+        wait_some_time(user)
         user.driver.execute_script(js_ajax, what_json)
         log(user, f"Worked for state department: {dept}")
+        user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
         return True
     except Exception as e:
         return error(user, e, "Error working for state department")
@@ -63,7 +67,7 @@ def work_state_department(user, id=None, dept="gold"):
 
 def get_region_info(user, id):
     try:
-        user.driver.get(f"https://rivalregions.com/map/details/{id}")
+        get_page(user, f"map/details/{id}")
         time.sleep(1)
 
         region = get_region(id)
@@ -76,8 +80,17 @@ def get_region_info(user, id):
             region.set_state(get_state(upper[-1]))
         elif upper[1] == "autonomy_details":
             region.set_autonomy(get_autonomy(upper[-1]))
+            region.set_state(
+                get_state(
+                    user.driver.find_element(
+                        By.CSS_SELECTOR, "div.margin > h1 > div > span"
+                    )
+                    .get_attribute("action")
+                    .split("/")[-1]
+                )
+            )
 
-        data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll > div")
+        data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll")
         for div in data:
             if "Governor:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 autonomy = get_autonomy(id)
@@ -238,10 +251,10 @@ def get_region_info(user, id):
         if region.autonomy and not region.state:
             get_autonomy_info(user, region.autonomy.id)
             region.set_state(region.autonomy.state)
-        return_to_mainpage(user)
-        return region
+        return_to_the_mainpage(user)
+        return True
     except NoSuchElementException:
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting region info")
@@ -249,7 +262,7 @@ def get_region_info(user, id):
 
 def get_state_info(user, id):
     try:
-        user.driver.get(f"https://rivalregions.com/map/state_details/{id}")
+        get_page(user, f"map/state_details/{id}")
         time.sleep(1)
 
         state = get_state(id)
@@ -370,10 +383,10 @@ def get_state_info(user, id):
                         .split("/")[-1]
                     )
                 )
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return True
     except NoSuchElementException:
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting state info")
@@ -381,7 +394,7 @@ def get_state_info(user, id):
 
 def get_autonomy_info(user, id):
     try:
-        user.driver.get(f"https://rivalregions.com/map/autonomy_details/{id}")
+        get_page(user, f"map/autonomy_details/{id}")
         time.sleep(1)
 
         autonomy = get_autonomy(id)
@@ -463,7 +476,7 @@ def get_autonomy_info(user, id):
                     ).text.split(" ")[0]
                 ),
             )
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return True
     except NoSuchElementException:
         return get_region_info(user, id)
@@ -481,16 +494,16 @@ def get_citizens(user, id, is_state=False, get_residents=False):
         case True:
             match get_residents:
                 case True:
-                    link = f"https://rivalregions.com/listed/residency_state/{id}"
+                    link = f"listed/residency_state/{id}"
                 case False:
-                    link = f"https://rivalregions.com/listed/state_population/{id}"
+                    link = f"listed/state_population/{id}"
         case False:
             match get_residents:
                 case True:
-                    link = f"https://rivalregions.com/listed/residency/{id}"
+                    link = f"listed/residency/{id}"
                 case False:
-                    link = f"https://rivalregions.com/listed/region/{id}"
-    user.driver.get(link)
+                    link = f"listed/region/{id}"
+    get_page(user, link)
     time.sleep(1)
 
     citizens = []
@@ -498,10 +511,10 @@ def get_citizens(user, id, is_state=False, get_residents=False):
         data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in data:
             citizens.append(get_player((tr.get_attribute("user"))))
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return citizens if citizens else False
     except NoSuchElementException:
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting citizens")

@@ -28,6 +28,10 @@ class Client:
         self.s = None
         self.driver = None
         self.wait = None
+        self.main_window = None
+
+        self.is_resetting = False
+        self.last_request_time = 0
 
         self.perkoptions = {
             "goldperks": None,
@@ -41,6 +45,12 @@ class Client:
 
     def set_driveroptions(self, element, value):
         self.driveroptions[element] = value
+
+    def set_is_resetting(self, value):
+        self.is_resetting = value
+
+    def set_last_request_time(self):
+        self.last_request_time = time.time()
 
     def set_perkoptions(self, element, value):
         self.perkoptions[element] = value
@@ -90,6 +100,7 @@ class Client:
             self.wait.until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
             )
+            self.main_window = self.driver.current_window_handle
             time.sleep(1)
             return True
         except Exception as e:

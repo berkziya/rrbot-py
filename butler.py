@@ -7,8 +7,31 @@ from selenium.webdriver.support import expected_conditions as EC
 from misc.logger import alert
 
 
-def return_to_mainpage(user):
+DELAY = 0.5
+
+def wait_some_time(user):
+    if time.time() - user.last_request_time < DELAY:
+        time.sleep(DELAY)
+    user.set_last_request_time()
+
+def get_page(user, url):
+    wait_until_internet_is_back(user)
+    user.driver.execute_script("window.open('');")
+    user.driver.switch_to.window(user.driver.window_handles[1])
+    user.driver.get(f"https://rivalregions.com/{url}")
+
+
+def return_to_the_mainpage(user):
+    while len(user.driver.window_handles) > 1:
+        user.driver.switch_to.window(user.driver.window_handles[1])
+        user.driver.close()
+    user.driver.switch_to.window(user.main_window)
+
+
+def reload_the_mainpage(user):
     try:
+        return_to_the_mainpage(user)
+        wait_until_internet_is_back(user)
         user.driver.get("https://rivalregions.com")
         user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
         time.sleep(0.5)
@@ -27,8 +50,9 @@ def delay_tasks(scheduler, delay):
             scheduler.enter(delay, event.priority, event.action, event.argument)
 
 
-def internet_on():
+def internet_on(user):
     try:
+        wait_some_time(user)
         requests.get("https://rivalregions.com", timeout=5)
         return True
     except:
@@ -36,25 +60,27 @@ def internet_on():
 
 
 def wait_until_internet_is_back(user):
-    while internet_on() is False:
+    wait_some_time(user)
+    count = 1
+    if internet_on(user):
+        return True
+    while internet_on(user) is False:
         alert(user, "Waiting for internet connection to be restored", False)
-        time.sleep(66)
-
-
-is_resetting = False
+        time.sleep(min(count * 60, 600))
+        count += 1
+    reload_the_mainpage(user)
+    return True
 
 
 def reset_browser(user):
-    global is_resetting
-    if is_resetting:
+    if user.is_resetting:
         return False
-    is_resetting = True
-    wait_until_internet_is_back(user)
+    user.set_is_resetting(True)
     try:
-        return_to_mainpage(user)
+        wait_until_internet_is_back(user)
         id = user.driver.execute_script("return id;")
         if id == user.id:
-            is_resetting = False
+            user.set_is_resetting(False)
             return True
     except:
         pass
@@ -67,20 +93,20 @@ def reset_browser(user):
         alert(user, "Browser failed to reset, will try again in 10 minutes.")
         delay_tasks(user.s, 666)
         user.s.enter(600, 1, reset_browser, (user,))
-        is_resetting = False
+        user.set_is_resetting(False)
         return False
-    is_resetting = False
+    user.set_is_resetting(False)
     return True
 
 
 def error(user, error, text=None):
-    print(f"[{user.name}] {error}")
-    alert(user, f"{text}: {error}")
+    if text:
+        alert(user, f"{text}: {error}")
     try:
-        return_to_mainpage(user)
+        wait_until_internet_is_back(user)
         id = user.driver.execute_script("return id;")
         if not id == user.id:
-            raise Exception("Not logged in")
+            raise Exception("Bro wtf")
     except Exception as e:
         alert(user, f"Browser error: {e}")
         reset_browser(user)
@@ -88,6 +114,7 @@ def error(user, error, text=None):
 
 
 def ajax(user, url, data, text=None):
+    wait_until_internet_is_back(user)
     try:
         js_ajax = f"""
         $.ajax({{

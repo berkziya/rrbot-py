@@ -4,14 +4,14 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from actions.status import set_money, set_perks
-from butler import ajax, error, return_to_mainpage
+from butler import ajax, error, reload_the_mainpage
 from misc.logger import log
 from misc.utils import timetosecs
 
 
 def check_training_status(user):
     try:
-        return_to_mainpage(user)
+        reload_the_mainpage(user)
         perk_counter = user.driver.find_element(By.ID, "perk_counter_2")
         perk_counter = perk_counter.text
         total_seconds = timetosecs(perk_counter)

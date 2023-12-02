@@ -3,7 +3,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import ajax, error, return_to_mainpage
+from butler import ajax, return_to_the_mainpage, error, get_page
 from misc.logger import alert
 from misc.utils import dotless
 from models import get_factory, get_region
@@ -12,18 +12,16 @@ from models import get_factory, get_region
 def get_factories(user, id, resource="gold"):
     try:
         resources = {
-            "gold": "0/6",
-            "oil": "0/2",
-            "ore": "0/5",
-            "uranium": "0/11",
-            "diamond": "0/15",
-            "lox": "0/21",
-            "he3": "0/24",
-            "rivalium": "0/26",
+            "gold": 6,
+            "oil": 2,
+            "ore": 5,
+            "uranium": 11,
+            "diamond": 15,
+            "lox": 21,
+            "helium": 24,
+            "rivalium": 26,
         }
-        user.driver.get(
-            f"https://rivalregions.com/factory/search/{id}/{resources[resource]}"
-        )
+        get_page(user, f"factory/search/{id}/0/{resources[resource]}")
         time.sleep(1)
         try:
             if user.driver.find_element(By.XPATH, "//*[contains(text(), 'Not found')]"):
@@ -46,7 +44,7 @@ def get_factories(user, id, resource="gold"):
             factory.set_wage(float(wage))
             factories.append(factory)
         get_region(id).set_factories(factories)
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return factories
     except Exception as e:
         return error(user, e, "Error getting factories")
@@ -87,7 +85,6 @@ def auto_work_factory(user, factory=None):
         f"mentor: 0, factory: {factory}, type: 6, lim: 0",
         "Error setting auto work",
     )
-    print(f"Auto work result: {factory} {result}")
     time.sleep(3)
     return result
 
@@ -111,7 +108,7 @@ def get_best_factory(user, resource="gold", fix_wage=False):
 
 def get_factory_info(user, id):
     try:
-        user.driver.get(f"https://rivalregions.com/factory/index/{id}")
+        get_page(user, f"factory/index/{id}")
         factory = get_factory(id)
         data = user.driver.find_elements(
             By.CSS_SELECTOR,
@@ -158,10 +155,10 @@ def get_factory_info(user, id):
                         ).text.split(" ")[0]
                     )
                 )
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return factory
     except NoSuchElementException:
-        return_to_mainpage(user)
+        return_to_the_mainpage(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting factory info")
