@@ -1,5 +1,3 @@
-import time
-
 from selenium.webdriver.common.by import By
 
 from butler import error, get_page, return_to_the_mainpage
