@@ -185,7 +185,7 @@ class Region:
         self.id = id
         self.state = None
         self.autonomy = None
-        self.location = (0, 0)
+        self.location = [0, 0]
         self.buildings = {
             "hospital": 0,
             "military": 0,
