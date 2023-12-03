@@ -29,6 +29,7 @@ class Client:
         self.driver = None
         self.wait = None
         self.main_window = None
+        self.data_window = None
 
         self.is_resetting = False
         self.last_request_time = 0
@@ -100,8 +101,10 @@ class Client:
             self.wait.until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
             )
-            self.main_window = self.driver.current_window_handle
             time.sleep(1)
+            self.main_window = self.driver.current_window_handle
+            self.driver.execute_script("window.open('');")
+            self.data_window = self.driver.window_handles[1]
             return True
         except Exception as e:
             error(self, e, "Error logging in, check your credentials")

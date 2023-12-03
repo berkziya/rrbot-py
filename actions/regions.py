@@ -3,9 +3,16 @@ import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
-from butler import ajax, return_to_the_mainpage, error, get_page, wait_some_time
+from butler import (
+    ajax,
+    error,
+    get_page,
+    reload,
+    return_to_the_mainpage,
+    wait_some_time,
+    wait_until_internet_is_back,
+)
 from misc.logger import log
 from misc.utils import dotless
 from models import get_autonomy, get_player, get_region, get_state
@@ -16,13 +23,13 @@ def build_military_academy(user):
 
 
 def work_state_department(user, id=None, dept="gold"):
+    wait_until_internet_is_back(user)
     if not id:
         get_region_info(user, user.player.region.id)
         id = user.player.region.state.id
     if not id:
         log(user, "No state id found")
         return False
-
     dept_ids = {
         "building": 1,
         "gold": 2,
@@ -36,14 +43,12 @@ def work_state_department(user, id=None, dept="gold"):
         "spacestations": 10,
         "battleships": 11,
     }
-
     what_dict = {"state": id}
     for key, value in dept_ids.items():
         if key == dept:
             what_dict[f"w{value}"] = 10
         else:
             what_dict[f"w{value}"] = 0
-
     what_json = json.dumps(what_dict).replace("'", '"').replace(" ", "")
     try:
         js_ajax = """
@@ -52,14 +57,11 @@ def work_state_department(user, id=None, dept="gold"):
             url: '/rival/instwork',
             data: { c: c_html, what: what_json},
             type: 'POST',
-            success: function (data) {
-                location.reload();
-            },
         });"""
         wait_some_time(user)
         user.driver.execute_script(js_ajax, what_json)
         log(user, f"Worked for state department: {dept}")
-        user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
+        reload(user)
         return True
     except Exception as e:
         return error(user, e, "Error working for state department")
@@ -68,8 +70,6 @@ def work_state_department(user, id=None, dept="gold"):
 def get_region_info(user, id):
     try:
         get_page(user, f"map/details/{id}")
-        time.sleep(1)
-
         region = get_region(id)
         upper = (
             user.driver.find_element(By.CSS_SELECTOR, "div.margin > h1 > span")
@@ -89,7 +89,6 @@ def get_region_info(user, id):
                     .split("/")[-1]
                 )
             )
-
         data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll")
         for div in data:
             if "Governor:" in div.find_element(By.CSS_SELECTOR, "h2").text:
@@ -166,15 +165,11 @@ def get_region_info(user, id):
                 region.set_num_of_residents(
                     int(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
-            elif (
-                "Initial attack damage:" in div.find_element(By.CSS_SELECTOR, "h2").text
-            ):
+            elif "Initial attack" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_initial_attack_damage(
                     dotless(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
-            elif (
-                "Initial defend damage:" in div.find_element(By.CSS_SELECTOR, "h2").text
-            ):
+            elif "Initial defend" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_initial_defend_damage(
                     dotless(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
@@ -247,7 +242,6 @@ def get_region_info(user, id):
                         get_region(region_.get_attribute("action").split("/")[-1])
                     )
                 region.set_border_regions(border_regions)
-
         if region.autonomy and not region.state:
             get_autonomy_info(user, region.autonomy.id)
             region.set_state(region.autonomy.state)
@@ -263,8 +257,6 @@ def get_region_info(user, id):
 def get_state_info(user, id):
     try:
         get_page(user, f"map/state_details/{id}")
-        time.sleep(1)
-
         state = get_state(id)
         state.set_budget(
             "money",
@@ -314,7 +306,6 @@ def get_state_info(user, id):
                 ).text.split(" ")[0]
             ),
         )
-
         data = user.driver.find_elements(By.CSS_SELECTOR, "div.hide_from_inst")
         for div in data:
             if "Number of citizens:" in div.find_element(By.CSS_SELECTOR, "h2").text:
@@ -395,8 +386,6 @@ def get_state_info(user, id):
 def get_autonomy_info(user, id):
     try:
         get_page(user, f"map/autonomy_details/{id}")
-        time.sleep(1)
-
         autonomy = get_autonomy(id)
         autonomy.set_state(
             get_state(
@@ -405,7 +394,6 @@ def get_autonomy_info(user, id):
                 .split("/")[-1]
             )
         )
-
         data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll > div")
         for div in data:
             if "Governor:" in div.find_element(By.CSS_SELECTOR, "h2").text:
@@ -504,8 +492,6 @@ def get_citizens(user, id, is_state=False, get_residents=False):
                 case False:
                     link = f"listed/region/{id}"
     get_page(user, link)
-    time.sleep(1)
-
     citizens = []
     try:
         data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")

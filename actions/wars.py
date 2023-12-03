@@ -3,18 +3,32 @@ import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 from actions.status import get_player_info
-from butler import ajax, return_to_the_mainpage, error, get_page, reload_the_mainpage, wait_some_time
+from butler import (
+    ajax,
+    error,
+    get_page,
+    reload,
+    return_to_the_mainpage,
+    wait_some_time,
+    wait_until_internet_is_back,
+)
 from misc.logger import log
 
 
 def cancel_autoattack(user):
-    return ajax(user, "/war/autoset_cancel/", "", "Error cancelling autoattack")
+    return ajax(
+        user,
+        "/war/autoset_cancel/",
+        "",
+        "Error cancelling autoattack",
+        relad_after=True,
+    )
 
 
 def attack(user, id=None, max=False, drones=False):
+    wait_until_internet_is_back(user)
     warname = id
     stringified_troops = ""
 
@@ -85,9 +99,6 @@ def attack(user, id=None, max=False, drones=False):
             url: '/war/autoset/',
             data: { free_ene: hourly, c: c_html, n: n_json, aim: side, edit: link},
             type: 'POST',
-            success: function (data) {
-                location.reload();
-            },
         });"""
         wait_some_time(user)
         user.driver.execute_script(js_ajax, hourly, n_json, side, id)
@@ -95,7 +106,7 @@ def attack(user, id=None, max=False, drones=False):
             user,
             f"{'Defending' if side else 'Attacking'} {warname} {'hourly' if hourly else 'at max'} with {stringified_troops.removesuffix(', ')}",
         )
-        user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
+        reload(user)
         return True
     except Exception as e:
         return error(user, e, "Error attacking")
@@ -110,7 +121,6 @@ def get_wars(user, id=None):
     wars = []
     try:
         get_page(user, f"listed/statewars/{id}")
-        time.sleep(1)
         tbody = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in tbody:
             war_id = int(
@@ -127,6 +137,7 @@ def get_wars(user, id=None):
 
 
 def get_training_link(user):
+    wait_until_internet_is_back(user)
     try:
         element = user.driver.find_element(
             By.CSS_SELECTOR, "span.pointer.index_training.hov2.dot"
@@ -134,7 +145,7 @@ def get_training_link(user):
         user.driver.execute_script("arguments[0].click();", element)
         time.sleep(2)
         link = int(user.driver.current_url.split("/")[-1])
-        reload_the_mainpage(user)
+        reload(user)
         return link
     except Exception as e:
         return error(user, e, "Error getting training link")

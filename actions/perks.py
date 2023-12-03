@@ -1,17 +1,15 @@
-import time
-
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from actions.status import set_money, set_perks
-from butler import ajax, error, reload_the_mainpage
+from butler import ajax, error, reload
 from misc.logger import log
 from misc.utils import timetosecs
 
 
 def check_training_status(user):
     try:
-        reload_the_mainpage(user)
+        reload(user)
         perk_counter = user.driver.find_element(By.ID, "perk_counter_2")
         perk_counter = perk_counter.text
         total_seconds = timetosecs(perk_counter)
@@ -80,9 +78,9 @@ def upgrade_perk(user):
         f"/perks/up/{perkurl[perk]}/{currencyurl[currency]}",
         "",
         "Error upgrading perk",
+        relad_after=True,
     ):
         log(user, f"Upgrading {perk.upper()} with {currency.upper()}")
-        time.sleep(2)
         return True
     else:
         log(user, f"Failed to upgrade {perk} with {currency}")

@@ -3,13 +3,15 @@ import time
 from selenium.webdriver.common.by import By
 
 from actions.regions import get_state_info
-from butler import ajax, return_to_the_mainpage, error, get_page
+from butler import ajax, error, get_page, return_to_the_mainpage
 from misc.logger import log
 from misc.utils import sum_costs
 
 
 def remove_self_law(user):
-    return ajax(user, "/parliament/removelaw", "", "Error removing self law")
+    return ajax(
+        user, "/parliament/removelaw", "", "Error removing self law", relad_after=True
+    )
 
 
 def accept_law(user, text):
@@ -35,7 +37,10 @@ def accept_law(user, text):
         return error(user, e, "Something went wrong while accepting a law")
     return_to_the_mainpage(user)
     return ajax(
-        user, f"/parliament/votelaw/{law_action}/pro", "", "Error accepting law"
+        user,
+        f"/parliament/votelaw/{law_action}/pro",
+        "",
+        "Error accepting law",
     )
 
 
@@ -46,6 +51,7 @@ def explore_resource(user, resource="gold"):
         f"/parliament/donew/42/{resources[resource]}/0",
         "",
         "Error exploring resource",
+        relad_after=True,
     )
     if law:
         time.sleep(2)

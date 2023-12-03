@@ -6,35 +6,34 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from misc.logger import alert
 
+DELAY = 1.5
 
-DELAY = 0.5
 
 def wait_some_time(user):
     if time.time() - user.last_request_time < DELAY:
         time.sleep(DELAY)
     user.set_last_request_time()
 
+
 def get_page(user, url):
     wait_until_internet_is_back(user)
-    user.driver.execute_script("window.open('');")
-    user.driver.switch_to.window(user.driver.window_handles[1])
+    user.driver.switch_to.window(user.data_window)
+    wait_some_time(user)
     user.driver.get(f"https://rivalregions.com/{url}")
 
 
 def return_to_the_mainpage(user):
-    while len(user.driver.window_handles) > 1:
-        user.driver.switch_to.window(user.driver.window_handles[1])
-        user.driver.close()
     user.driver.switch_to.window(user.main_window)
 
 
-def reload_the_mainpage(user):
+def reload(user):
     try:
         return_to_the_mainpage(user)
         wait_until_internet_is_back(user)
+        wait_some_time(user)
         user.driver.get("https://rivalregions.com")
         user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
-        time.sleep(0.5)
+        time.sleep(1)
         return True
     except Exception as e:
         return error(user, e, "Error returning to mainpage")
@@ -52,23 +51,22 @@ def delay_tasks(scheduler, delay):
 
 def internet_on(user):
     try:
-        wait_some_time(user)
         requests.get("https://rivalregions.com", timeout=5)
         return True
     except:
+        alert(user, "No internet connection")
         return False
 
 
 def wait_until_internet_is_back(user):
-    wait_some_time(user)
     count = 1
-    if internet_on(user):
-        return True
     while internet_on(user) is False:
         alert(user, "Waiting for internet connection to be restored", False)
         time.sleep(min(count * 60, 600))
-        count += 1
-    reload_the_mainpage(user)
+        count += 2
+    if count > 1:
+        alert(user, "Internet connection restored", False)
+        reload(user)
     return True
 
 
@@ -102,8 +100,11 @@ def reset_browser(user):
 def error(user, error, text=None):
     if text:
         alert(user, f"{text}: {error}")
+    if "ReferenceError: $ is not defined" in str(error):
+        link = user.driver.current_url
+        alert(user, f"Redirecting to mainpage from {link}")
+        reload(user)
     try:
-        wait_until_internet_is_back(user)
         id = user.driver.execute_script("return id;")
         if not id == user.id:
             raise Exception("Bro wtf")
@@ -113,20 +114,20 @@ def error(user, error, text=None):
     return False
 
 
-def ajax(user, url, data, text=None):
+def ajax(user, url, data, text=None, relad_after=False):
     wait_until_internet_is_back(user)
+    return_to_the_mainpage(user)
     try:
         js_ajax = f"""
         $.ajax({{
             url: '{url}',
             data: {{ c: c_html, {data} }},
             type: 'POST',
-            success: function (data) {{
-                location.reload();
-            }},
         }});"""
+        wait_some_time(user)
         user.driver.execute_script(js_ajax)
-        user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
+        if relad_after:
+            reload(user)
         return True
     except Exception as e:
         return error(user, e, text)

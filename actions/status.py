@@ -4,7 +4,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import return_to_the_mainpage, error, get_page, reload_the_mainpage
+from butler import error, get_page, reload, return_to_the_mainpage
 from misc.utils import dotless
 from models import get_autonomy, get_party, get_player, get_region, get_state
 
@@ -14,16 +14,12 @@ def get_player_info(user, id=None):
         if not id:
             id = user.player.id
         get_page(user, f"slide/profile/{id}")
-        time.sleep(1)
-
         player = get_player(id)
-
         level_text = user.driver.find_element(
             By.CSS_SELECTOR, "div.oil > div:nth-child(2)"
         ).text
         level = re.search(r"\d+", level_text).group()
         player.set_level(dotless(level))
-
         data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in data:
             try:
@@ -144,7 +140,7 @@ def get_player_info(user, id=None):
 
 def set_perks(user):
     try:
-        reload_the_mainpage(user)
+        reload(user)
         str = user.driver.find_element(
             By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2"
         ).text
@@ -162,13 +158,11 @@ def set_perks(user):
 
 def set_money(user, energy=False):
     try:
-        reload_the_mainpage(user)
+        reload(user)
         money = user.driver.find_element(By.CSS_SELECTOR, "#m").text
         gold = user.driver.find_element(By.CSS_SELECTOR, "#g").text
-
         user.player.set_money("money", dotless(money))
         user.player.set_money("gold", dotless(gold))
-
         if energy:
             storage_button = user.driver.find_element(
                 By.CSS_SELECTOR, "div.item_menu:nth-child(6)"
@@ -180,16 +174,15 @@ def set_money(user, energy=False):
                 "div.storage_item:nth-child(11) > .storage_number > .storage_number_change",
             ).text
             user.player.set_money("energy", dotless(energy))
-            reload_the_mainpage(user)
+            reload(user)
         return True
     except Exception as e:
         return error(user, e, "Error setting money")
 
 
-# NOT COMPLETE
 def check_traveling_status(user):
     try:
-        reload_the_mainpage(user)
+        reload(user)
         user.driver.find_element(By.CSS_SELECTOR, ".gototravel")
         return True
     except NoSuchElementException:

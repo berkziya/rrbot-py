@@ -2,7 +2,7 @@ import time
 
 from selenium.webdriver.common.by import By
 
-from butler import return_to_the_mainpage, error, get_page
+from butler import error, get_page, return_to_the_mainpage
 
 market_limits = {
     "oil": 614.4e6,
@@ -71,7 +71,6 @@ market_ids = {
 def get_market_price(user, resource):
     try:
         get_page(user, f"storage/listed/{market_ids[resource]}")
-        time.sleep(1)
         prices = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for price in prices:
             if (

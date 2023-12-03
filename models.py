@@ -343,6 +343,24 @@ class Factory:
     def set_potential_wage(self, value):
         self.potential_wage = value
 
+    def __str__(self):
+        return str(self.id)
+
+
+class Bloc:
+    def __init__(self, id):
+        self.id = id
+        self.states = []
+
+    def set_states(self, value):
+        self.members = value
+
+    def add_state(self, value):
+        self.members.append(value)
+
+    def __str__(self):
+        return str(self.id)
+
 
 players = {}
 states = {}
@@ -350,6 +368,7 @@ autonomies = {}
 regions = {}
 parties = {}
 factories = {}
+blocs = {}
 
 
 def get_player(id):
@@ -404,3 +423,12 @@ def get_factory(id):
     else:
         factories[id] = Factory(id)
         return factories[id]
+
+
+def get_bloc(id):
+    id = int(id)
+    if id in blocs:
+        return blocs[id]
+    else:
+        blocs[id] = Bloc(id)
+        return blocs[id]

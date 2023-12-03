@@ -3,7 +3,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import ajax, return_to_the_mainpage, error, get_page
+from butler import ajax, error, get_page, return_to_the_mainpage
 from misc.logger import alert
 from misc.utils import dotless
 from models import get_factory, get_region
@@ -22,7 +22,6 @@ def get_factories(user, id, resource="gold"):
             "rivalium": 26,
         }
         get_page(user, f"factory/search/{id}/0/{resources[resource]}")
-        time.sleep(1)
         try:
             if user.driver.find_element(By.XPATH, "//*[contains(text(), 'Not found')]"):
                 return []
@@ -51,7 +50,9 @@ def get_factories(user, id, resource="gold"):
 
 
 def resign_factory(user):
-    return ajax(user, "/factory/resign", "", "Error resigning factory")
+    return ajax(
+        user, "/factory/resign", "", "Error resigning factory", relad_after=True
+    )
 
 
 def assign_factory(user, factory):
@@ -60,12 +61,18 @@ def assign_factory(user, factory):
     resign_factory(user)
     time.sleep(2)
     return ajax(
-        user, "/factory/assign", f"factory: {factory}", "Error assigning factory"
+        user,
+        "/factory/assign",
+        f"factory: {factory}",
+        "Error assigning factory",
+        relad_after=True,
     )
 
 
 def cancel_auto_work(user):
-    return ajax(user, "/work/autoset_cancel", "", "Error cancelling work")
+    return ajax(
+        user, "/work/autoset_cancel", "", "Error cancelling work", relad_after=True
+    )
 
 
 def auto_work_factory(user, factory=None):
@@ -78,14 +85,14 @@ def auto_work_factory(user, factory=None):
     # assign_factory(user, factory)
     # time.sleep(3)
     cancel_auto_work(user)
-    time.sleep(4)
+    time.sleep(3)
     result = ajax(
         user,
         "/work/autoset",
         f"mentor: 0, factory: {factory}, type: 6, lim: 0",
         "Error setting auto work",
+        relad_after=True,
     )
-    time.sleep(3)
     return result
 
 
