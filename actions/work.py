@@ -4,7 +4,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from butler import ajax, error, get_page, return_to_the_mainpage
-from misc.logger import alert
+from misc.logger import alert, log
 from misc.utils import dotless
 from models import get_factory, get_region
 
@@ -79,26 +79,28 @@ def cancel_auto_work(user):
 
 
 def auto_work_factory(user, id=None):
+    log(user, "Auto working factory")
     try:
-        if not id:
-            factory = get_best_factory(user)
-        else:
-            factory = get_factory_info(user, id)
-        if not factory:
-            error(user, "No factory found")
-            return False
-        assign_factory(user, factory)
-        time.sleep(3)
+        # if not id:
+        #     factory = get_best_factory(user)
+        # else:
+        #     factory = get_factory_info(user, id)
+        # if not factory:
+        #     alert(user, "No factory found")
+        #     return False
+        # log(user, f"Auto working factory: {factory.id}, type: {RESOURCES[factory.type]}")
+        # assign_factory(user, factory.id)
+        # time.sleep(3)
+        # log(user, f"Auto working factory: {factory.id}, type: {RESOURCES[factory.type]}")
         cancel_auto_work(user)
         time.sleep(3)
-        result = ajax(
+        return ajax(
             user,
             "/work/autoset",
-            f"mentor: 0, factory: {factory.id}, type: {RESOURCES[factory.type]}, lim: 0",
+            f"mentor: 0, factory: {id}, type: {6}, lim: 0",
             "Error setting auto work",
             relad_after=True,
         )
-        return result
     except Exception as e:
         return error(user, e, "Error auto working factory")
 
@@ -134,7 +136,7 @@ def get_factory_info(user, id):
                     int(div.find_element(By.CSS_SELECTOR, "apn").text.split(" ")[-1])
                 )
                 factory.set_type(
-                    div.find_element(By.CSS_SELECTOR, "apn").text.split(" ")[0]
+                    div.find_element(By.CSS_SELECTOR, "apn").text.split(" ")[0].lower()
                 )
 
             if "Factory region:" in div.find_element(By.CSS_SELECTOR, "h2").text:

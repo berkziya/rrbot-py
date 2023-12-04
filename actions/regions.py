@@ -245,7 +245,7 @@ def get_region_info(user, id):
             get_autonomy_info(user, region.autonomy.id)
             region.set_state(region.autonomy.state)
         return_to_the_mainpage(user)
-        return True
+        return region
     except NoSuchElementException:
         return_to_the_mainpage(user)
         return None
@@ -374,7 +374,7 @@ def get_state_info(user, id):
                     )
                 )
         return_to_the_mainpage(user)
-        return True
+        return state
     except NoSuchElementException:
         return_to_the_mainpage(user)
         return None
@@ -464,7 +464,7 @@ def get_autonomy_info(user, id):
                 ),
             )
         return_to_the_mainpage(user)
-        return True
+        return autonomy
     except NoSuchElementException:
         return get_region_info(user, id)
     except Exception as e:

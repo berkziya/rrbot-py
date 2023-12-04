@@ -130,7 +130,7 @@ def get_player_info(user, id=None):
                     )
                 )
         return_to_the_mainpage(user)
-        return True
+        return player
     except NoSuchElementException:
         return_to_the_mainpage(user)
         return None

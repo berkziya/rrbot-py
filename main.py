@@ -38,8 +38,6 @@ users = []
 commands = {}
 
 
-# Start session
-# keyboard.add_hotkey("ctrl+i", handle_input, args=(users, commands))  # Comment out this line
 my_os = platform.system().lower()
 futures = []
 caffeinate = None
