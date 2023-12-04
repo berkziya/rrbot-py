@@ -3,6 +3,7 @@ import time
 import requests
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 from misc.logger import alert
 
@@ -15,11 +16,18 @@ def wait_some_time(user):
     user.set_last_request_time()
 
 
+def wait_for_page_load(driver, timeout=30):
+    WebDriverWait(driver, timeout).until(
+        lambda driver: driver.execute_script("return document.readyState") == "complete"
+    )
+
+
 def get_page(user, url):
     wait_until_internet_is_back(user)
     user.driver.switch_to.window(user.data_window)
     wait_some_time(user)
     user.driver.get(f"https://rivalregions.com/{url}")
+    wait_for_page_load(user.driver)
 
 
 def return_to_the_mainpage(user):
@@ -127,6 +135,7 @@ def ajax(user, url, data, text=None, relad_after=False):
         wait_some_time(user)
         user.driver.execute_script(js_ajax)
         if relad_after:
+            time.sleep(2)
             reload(user)
         return True
     except Exception as e:

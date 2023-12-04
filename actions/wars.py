@@ -15,6 +15,54 @@ from butler import (
     wait_until_internet_is_back,
 )
 from misc.logger import log
+from misc.utils import dotless
+from models import get_region
+
+
+def get_war_info(user, id):
+    result = {}
+    try:
+        typez = user.driver.find_element(
+            By.CSS_SELECTOR, "#war_w_ata > div.imp > span.no_pointer"
+        ).text
+        if "Revolution powers" in typez or "Coup powers" in typez:
+            typez = "Revolution"
+        else:
+            typez = "War"
+        get_page(user, f"war/details/{id}")
+        attacker = get_region(0)
+        if typez == "War":
+            attacker = get_region(
+                user.driver.find_element(
+                    By.CSS_SELECTOR, "#war_w_ata_s > div.imp > span:nth-child(3)"
+                )
+                .get_attribute("action")
+                .split("/")[-1]
+            )
+        defender = get_region(
+            user.driver.find_element(
+                By.CSS_SELECTOR, "#war_w_def_s > span:nth-child(3)"
+            )
+            .get_attribute("action")
+            .split("/")[-1]
+        )
+        result[attacker] = dotless(
+            user.driver.find_element(
+                By.CSS_SELECTOR,
+                "#war_w_ata_s > div.imp > span:nth-child(5) > span"
+                if typez == "War"
+                else "#war_w_ata > div.imp > span.hov2 > span",
+            ).text
+        )
+        result[defender] = dotless(
+            user.driver.find_element(
+                By.CSS_SELECTOR, "#war_w_def_s > span:nth-child(5) > span"
+            ).text
+        )
+        return_to_the_mainpage(user)
+        return result
+    except Exception as e:
+        return error(user, e, "Error getting war info")
 
 
 def cancel_autoattack(user):
@@ -27,7 +75,7 @@ def cancel_autoattack(user):
     )
 
 
-def attack(user, id=None, max=False, drones=False):
+def attack(user, id=None, side=None, max=False, drones=False):
     wait_until_internet_is_back(user)
     warname = id
     stringified_troops = ""
@@ -86,7 +134,6 @@ def attack(user, id=None, max=False, drones=False):
 
     n_json = json.dumps(n).replace("'", '"').replace(" ", "")
 
-    side = 0
     cancel_autoattack(user)
     time.sleep(2)
     try:

@@ -8,20 +8,23 @@ from misc.logger import alert
 from misc.utils import dotless
 from models import get_factory, get_region
 
+RESOURCES = {
+    "gold": 6,
+    "oil": 2,
+    "ore": 5,
+    "uranium": 11,
+    "diamond": 15,
+    "lox": 21,
+    "liquefaction": 21,
+    "helium": 24,
+    "helium-3": 24,
+    "rivalium": 26,
+}
+
 
 def get_factories(user, id, resource="gold"):
     try:
-        resources = {
-            "gold": 6,
-            "oil": 2,
-            "ore": 5,
-            "uranium": 11,
-            "diamond": 15,
-            "lox": 21,
-            "helium": 24,
-            "rivalium": 26,
-        }
-        get_page(user, f"factory/search/{id}/0/{resources[resource]}")
+        get_page(user, f"factory/search/{id}/0/{RESOURCES[resource]}")
         try:
             if user.driver.find_element(By.XPATH, "//*[contains(text(), 'Not found')]"):
                 return []
@@ -75,25 +78,29 @@ def cancel_auto_work(user):
     )
 
 
-def auto_work_factory(user, factory=None):
-    if not factory:
-        factory = get_best_factory(user)
-        if factory:
-            factory = factory.id
+def auto_work_factory(user, id=None):
+    try:
+        if not id:
+            factory = get_best_factory(user)
         else:
-            return alert(user, "No factory set or found")
-    # assign_factory(user, factory)
-    # time.sleep(3)
-    cancel_auto_work(user)
-    time.sleep(3)
-    result = ajax(
-        user,
-        "/work/autoset",
-        f"mentor: 0, factory: {factory}, type: 6, lim: 0",
-        "Error setting auto work",
-        relad_after=True,
-    )
-    return result
+            factory = get_factory_info(user, id)
+        if not factory:
+            error(user, "No factory found")
+            return False
+        assign_factory(user, factory)
+        time.sleep(3)
+        cancel_auto_work(user)
+        time.sleep(3)
+        result = ajax(
+            user,
+            "/work/autoset",
+            f"mentor: 0, factory: {factory.id}, type: {RESOURCES[factory.type]}, lim: 0",
+            "Error setting auto work",
+            relad_after=True,
+        )
+        return result
+    except Exception as e:
+        return error(user, e, "Error auto working factory")
 
 
 def get_best_factory(user, resource="gold", fix_wage=False):
@@ -126,6 +133,10 @@ def get_factory_info(user, id):
                 factory.set_level(
                     int(div.find_element(By.CSS_SELECTOR, "apn").text.split(" ")[-1])
                 )
+                factory.set_type(
+                    div.find_element(By.CSS_SELECTOR, "apn").text.split(" ")[0]
+                )
+
             if "Factory region:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 factory.set_location(
                     get_region(

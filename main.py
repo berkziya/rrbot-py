@@ -35,6 +35,16 @@ minlvl4gold = 30
 """
 
 users = []
+commands = {}
+
+
+# Start session
+# keyboard.add_hotkey("ctrl+i", handle_input, args=(users, commands))  # Comment out this line
+my_os = platform.system().lower()
+futures = []
+caffeinate = None
+if my_os != "windows":
+    caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i"])
 
 
 def create_user_from_config(config, general):
@@ -98,6 +108,11 @@ def main():
         log(user, "Login successful.")
 
     # Start session
+    if not users:
+        print("No users enabled. Aborting...")
+        sys.exit()
+    for user in users:
+        commands[user] = []
     my_os = platform.system().lower()
     futures = []
     caffeinate = None

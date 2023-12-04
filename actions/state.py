@@ -83,8 +83,41 @@ def set_minister(user, id, ministry="economic"):
     return ajax(user, f"/leader/{position}", "u: {id}", "Error setting minister")
 
 
-def get_indexes(user, link):
-    pass
+def get_indexes(user):
+    try:
+        health = {}
+        military = {}
+        education = {}
+        development = {}
+        indexes = {
+            "hospital": health,
+            "military": military,
+            "school": education,
+            "homes": development,
+        }
+        for link in indexes:
+            index = 10
+            get_page(user, f"listed/country/-2/0/{link}")
+            data = user.driver.find_elements(
+                By.CSS_SELECTOR, "td.list_level.tip.yellow"
+            )
+            level = int(float(data[0].get_attribute("rat")))
+            for tr in data:
+                if int(tr.text) < index:
+                    indexes[link][index] = level
+                    index -= 1
+                level = int(float(tr.get_attribute("rat")))
+                if index < 2:
+                    break
+        return_to_the_mainpage(user)
+        return {
+            "health": health,
+            "military": military,
+            "education": education,
+            "development": development,
+        }
+    except Exception as e:
+        return error(user, e, "Error getting indexes")
 
 
 def calculate_building_cost(user, building, fromme, tomme):
