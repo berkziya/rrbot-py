@@ -1,4 +1,5 @@
 import time
+from functools import lru_cache
 
 from selenium.webdriver.common.by import By
 
@@ -120,7 +121,9 @@ def get_indexes(user):
         return error(user, e, "Error getting indexes")
 
 
-def calculate_building_cost(user, building, fromme, tomme):
+# use cache with lru cache
+@lru_cache(maxsize=None)
+def calculate_building_cost(building, fromme, tomme):
     building_costs = {
         "hospital": {
             "money": (300, 1.5),
@@ -193,4 +196,4 @@ def calculate_building_cost(user, building, fromme, tomme):
         )
         for key in building_costs[building]
     }
-    return sum_costs(costs, calculate_building_cost(user, building, fromme, tomme - 1))
+    return sum_costs(costs, calculate_building_cost(building, fromme, tomme - 1))

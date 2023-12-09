@@ -6,24 +6,18 @@ def dotless(number):
     return int("".join(numbers)) if numbers else 0
 
 
-def k(number):
+def numba(number):
     if number < 1e3:
         return number
-    return str(number)[:-3] + " k"
-
-
-def kk(number):
     if number < 1e6:
-        return k(number)
-    return str(number)[:-6] + " kk"
-
-
-def numba(number):
+        return f"{number/1e3:.1f}" + " k"
     if number < 1e9:
-        return kk(number)
-    if number > 1e13:
-        return str(number)[:-12] + " t"
-    return str(number)[:-9] + " kkk"
+        return f"{number/1e6:.1f}" + " kk"
+    if number < 1e12:
+        return f"{number/1e9:.1f}" + " kk" + "k"
+    if number < 1e15:
+        return f"{number/1e12:.1f}" + " T"
+    return f"{number/1e15:.3f}" + " T"
 
 
 def timetosecs(time):
