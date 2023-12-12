@@ -1,6 +1,7 @@
 config.ini
 geckodriver.log
 log.txt
+database.db
 
 ### macOS ###
 # General

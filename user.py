@@ -9,17 +9,19 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 
+import database
 from butler import error
 from misc.logger import log
 from models import get_player
 
 
 class Client:
-    def __init__(self, name, email, password):
+    def __init__(self, name, database_name, email, password):
         self.name = name
 
         self.id = 0
         self.player = None
+        self.database_name = database_name
 
         self.email = email
         self.password = password
@@ -43,6 +45,14 @@ class Client:
 
         self.statedept = None
         self.factory = None
+
+        if self.database_name:
+            database.initiate_database(self.database_name)
+            database.load()
+
+    def save_database(self):
+        if self.database_name:
+            database.save()
 
     def set_driveroptions(self, element, value):
         self.driveroptions[element] = value

@@ -35,7 +35,6 @@ minlvl4gold = 30
 """
 
 users = []
-commands = {}
 
 
 my_os = platform.system().lower()
@@ -52,8 +51,9 @@ def create_user_from_config(config, general):
     email = config.get("email")
     password = config.get("password")
     is_headless = config.getboolean("headless", fallback=headless) or not binary
+    database = config.get("database", fallback=None)
 
-    user = Client(config.name, email, password)
+    user = Client(config.name, database, email, password)
     user.set_driveroptions("binary_location", binary)
     user.set_driveroptions("headless", is_headless)
 
@@ -105,12 +105,11 @@ def main():
         users.append(user)
         log(user, "Login successful.")
 
-    # Start session
     if not users:
         print("No users enabled. Aborting...")
         sys.exit()
-    for user in users:
-        commands[user] = []
+
+    # Start session
     my_os = platform.system().lower()
     futures = []
     caffeinate = None

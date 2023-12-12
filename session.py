@@ -96,9 +96,12 @@ def session(user):
                                 Diamonds: {numba(user.player.economics.budget['diamonds'])}""",
         )
 
+    # user.save_database()
+
     events.initiate_all_events(user, eventsToBeDone)
     schedule.every(3).to(5).hours.do(events.initiate_all_events, user, eventsToBeDone)
     schedule.every(4).to(6).hours.do(reset_browser, user)
+    # schedule.every(5).to(7).hours.do(user.save_database)
 
     def activate_scheduler():
         schedule.run_pending()

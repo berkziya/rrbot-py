@@ -1,6 +1,10 @@
+import time
+
+
 class Player:
     def __init__(self, id):
         self.id = id
+        self.last_accessed = 0
         self.level = 0
         self.money = {"money": 0, "gold": 0, "energy": 0}
         self.state_leader = None
@@ -18,6 +22,9 @@ class Player:
 
     def set_level(self, value):
         self.level = value
+
+    def set_last_accessed(self):
+        self.last_accessed = time.time()
 
     def set_money(self, element, value):
         self.money[element] = value
@@ -70,6 +77,7 @@ class Player:
 class State:
     def __init__(self, id):
         self.id = id
+        self.last_accessed = 0
         self.leader = None
         self.commander = None
         self.economics = None
@@ -93,6 +101,9 @@ class State:
         self.wars = []
         self.num_of_wars = 0
         self.borders = ""
+
+    def set_last_accessed(self):
+        self.last_accessed = time.time()
 
     def set_leader(self, value):
         self.leader = value
@@ -152,6 +163,7 @@ class State:
 class Autonomy:
     def __init__(self, id):
         self.id = id
+        self.last_accessed = 0
         self.state = None
         self.governor = None
         self.regions = []
@@ -163,6 +175,9 @@ class Autonomy:
             "uranium": 0,
             "diamonds": 0,
         }
+
+    def set_last_accessed(self):
+        self.last_accessed = time.time()
 
     def set_state(self, value):
         self.state = value
@@ -183,6 +198,7 @@ class Autonomy:
 class Region:
     def __init__(self, id):
         self.id = id
+        self.last_accessed = 0
         self.state = None
         self.autonomy = None
         self.location = [0, 0]
@@ -229,6 +245,9 @@ class Region:
         }
         self.border_regions = []
         self.factories = []
+
+    def set_last_accessed(self):
+        self.last_accessed = time.time()
 
     def set_state(self, value):
         self.state = value
@@ -294,10 +313,14 @@ class Region:
 class Party:
     def __init__(self, id):
         self.id = id
+        self.last_accessed = 0
         self.leader = None
         self.location = None
         self.secretaries = []
         self.members = []
+
+    def set_last_accessed(self):
+        self.last_accessed = time.time()
 
     def set_leader(self, value):
         self.leader = value
@@ -318,12 +341,16 @@ class Party:
 class Factory:
     def __init__(self, id):
         self.id = id
+        self.last_accessed = 0
         self.type = ""
         self.location = None
         self.owner = None
         self.level = 0
         self.wage = 0
         self.potential_wage = 0
+
+    def set_last_accessed(self):
+        self.last_accessed = time.time()
 
     def set_type(self, value):
         self.type = value
@@ -350,7 +377,11 @@ class Factory:
 class Bloc:
     def __init__(self, id):
         self.id = id
+        self.last_accessed = 0
         self.states = []
+
+    def set_last_accessed(self):
+        self.last_accessed = time.time()
 
     def set_states(self, value):
         self.members = value
