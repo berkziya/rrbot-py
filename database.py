@@ -62,12 +62,14 @@ def save():
     wait_for_release()
 
     for table in tables:
-        for item in tables[table]:
+        for id in tables[table]:
+            item = tables[table][id]
+            print(f"Saving {item}, type: {type(item)}, table: {table}, type: {type(tables[table])}")
             cursor.execute(
                 f"""
                 SELECT last_accessed FROM {table} WHERE id = ?
             """,
-                (item.id,),
+                (id,),
             )
             result = cursor.fetchone()
             if result is None or result[0] < item.last_accessed:
@@ -77,7 +79,7 @@ def save():
                     SET data = ?, last_accessed = ?
                     WHERE id = ?
                 """,
-                    (pickle.dumps(item), item.last_accessed, item.id),
+                    (pickle.dumps(item), item.last_accessed, id),
                 )
 
     conn.commit()

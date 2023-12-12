@@ -96,7 +96,7 @@ def session(user):
                                 Diamonds: {numba(user.player.economics.budget['diamonds'])}""",
         )
 
-    # user.save_database()
+    user.save_database()
 
     events.initiate_all_events(user, eventsToBeDone)
     schedule.every(3).to(5).hours.do(events.initiate_all_events, user, eventsToBeDone)

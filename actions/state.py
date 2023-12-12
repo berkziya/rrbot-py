@@ -86,15 +86,11 @@ def set_minister(user, id, ministry="economic"):
 
 def get_indexes(user):
     try:
-        health = {}
-        military = {}
-        education = {}
-        development = {}
         indexes = {
-            "hospital": health,
-            "military": military,
-            "school": education,
-            "homes": development,
+            "hospital": {},
+            "military": {},
+            "school": {},
+            "homes": {},
         }
         for link in indexes:
             index = 10
@@ -112,16 +108,15 @@ def get_indexes(user):
                     break
         return_to_the_mainpage(user)
         return {
-            "health": health,
-            "military": military,
-            "education": education,
-            "development": development,
+            "health": indexes["hospital"],
+            "military": indexes["military"],
+            "education": indexes["school"],
+            "development": indexes["homes"],
         }
     except Exception as e:
         return error(user, e, "Error getting indexes")
 
 
-# use cache with lru cache
 @lru_cache(maxsize=None)
 def calculate_building_cost(building, fromme, tomme):
     building_costs = {
