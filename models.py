@@ -73,6 +73,44 @@ class Player:
     def __str__(self):
         return str(self.id)
 
+    def __getstate__(self):
+        return {
+            "id": self.id,
+            "last_accessed": self.last_accessed,
+            "level": self.level,
+            "money": self.money,
+            "state_leader": self.state_leader.id if self.state_leader else None,
+            "commander": self.commander.id if self.commander else None,
+            "rating": self.rating,
+            "perks": self.perks,
+            "region": self.region.id if self.region else None,
+            "state": self.state.id if self.state else None,
+            "residency": self.residency.id if self.residency else None,
+            "workpermits": {key.id: (value.id if value else 0) for key, value in self.workpermits.items()},
+            "governor": self.governor.id if self.governor else None,
+            "economics": self.economics.id if self.economics else None,
+            "foreign": self.foreign.id if self.foreign else None,
+            "party": self.party.id if self.party else None,
+        }
+
+    def __setstate__(self, state):
+        self.id = state["id"]
+        self.last_accessed = state["last_accessed"]
+        self.level = state["level"]
+        self.money = state["money"]
+        self.state_leader = get_player(state["state_leader"]) if state["state_leader"] else None
+        self.commander = get_player(state["commander"]) if state["commander"] else None
+        self.rating = state["rating"]
+        self.perks = state["perks"]
+        self.region = get_region(state["region"]) if state["region"] else None
+        self.state = get_state(state["state"]) if state["state"] else None
+        self.residency = get_region(state["residency"]) if state["residency"] else None
+        self.workpermits = {get_state(key): (get_region(value) if value else 0) for key, value in state["workpermits"].items()}
+        self.governor = get_autonomy(state["governor"]) if state["governor"] else None
+        self.economics = get_state(state["economics"]) if state["economics"] else None
+        self.foreign = get_state(state["foreign"]) if state["foreign"] else None
+        self.party = get_party(state["party"]) if state["party"] else None
+
 
 class State:
     def __init__(self, id):
@@ -194,6 +232,24 @@ class Autonomy:
     def __str__(self):
         return str(self.id)
 
+    def __getstate__(self):
+        return {
+            "id": self.id,
+            "last_accessed": self.last_accessed,
+            "state": self.state.id if self.state else None,
+            "governor": self.governor.id if self.governor else None,
+            "regions": [region.id for region in self.regions],
+            "budget": self.budget,
+        }
+
+    def __setstate__(self, state):
+        self.id = state["id"]
+        self.last_accessed = state["last_accessed"]
+        self.state = get_state(state["state"]) if state["state"] else None
+        self.governor = get_player(state["governor"]) if state["governor"] else None
+        self.regions = [get_region(region) for region in state["regions"]]
+        self.budget = state["budget"]
+
 
 class Region:
     def __init__(self, id):
@@ -309,6 +365,54 @@ class Region:
     def __str__(self):
         return str(self.id)
 
+    def __getstate__(self):
+        return {
+            "id": self.id,
+            "last_accessed": self.last_accessed,
+            "state": self.state.id if self.state else None,
+            "autonomy": self.autonomy.id if self.autonomy else None,
+            "location": self.location,
+            "buildings": self.buildings,
+            "rating": self.rating,
+            "residents": [player.id for player in self.residents],
+            "num_of_residents": self.num_of_residents,
+            "citizens": [player.id for player in self.citizens],
+            "num_of_citizens": self.num_of_citizens,
+            "initial_attack_damage": self.initial_attack_damage,
+            "initial_defend_damage": self.initial_defend_damage,
+            "tax": self.tax,
+            "market_tax": self.market_tax,
+            "sea_access": self.sea_access,
+            "resources": self.resources,
+            "deep_resources": self.deep_resources,
+            "indexes": self.indexes,
+            "border_regions": [region.id for region in self.border_regions],
+            "factories": [factory.id for factory in self.factories],
+        }
+
+    def __setstate__(self, state):
+        self.id = state["id"]
+        self.last_accessed = state["last_accessed"]
+        self.state = get_state(state["state"]) if state["state"] else None
+        self.autonomy = get_autonomy(state["autonomy"]) if state["autonomy"] else None
+        self.location = state["location"]
+        self.buildings = state["buildings"]
+        self.rating = state["rating"]
+        self.residents = [get_player(player) for player in state["residents"]]
+        self.num_of_residents = state["num_of_residents"]
+        self.citizens = [get_player(player) for player in state["citizens"]]
+        self.num_of_citizens = state["num_of_citizens"]
+        self.initial_attack_damage = state["initial_attack_damage"]
+        self.initial_defend_damage = state["initial_defend_damage"]
+        self.tax = state["tax"]
+        self.market_tax = state["market_tax"]
+        self.sea_access = state["sea_access"]
+        self.resources = state["resources"]
+        self.deep_resources = state["deep_resources"]
+        self.indexes = state["indexes"]
+        self.border_regions = [get_region(region) for region in state["border_regions"]]
+        self.factories = [get_factory(factory) for factory in state["factories"]]
+
 
 class Party:
     def __init__(self, id):
@@ -336,6 +440,24 @@ class Party:
 
     def __str__(self):
         return str(self.id)
+
+    def __getstate__(self):
+        return {
+            "id": self.id,
+            "last_accessed": self.last_accessed,
+            "leader": self.leader.id if self.leader else None,
+            "location": self.location.id if self.location else None,
+            "secretaries": [player.id for player in self.secretaries],
+            "members": [player.id for player in self.members],
+        }
+
+    def __setstate__(self, state):
+        self.id = state["id"]
+        self.last_accessed = state["last_accessed"]
+        self.leader = get_player(state["leader"]) if state["leader"] else None
+        self.location = get_region(state["location"]) if state["location"] else None
+        self.secretaries = [get_player(player) for player in state["secretaries"]]
+        self.members = [get_player(player) for player in state["members"]]
 
 
 class Factory:
@@ -391,6 +513,18 @@ class Bloc:
 
     def __str__(self):
         return str(self.id)
+
+    def __getstate__(self):
+        return {
+            "id": self.id,
+            "last_accessed": self.last_accessed,
+            "states": [state.id for state in self.states],
+        }
+
+    def __setstate__(self, state):
+        self.id = state["id"]
+        self.last_accessed = state["last_accessed"]
+        self.states = [get_state(state) for state in state["states"]]
 
 
 players = {}

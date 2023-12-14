@@ -12,6 +12,7 @@ from user import Client
 
 DEFAULT_CONFIG = """[general]
 browser = firefox
+database = database.db
 
 [user1]
 enabled = true
@@ -51,7 +52,7 @@ def create_user_from_config(config, general):
     email = config.get("email")
     password = config.get("password")
     is_headless = config.getboolean("headless", fallback=headless) or not binary
-    database = config.get("database", fallback=None)
+    database = general.get("database", fallback=None)
 
     user = Client(config.name, database, email, password)
     user.set_driveroptions("binary_location", binary)

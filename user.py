@@ -22,6 +22,7 @@ class Client:
         self.id = 0
         self.player = None
         self.database_name = database_name
+        self.conn, self.cursor = None, None
 
         self.email = email
         self.password = password
@@ -46,13 +47,14 @@ class Client:
         self.statedept = None
         self.factory = None
 
+    def load_database(self):
         if self.database_name:
-            database.initiate_database(self.database_name)
-            database.load()
+            self.conn, self.cursor = database.initiate_database(self, self.database_name)
+            database.load(self, self.conn, self.cursor)
 
     def save_database(self):
-        if self.database_name:
-            database.save()
+        if self.conn and self.cursor:
+            database.save(self, self.conn, self.cursor)
 
     def set_driveroptions(self, element, value):
         self.driveroptions[element] = value

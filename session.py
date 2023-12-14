@@ -1,7 +1,7 @@
 import schedule
 
 import events
-from actions.regions import get_autonomy_info, get_state_info, work_state_department
+from actions.regions import get_autonomy_info, get_state_info, work_state_department, get_region_info
 from actions.status import get_player_info, set_money
 from actions.wars import attack
 from actions.work import auto_work_factory
@@ -11,6 +11,8 @@ from misc.utils import numba
 
 
 def session(user):
+    user.load_database()
+
     eventsToBeDone = [
         {"desc": "upgrade perks", "event": events.perks},
         {"desc": "build military academy", "event": events.militaryAcademy},
@@ -36,6 +38,8 @@ def session(user):
     ]
 
     if get_player_info(user):
+        get_region_info(user, user.player.region.id)
+        get_state_info(user, user.player.region.state.id)
         log(
             user,
             f"ID: {user.player} | Level: {user.player.level} | Rating: {user.player.rating}",
@@ -72,6 +76,7 @@ def session(user):
 
     if user.player.governor:
         get_autonomy_info(user, user.player.governor.id)
+        get_state_info(user, user.player.governor.state.id)
         log(
             user,
             f"""Autonomy Budget:
@@ -101,7 +106,7 @@ def session(user):
     events.initiate_all_events(user, eventsToBeDone)
     schedule.every(3).to(5).hours.do(events.initiate_all_events, user, eventsToBeDone)
     schedule.every(4).to(6).hours.do(reset_browser, user)
-    # schedule.every(5).to(7).hours.do(user.save_database)
+    schedule.every(5).to(7).hours.do(user.save_database)
 
     def activate_scheduler():
         schedule.run_pending()

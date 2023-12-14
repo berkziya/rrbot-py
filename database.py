@@ -2,10 +2,7 @@ import pickle
 import sqlite3
 
 import models
-
-conn = None
-cursor = None
-in_use = False
+from butler import error
 
 tables = {
     "players": models.players,
@@ -18,82 +15,74 @@ tables = {
 }
 
 
-def wait_for_release():
-    global in_use
-    while in_use:
-        print("Waiting for database to be released...")
-        pass
-
-
 # Connect to the database
-def initiate_database(name):
-    global conn, cursor, in_use
-    wait_for_release()
+def initiate_database(user, name):
+    try:
+        conn = sqlite3.connect(name)
+        cursor = conn.cursor()
+        # Create tables if they don't exist
+        for table in tables:
+            create_table(user, conn, cursor, table)
+        return conn, cursor
+    except Exception as e:
+        error(user, f"Database initiation failed: {e}")
+        return None, None
 
-    conn = sqlite3.connect(name)
-    cursor = conn.cursor()
 
-    # Create tables if they don't exist
-    for table in tables:
-        create_table(table)
-
-    in_use = False
-
-
-def create_table(table):
-    global conn, cursor, in_use
-    wait_for_release()
-
+def create_table(user, conn, cursor, table):
     cursor.execute(
-        f"""
-    CREATE TABLE IF NOT EXISTS {table} (
-        id INTEGER PRIMARY KEY,
-        data BLOB
-        last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )"""
+        f"CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY, data BLOB, last_accessed TIMESTAMP)"
     )
-
     conn.commit()
-    in_use = False
 
 
-def save():
-    global conn, cursor, in_use
-    wait_for_release()
-
-    for table in tables:
-        for id in tables[table]:
-            item = tables[table][id]
-            print(f"Saving {item}, type: {type(item)}, table: {table}, type: {type(tables[table])}")
-            cursor.execute(
-                f"""
-                SELECT last_accessed FROM {table} WHERE id = ?
-            """,
-                (id,),
-            )
-            result = cursor.fetchone()
-            if result is None or result[0] < item.last_accessed:
-                cursor.execute(
-                    f"""
-                    UPDATE {table}
-                    SET data = ?, last_accessed = ?
-                    WHERE id = ?
-                """,
-                    (pickle.dumps(item), item.last_accessed, id),
-                )
-
-    conn.commit()
-    in_use = False
+def save(user, conn, cursor):
+    try:
+        for table in tables:
+            for id in tables[table]:
+                if id == 0:
+                    continue
+                item = tables[table][id]
+                cursor.execute(f"SELECT last_accessed FROM {table} WHERE id = ?", (id,))
+                result = cursor.fetchone()
+                if result is None or result[0] < item.last_accessed:
+                    cursor.execute(
+                        f"INSERT OR REPLACE INTO {table} (id, data, last_accessed) VALUES (?, ?, ?)",
+                        (id, pickle.dumps(item), item.last_accessed),
+                    )
+        conn.commit()
+    except Exception as e:
+        error(user, f"Database save failed: {e}")
+        return False
 
 
-def load():
-    global conn, cursor, in_use
-    wait_for_release()
-
-    for table in tables:
-        cursor.execute(f"SELECT * FROM {table}")
-        for row in cursor.fetchall():
-            tables[table][row[0]] = pickle.loads(row[1])
-
-    conn.commit()
-    in_use = False
+def load(user, conn, cursor):
+    try:
+        for table in tables:
+            cursor.execute(f"SELECT * FROM {table}")
+            for row in cursor.fetchall():
+                if table == "players":
+                    player = models.get_player(row[0])
+                    player.__dict__ = pickle.loads(row[1]).__dict__
+                elif table == "states":
+                    state = models.get_state(row[0])
+                    state.__dict__ = pickle.loads(row[1]).__dict__
+                elif table == "autonomies":
+                    autonomy = models.get_autonomy(row[0])
+                    autonomy.__dict__ = pickle.loads(row[1]).__dict__
+                elif table == "regions":
+                    region = models.get_region(row[0])
+                    region.__dict__ = pickle.loads(row[1]).__dict__
+                elif table == "parties":
+                    party = models.get_party(row[0])
+                    party.__dict__ = pickle.loads(row[1]).__dict__
+                elif table == "factories":
+                    factory = models.get_factory(row[0])
+                    factory.__dict__ = pickle.loads(row[1]).__dict__
+                elif table == "blocs":
+                    bloc = models.get_bloc(row[0])
+                    bloc.__dict__ = pickle.loads(row[1]).__dict__
+        conn.commit()
+    except Exception as e:
+        error(user, f"Database load failed: {e}")
+        return False

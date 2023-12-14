@@ -9,12 +9,14 @@ from misc.utils import dotless
 from models import get_autonomy, get_party, get_player, get_region, get_state
 
 
-def get_player_info(user, id=None):
+def get_player_info(user, id=None, force=False):
+    if not id:
+        id = user.player.id
+    player = get_player(id)
+    if player.last_accessed and player.last_accessed < time.time() - 900 and (not force):
+        return player
     try:
-        if not id:
-            id = user.player.id
         get_page(user, f"slide/profile/{id}")
-        player = get_player(id)
         level_text = user.driver.find_element(
             By.CSS_SELECTOR, "div.oil > div:nth-child(2)"
         ).text
@@ -129,6 +131,7 @@ def get_player_info(user, id=None):
                         .split("/")[-1]
                     )
                 )
+        player.set_last_accessed()
         return_to_the_mainpage(user)
         return player
     except NoSuchElementException:

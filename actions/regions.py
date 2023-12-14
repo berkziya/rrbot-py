@@ -1,4 +1,5 @@
 import json
+import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -66,10 +67,12 @@ def work_state_department(user, id=None, dept="gold"):
         return error(user, e, "Error working for state department")
 
 
-def get_region_info(user, id):
+def get_region_info(user, id, force=False):
+    region = get_region(id)
+    if region.last_accessed and region.last_accessed > time.time() - 900 and not force:
+        return region
     try:
         get_page(user, f"map/details/{id}")
-        region = get_region(id)
         upper = (
             user.driver.find_element(By.CSS_SELECTOR, "div.margin > h1 > span")
             .get_attribute("action")
@@ -152,6 +155,7 @@ def get_region_info(user, id):
                         ).text.split(" ")[0]
                     ),
                 )
+                autonomy.set_last_accessed()
             elif "Rating place:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_rating(
                     int(div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0])
@@ -244,6 +248,7 @@ def get_region_info(user, id):
         if region.autonomy and not region.state:
             get_autonomy_info(user, region.autonomy.id)
             region.set_state(region.autonomy.state)
+        region.set_last_accessed()
         return_to_the_mainpage(user)
         return region
     except NoSuchElementException:
@@ -253,10 +258,12 @@ def get_region_info(user, id):
         return error(user, e, "Error getting region info")
 
 
-def get_state_info(user, id):
+def get_state_info(user, id, force=False):
+    state = get_state(id)
+    if state.last_accessed and state.last_accessed > time.time() - 900 and not force:
+        return state
     try:
         get_page(user, f"map/state_details/{id}")
-        state = get_state(id)
         state.set_budget(
             "money",
             dotless(
@@ -373,6 +380,7 @@ def get_state_info(user, id):
                         .split("/")[-1]
                     )
                 )
+        state.set_last_accessed()
         return_to_the_mainpage(user)
         return state
     except NoSuchElementException:
@@ -382,10 +390,12 @@ def get_state_info(user, id):
         return error(user, e, "Error getting state info")
 
 
-def get_autonomy_info(user, id):
+def get_autonomy_info(user, id, force=False):
+    autonomy = get_autonomy(id)
+    if autonomy.last_accessed and autonomy.last_accessed > time.time() - 900 and not force:
+        return autonomy
     try:
         get_page(user, f"map/autonomy_details/{id}")
-        autonomy = get_autonomy(id)
         autonomy.set_state(
             get_state(
                 user.driver.find_element(By.CSS_SELECTOR, "div.margin > h1 > span")
@@ -464,6 +474,7 @@ def get_autonomy_info(user, id):
                 ),
             )
         return_to_the_mainpage(user)
+        autonomy.set_last_accessed()
         return autonomy
     except NoSuchElementException:
         return get_region_info(user, id)
