@@ -49,7 +49,9 @@ class Client:
 
     def load_database(self):
         if self.database_name:
-            self.conn, self.cursor = database.initiate_database(self, self.database_name)
+            self.conn, self.cursor = database.initiate_database(
+                self, self.database_name
+            )
             database.load(self, self.conn, self.cursor)
 
     def save_database(self):

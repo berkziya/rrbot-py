@@ -86,7 +86,10 @@ class Player:
             "region": self.region.id if self.region else None,
             "state": self.state.id if self.state else None,
             "residency": self.residency.id if self.residency else None,
-            "workpermits": {key.id: (value.id if value else 0) for key, value in self.workpermits.items()},
+            "workpermits": {
+                key.id: (value.id if value else 0)
+                for key, value in self.workpermits.items()
+            },
             "governor": self.governor.id if self.governor else None,
             "economics": self.economics.id if self.economics else None,
             "foreign": self.foreign.id if self.foreign else None,
@@ -98,14 +101,19 @@ class Player:
         self.last_accessed = state["last_accessed"]
         self.level = state["level"]
         self.money = state["money"]
-        self.state_leader = get_player(state["state_leader"]) if state["state_leader"] else None
+        self.state_leader = (
+            get_player(state["state_leader"]) if state["state_leader"] else None
+        )
         self.commander = get_player(state["commander"]) if state["commander"] else None
         self.rating = state["rating"]
         self.perks = state["perks"]
         self.region = get_region(state["region"]) if state["region"] else None
         self.state = get_state(state["state"]) if state["state"] else None
         self.residency = get_region(state["residency"]) if state["residency"] else None
-        self.workpermits = {get_state(key): (get_region(value) if value else 0) for key, value in state["workpermits"].items()}
+        self.workpermits = {
+            get_state(key): (get_region(value) if value else 0)
+            for key, value in state["workpermits"].items()
+        }
         self.governor = get_autonomy(state["governor"]) if state["governor"] else None
         self.economics = get_state(state["economics"]) if state["economics"] else None
         self.foreign = get_state(state["foreign"]) if state["foreign"] else None

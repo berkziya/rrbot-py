@@ -13,7 +13,11 @@ def get_player_info(user, id=None, force=False):
     if not id:
         id = user.player.id
     player = get_player(id)
-    if player.last_accessed and player.last_accessed < time.time() - 900 and (not force):
+    if (
+        player.last_accessed
+        and player.last_accessed < time.time() - 900
+        and (not force)
+    ):
         return player
     try:
         get_page(user, f"slide/profile/{id}")

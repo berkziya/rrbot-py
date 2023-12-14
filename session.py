@@ -1,7 +1,12 @@
 import schedule
 
 import events
-from actions.regions import get_autonomy_info, get_state_info, work_state_department, get_region_info
+from actions.regions import (
+    get_autonomy_info,
+    get_region_info,
+    get_state_info,
+    work_state_department,
+)
 from actions.status import get_player_info, set_money
 from actions.wars import attack
 from actions.work import auto_work_factory

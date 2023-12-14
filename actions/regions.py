@@ -392,7 +392,11 @@ def get_state_info(user, id, force=False):
 
 def get_autonomy_info(user, id, force=False):
     autonomy = get_autonomy(id)
-    if autonomy.last_accessed and autonomy.last_accessed > time.time() - 900 and not force:
+    if (
+        autonomy.last_accessed
+        and autonomy.last_accessed > time.time() - 900
+        and not force
+    ):
         return autonomy
     try:
         get_page(user, f"map/autonomy_details/{id}")
