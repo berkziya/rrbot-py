@@ -140,3 +140,4 @@ class Client:
             self.driver.quit()
         self.s = None
         self.driver = None
+        self.save_database()

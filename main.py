@@ -41,8 +41,6 @@ users = []
 my_os = platform.system().lower()
 futures = []
 caffeinate = None
-if my_os != "windows":
-    caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i"])
 
 
 def create_user_from_config(config, general):
