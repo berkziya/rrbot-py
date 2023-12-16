@@ -52,11 +52,11 @@ class Client:
             self.conn, self.cursor = database.initiate_database(
                 self, self.database_name
             )
-            database.load(self, self.conn, self.cursor)
+            database.load(self)
 
     def save_database(self):
         if self.conn and self.cursor:
-            database.save(self, self.conn, self.cursor)
+            database.save(self)
 
     def set_driveroptions(self, element, value):
         self.driveroptions[element] = value

@@ -22,45 +22,47 @@ def initiate_database(user, name):
         cursor = conn.cursor()
         # Create tables if they don't exist
         for table in tables:
-            create_table(user, conn, cursor, table)
+            create_table(user, table)
         return conn, cursor
     except Exception as e:
         error(user, f"Database initiation failed: {e}")
         return None, None
 
 
-def create_table(user, conn, cursor, table):
-    cursor.execute(
+def create_table(user, table):
+    user.cursor.execute(
         f"CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY, data BLOB, last_accessed TIMESTAMP)"
     )
-    conn.commit()
+    user.conn.commit()
 
 
-def save(user, conn, cursor):
+def save(user):
     try:
         for table in tables:
             for id in tables[table]:
                 if id == 0:
                     continue
                 item = tables[table][id]
-                cursor.execute(f"SELECT last_accessed FROM {table} WHERE id = ?", (id,))
-                result = cursor.fetchone()
+                user.cursor.execute(
+                    f"SELECT last_accessed FROM {table} WHERE id = ?", (id,)
+                )
+                result = user.cursor.fetchone()
                 if result is None or result[0] < item.last_accessed:
-                    cursor.execute(
+                    user.cursor.execute(
                         f"INSERT OR REPLACE INTO {table} (id, data, last_accessed) VALUES (?, ?, ?)",
                         (id, pickle.dumps(item), item.last_accessed),
                     )
-        conn.commit()
+        user.conn.commit()
     except Exception as e:
         error(user, f"Database save failed: {e}")
         return False
 
 
-def load(user, conn, cursor):
+def load(user):
     try:
         for table in tables:
-            cursor.execute(f"SELECT * FROM {table}")
-            for row in cursor.fetchall():
+            user.cursor.execute(f"SELECT * FROM {table}")
+            for row in user.cursor.fetchall():
                 if table == "players":
                     player = models.get_player(row[0])
                     player.__dict__ = pickle.loads(row[1]).__dict__
@@ -82,7 +84,7 @@ def load(user, conn, cursor):
                 elif table == "blocs":
                     bloc = models.get_bloc(row[0])
                     bloc.__dict__ = pickle.loads(row[1]).__dict__
-        conn.commit()
+        user.conn.commit()
     except Exception as e:
         error(user, f"Database load failed: {e}")
         return False
