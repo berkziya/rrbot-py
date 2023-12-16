@@ -79,18 +79,24 @@ def get_region_info(user, id, force=False):
             .split("/")
         )
         if upper[1] == "state_details":
-            region.set_state(get_state(upper[-1]))
+            state = get_state(upper[-1])
+            region.set_state(state)
+            state.add_region(region)
+
         elif upper[1] == "autonomy_details":
-            region.set_autonomy(get_autonomy(upper[-1]))
-            region.set_state(
-                get_state(
-                    user.driver.find_element(
-                        By.CSS_SELECTOR, "div.margin > h1 > div > span"
-                    )
-                    .get_attribute("action")
-                    .split("/")[-1]
+            autonomy = get_autonomy(upper[-1])
+            region.set_autonomy(autonomy)
+            autonomy.add_region(region)
+            state = get_state(
+                user.driver.find_element(
+                    By.CSS_SELECTOR, "div.margin > h1 > div > span"
                 )
+                .get_attribute("action")
+                .split("/")[-1]
             )
+            region.set_state(state)
+            state.add_region(region)
+
         data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll")
         for div in data:
             if "Governor:" in div.find_element(By.CSS_SELECTOR, "h2").text:
@@ -105,7 +111,7 @@ def get_region_info(user, id, force=False):
                         .split("/")[-1]
                     )
                 )
-                autonomy.set_regions([region])
+                autonomy.add_region(region)
                 region.set_autonomy(autonomy)
                 autonomy.set_budget(
                     "money",
@@ -241,9 +247,11 @@ def get_region_info(user, id, force=False):
             elif "Border regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 border_regions = []
                 for region_ in div.find_elements(By.CSS_SELECTOR, "slide_profile_data"):
-                    border_regions.append(
-                        get_region(region_.get_attribute("action").split("/")[-1])
+                    border_region = get_region(
+                        region_.get_attribute("action").split("/")[-1]
                     )
+                    border_regions.append(border_region)
+                    border_region.add_border_region(region)
                 region.set_border_regions(border_regions)
         if region.autonomy and not region.state:
             get_autonomy_info(user, region.autonomy.id)
@@ -427,7 +435,7 @@ def get_autonomy_info(user, id, force=False):
                         get_region(region.get_attribute("action").split("/")[-1])
                     )
                 autonomy.set_regions(regions)
-        if len(autonomy.regions):
+        if autonomy.regions:
             regionid = autonomy.regions[0].id
             autonomy.set_budget(
                 "money",

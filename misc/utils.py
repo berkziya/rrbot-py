@@ -8,7 +8,7 @@ def dotless(number):
 
 
 def numba(number):
-    units = ['','k', 'kk', 'k'+'kk', 'T', 'P']
+    units = ["", "k", "kk", "k" + "kk", "T", "P"]
     for unit in units:
         if abs(number) < 1000:
             return f"{number:.1f}{unit}"
@@ -18,10 +18,10 @@ def numba(number):
 
 def time_to_secs(time_str):
     days, hours, minutes, seconds = 0, 0, 0, 0
-    if ' d ' in time_str:
-        days_str, time_str = time_str.split(' d ')
+    if " d " in time_str:
+        days_str, time_str = time_str.split(" d ")
         days = int(days_str)
-    time_parts = time_str.split(':')
+    time_parts = time_str.split(":")
     if len(time_parts) == 3:
         hours, minutes, seconds = map(int, time_parts)
     elif len(time_parts) == 2:
@@ -39,6 +39,7 @@ def sum_costs(cost1, cost2):
     for key, value in cost2.items():
         costs[key] += value
     return {key: value for key, value in costs.items() if value > 0}
+
 
 def subtract_costs(cost1, cost2):
     costs = defaultdict(int, cost1)

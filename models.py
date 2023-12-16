@@ -176,13 +176,18 @@ class State:
         self.wars = value
 
     def add_war(self, value):
-        self.wars.append(value)
+        if value not in self.wars:
+            self.wars.append(value)
 
     def set_num_of_wars(self, value):
         self.num_of_wars = value
 
     def set_regions(self, value):
         self.regions = value
+
+    def add_region(self, value):
+        if value not in self.regions:
+            self.regions.append(value)
 
     def set_num_of_regions(self, value):
         self.num_of_regions = value
@@ -201,6 +206,10 @@ class State:
 
     def set_autonomies(self, value):
         self.autonomies = value
+
+    def add_autonomy(self, value):
+        if value not in self.autonomies:
+            self.autonomies.append(value)
 
     def __str__(self):
         return str(self.id)
@@ -233,6 +242,10 @@ class Autonomy:
 
     def set_regions(self, value):
         self.regions = value
+
+    def add_region(self, value):
+        if value not in self.regions:
+            self.regions.append(value)
 
     def set_budget(self, element, value):
         self.budget[element] = value
@@ -366,6 +379,10 @@ class Region:
 
     def set_border_regions(self, value):
         self.border_regions = value
+
+    def add_border_region(self, value):
+        if value not in self.border_regions:
+            self.border_regions.append(value)
 
     def set_factories(self, value):
         self.factories = value
@@ -517,7 +534,8 @@ class Bloc:
         self.members = value
 
     def add_state(self, value):
-        self.members.append(value)
+        if value not in self.states:
+            self.states.append(value)
 
     def __str__(self):
         return str(self.id)
