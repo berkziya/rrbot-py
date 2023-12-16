@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 
 
 def dotless(number):
@@ -7,47 +8,40 @@ def dotless(number):
 
 
 def numba(number):
-    if number < 1e3:
-        return number
-    if number < 1e6:
-        return f"{number/1e3:.1f}" + " k"
-    if number < 1e9:
-        return f"{number/1e6:.1f}" + " kk"
-    if number < 1e12:
-        return f"{number/1e9:.1f}" + " kk" + "k"
-    if number < 1e15:
-        return f"{number/1e12:.1f}" + " T"
-    return f"{number/1e15:.3f}" + " T"
+    units = ['','k', 'kk', 'k'+'kk', 'T', 'P']
+    for unit in units:
+        if abs(number) < 1000:
+            return f"{number:.1f}{unit}"
+        number /= 1000
+    return f"{number:.3f}{unit}"
 
 
-def timetosecs(time):
-    days = 0
-    if " d " in time:
-        days = int(time.split(" d ")[0])
-        time = time.split(" d ")[1]
-    time = time.split(":")
-    hours = 0
-    if len(time) == 3:
-        hours = int(time.pop(0))
-    minutes = int(time[0])
-    seconds = int(time[1])
-    total_seconds = days * 86400 + hours * 3600 + minutes * 60 + seconds + 3
+def time_to_secs(time_str):
+    days, hours, minutes, seconds = 0, 0, 0, 0
+    if ' d ' in time_str:
+        days_str, time_str = time_str.split(' d ')
+        days = int(days_str)
+    time_parts = time_str.split(':')
+    if len(time_parts) == 3:
+        hours, minutes, seconds = map(int, time_parts)
+    elif len(time_parts) == 2:
+        minutes, seconds = map(int, time_parts)
+    elif len(time_parts) == 1:
+        seconds = int(time_parts[0])
+    else:
+        raise ValueError(f"Invalid time format: {time_str}")
+    total_seconds = days * 86400 + hours * 3600 + minutes * 60 + seconds + 1
     return total_seconds
 
 
 def sum_costs(cost1, cost2):
-    costs = {
-        key: cost1.get(key, 0) + cost2.get(key, 0) for key in set(cost1) | set(cost2)
-    }
-    if not costs == {}:
-        costs = {key: value for key, value in costs.items() if value > 0}
-    return costs
-
+    costs = defaultdict(int, cost1)
+    for key, value in cost2.items():
+        costs[key] += value
+    return {key: value for key, value in costs.items() if value > 0}
 
 def subtract_costs(cost1, cost2):
-    costs = {
-        key: cost1.get(key, 0) - cost2.get(key, 0) for key in set(cost1) | set(cost2)
-    }
-    if not costs == {}:
-        costs = {key: value for key, value in costs.items() if value > 0}
-    return costs
+    costs = defaultdict(int, cost1)
+    for key, value in cost2.items():
+        costs[key] -= value
+    return {key: value for key, value in costs.items() if value > 0}
