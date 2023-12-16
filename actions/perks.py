@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from actions.status import set_money, set_perks
 from butler import ajax, error, reload
 from misc.logger import log
-from misc.utils import timetosecs
+from misc.utils import time_to_secs
 
 
 def check_training_status(user):
@@ -12,7 +12,7 @@ def check_training_status(user):
         reload(user)
         perk_counter = user.driver.find_element(By.ID, "perk_counter_2")
         perk_counter = perk_counter.text
-        total_seconds = timetosecs(perk_counter)
+        total_seconds = time_to_secs(perk_counter)
         return total_seconds
     except NoSuchElementException:
         return None
