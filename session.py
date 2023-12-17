@@ -1,6 +1,7 @@
 import schedule
 
 import events
+from actions.perks import upgrade_perk
 from actions.regions import (
     get_autonomy_info,
     get_region_info,
@@ -10,6 +11,7 @@ from actions.regions import (
 from actions.status import get_player_info, set_money
 from actions.wars import attack
 from actions.work import auto_work_factory
+from actions.market import resources_to_money
 from butler import reset_browser
 from misc.logger import alert, log
 from misc.utils import numba
@@ -19,7 +21,7 @@ def session(user):
     user.load_database()
 
     eventsToBeDone = [
-        {"desc": "upgrade perks", "event": events.perks},
+        {"desc": "upgrade perks", "event": upgrade_perk},
         {"desc": "build military academy", "event": events.militaryAcademy},
         {"desc": "energy drink refill", "event": events.energy_drink_refill},
         {"desc": "attack training", "event": attack},
@@ -90,7 +92,8 @@ def session(user):
                                 Oil: {numba(user.player.governor.budget['oil'])}
                                 Ore: {numba(user.player.governor.budget['ore'])}
                                 Uranium: {numba(user.player.governor.budget['uranium'])}
-                                Diamonds: {numba(user.player.governor.budget['diamonds'])}""",
+                                Diamonds: {numba(user.player.governor.budget['diamonds'])}
+                                TOTAL: {numba(resources_to_money(user, user.player.governor.budget)['mone'])}""",
         )
 
     if user.player.economics:

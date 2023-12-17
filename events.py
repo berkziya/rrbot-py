@@ -1,14 +1,14 @@
 import datetime
 
-from actions.perks import check_training_status, upgrade_perk
 from actions.regions import build_military_academy
 from actions.state import explore_resource
 from actions.storage import produce_energy
-from butler import error
+from butler import error, wait_until_internet_is_back
 from misc.logger import log
 
 
 def initiate_all_events(user, events):
+    wait_until_internet_is_back(user)
     list(map(user.s.cancel, user.s.queue))
     for event in events:
         user.s.enter(
@@ -37,28 +37,6 @@ def upcoming_events(user):
             )
     else:
         log(user, "No upcoming events.", False)
-
-
-def perks(user):
-    training_time = check_training_status(user)
-    if training_time is None:
-        upgrade_perk(user)
-        user.s.enter(5, 1, perks, (user,))
-        return True
-    elif training_time is False:
-        user.s.enter(600, 1, perks, (user,))
-        return False
-    else:
-        if training_time < 61:
-            user.driver.refresh()
-            user.s.enter(5, 1, perks, (user,))
-        else:
-            user.s.enter(training_time + 5, 1, perks, (user,))
-            log(
-                user,
-                f"Perk upgrade in progress. Time remaining: {datetime.timedelta(seconds=training_time)}",
-            )
-        return False
 
 
 def militaryAcademy(user):

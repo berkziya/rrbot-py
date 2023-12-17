@@ -1,3 +1,5 @@
+import datetime
+
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
@@ -24,6 +26,19 @@ def upgrade_perk(user):
     if not (set_perks(user) and set_money(user, energy=True)):
         return False
 
+    training_time = check_training_status(user)
+
+    if training_time:
+        user.s.enter(training_time, 1, upgrade_perk, (user,))
+        log(
+            user,
+            f"Perk upgrade in progress. Time remaining: {datetime.timedelta(seconds=training_time)}",
+        )
+        return False
+    elif training_time is False:
+        user.s.enter(600, 1, upgrade_perk, (user,))
+        return False
+
     perkurl = {"str": 1, "edu": 2, "end": 3}
     currencyurl = {"money": 1, "gold": 2}
 
@@ -39,7 +54,7 @@ def upgrade_perk(user):
     edutime = edutime / (4 if edu < 50 else (2 if edu < 100 else 1))
     endtime = endtime / (4 if end < 50 else (2 if end < 100 else 1))
 
-    def isgoldperk(perk):
+    def isgoldperk(perk, time):
         goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
         currency = "gold"
         conditions = [
@@ -53,11 +68,11 @@ def upgrade_perk(user):
             if condition:
                 currency = "money"
                 break
-        return currency
+        return currency, (time if currency == "money" else time*0.075)
 
-    educurrency = isgoldperk("edu")
-    strcurrency = isgoldperk("str")
-    endcurrency = isgoldperk("end")
+    strcurrency, strtime = isgoldperk("str", strtime)
+    educurrency, edutime = isgoldperk("edu", edutime)
+    endcurrency, endtime = isgoldperk("end", endtime)
 
     if educurrency == "gold":
         edutime *= 0.075
@@ -66,7 +81,9 @@ def upgrade_perk(user):
     if endcurrency == "gold":
         endtime *= 0.075
 
-    if (edutime <= strtime) and (edutime <= endtime):
+    if edu < 100:
+        perk, currency = "edu", educurrency
+    elif (edutime <= strtime) and (edutime <= endtime):
         perk, currency = "edu", educurrency
     elif strtime <= endtime:
         perk, currency = "str", strcurrency
@@ -84,4 +101,5 @@ def upgrade_perk(user):
         return True
     else:
         log(user, f"Failed to upgrade {perk} with {currency}")
+        user.s.enter(600, 1, upgrade_perk, (user,))
         return False
