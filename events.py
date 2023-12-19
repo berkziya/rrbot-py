@@ -1,9 +1,8 @@
 import datetime
 
-from actions.regions import build_military_academy
-from actions.state import explore_resource
+from actions.states import explore_resource
 from actions.storage import produce_energy
-from butler import error, wait_until_internet_is_back
+from butler import wait_until_internet_is_back
 from misc.logger import log
 
 
@@ -37,16 +36,6 @@ def upcoming_events(user):
             )
     else:
         log(user, "No upcoming events.", False)
-
-
-def militaryAcademy(user):
-    try:
-        build_military_academy(user)
-        log(user, "Built military academy")
-        return True
-    except Exception as e:
-        error(user, e, "Error building military academy")
-        user.s.enter(3600, 1, militaryAcademy, (user,))
 
 
 def hourly_state_gold_refill(user):

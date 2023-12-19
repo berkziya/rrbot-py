@@ -68,7 +68,7 @@ def upgrade_perk(user):
             if condition:
                 currency = "money"
                 break
-        return currency, (time if currency == "money" else time*0.075)
+        return currency, (time if currency == "money" else time * 0.075)
 
     strcurrency, strtime = isgoldperk("str", strtime)
     educurrency, edutime = isgoldperk("edu", edutime)

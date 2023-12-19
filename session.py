@@ -1,20 +1,22 @@
 import schedule
 
 import events
+from actions.market import resources_to_money
 from actions.perks import upgrade_perk
 from actions.regions import (
-    get_autonomy_info,
-    get_region_info,
-    get_state_info,
+    build_military_academy,
     work_state_department,
 )
-from actions.status import get_player_info, set_money
+from actions.status import set_money
 from actions.wars import attack
 from actions.work import auto_work_factory
-from actions.market import resources_to_money
 from butler import reset_browser
 from misc.logger import alert, log
 from misc.utils import numba
+from models.autonomy import get_autonomy_info
+from models.player import get_player_info
+from models.region import get_region_info
+from models.state import get_state_info
 
 
 def session(user):
@@ -22,7 +24,7 @@ def session(user):
 
     eventsToBeDone = [
         {"desc": "upgrade perks", "event": upgrade_perk},
-        {"desc": "build military academy", "event": events.militaryAcademy},
+        {"desc": "build military academy", "event": build_military_academy},
         {"desc": "energy drink refill", "event": events.energy_drink_refill},
         {"desc": "attack training", "event": attack},
         {

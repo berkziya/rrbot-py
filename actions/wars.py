@@ -4,7 +4,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from actions.status import get_player_info
+from models.player import get_player_info
 from butler import (
     ajax,
     error,

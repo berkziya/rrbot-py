@@ -4,7 +4,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from butler import ajax, error, get_page, return_to_the_mainpage
-from misc.logger import alert, log
+from misc.logger import alert
 from misc.utils import dotless
 from models import get_factory, get_region
 
@@ -58,15 +58,15 @@ def resign_factory(user):
     )
 
 
-def assign_factory(user, factory):
-    if not factory:
+def assign_factory(user, id):
+    if not id:
         return alert(user, "No factory set")
     resign_factory(user)
     time.sleep(2)
     return ajax(
         user,
         "/factory/assign",
-        f"factory: {factory}",
+        f"factory: {id}",
         "Error assigning factory",
         relad_after=True,
     )
@@ -78,8 +78,7 @@ def cancel_auto_work(user):
     )
 
 
-def auto_work_factory(user, id=None):
-    log(user, "Auto working factory")
+def auto_work_factory(user, id):
     try:
         # if not id:
         #     factory = get_best_factory(user)
@@ -92,6 +91,9 @@ def auto_work_factory(user, id=None):
         # assign_factory(user, factory.id)
         # time.sleep(3)
         # log(user, f"Auto working factory: {factory.id}, type: {RESOURCES[factory.type]}")
+        # factory = get_factory_info(user, id)
+        # if factory.region.id != user.player.region.id:
+        #     return False
         cancel_auto_work(user)
         time.sleep(3)
         return ajax(
@@ -122,25 +124,26 @@ def get_best_factory(user, resource="gold", fix_wage=False):
         return error(user, e, "Error getting best factory")
 
 
-def get_factory_info(user, id):
+def get_factory_info(user, id, force=False):
     try:
-        get_page(user, f"factory/index/{id}")
         factory = get_factory(id)
+        if factory.last_accessed > time.time() - 3600 and not force:
+            return factory
+        get_page(user, f"factory/index/{id}")
         data = user.driver.find_elements(
             By.CSS_SELECTOR,
-            "body > div.minwidth > div > div.float_left.margin_left_20 > div",
+            "div.float_left.margin_left_20 > div",
         )
-        for div in data:
-            if "change_paper_about_target" in div.get_attribute("class"):
-                factory.set_level(
-                    int(div.find_element(By.CSS_SELECTOR, "apn").text.split(" ")[-1])
-                )
-                factory.set_type(
-                    div.find_element(By.CSS_SELECTOR, "apn").text.split(" ")[0].lower()
-                )
-
+        if "change_paper_about_target" in data[0].get_attribute("class"):
+            factory.set_level(
+                int(data[0].find_element(By.CSS_SELECTOR, "apn").text.split(" ")[-1])
+            )
+            factory.set_type(
+                data[0].find_element(By.CSS_SELECTOR, "apn").text.split(" ")[0].lower()
+            )
+        for div in data[1:]:
             if "Factory region:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                factory.set_location(
+                factory.set_region(
                     get_region(
                         div.find_element(
                             By.CSS_SELECTOR, "div:nth-child(2) > div:nth-child(1)"
@@ -149,7 +152,7 @@ def get_factory_info(user, id):
                         .split("/")[-1]
                     )
                 )
-            if "Owner:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+            elif "Owner:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 factory.set_owner(
                     div.find_element(
                         By.CSS_SELECTOR, "div:nth-child(2) > div:nth-child(1)"
@@ -157,7 +160,7 @@ def get_factory_info(user, id):
                     .get_attribute("action")
                     .split("/")[-1]
                 )
-            if "Wage:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+            elif "Wage:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 wage = div.find_element(
                     By.CSS_SELECTOR, "div:nth-child(2) > div:nth-child(1)"
                 ).text
@@ -167,7 +170,7 @@ def get_factory_info(user, id):
                 else:
                     wage = dotless(wage)
                 factory.set_wage(wage)
-            if "Potential wage" in div.find_element(By.CSS_SELECTOR, "h2").text:
+            elif "Potential wage" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 factory.set_potential_wage(
                     dotless(
                         div.find_element(
@@ -175,6 +178,7 @@ def get_factory_info(user, id):
                         ).text.split(" ")[0]
                     )
                 )
+        factory.set_last_accessed()
         return_to_the_mainpage(user)
         return factory
     except NoSuchElementException:
