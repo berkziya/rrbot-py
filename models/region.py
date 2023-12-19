@@ -1,12 +1,12 @@
 import time
-from models.autonomy import get_autonomy_info
-from butler import error, get_page, return_to_the_mainpage
-from misc.utils import dotless
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
+from butler import error, get_page, return_to_the_mainpage
+from misc.utils import dotless
 from models import get_autonomy, get_factory, get_player, get_region, get_state
+from models.autonomy import get_autonomy_info
 
 
 class Region:

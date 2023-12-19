@@ -3,7 +3,6 @@ import json
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from models.player import get_player_info
 from butler import (
     ajax,
     error,
@@ -15,6 +14,7 @@ from butler import (
 )
 from misc.logger import log
 from models import get_player
+from models.player import get_player_info
 from models.region import get_region_info
 
 

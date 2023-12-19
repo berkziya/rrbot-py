@@ -1,10 +1,10 @@
 import time
-from butler import error, get_page, return_to_the_mainpage
-from misc.utils import dotless
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
+from butler import error, get_page, return_to_the_mainpage
+from misc.utils import dotless
 from models import get_autonomy, get_player, get_region, get_state
 
 
@@ -157,6 +157,7 @@ def get_autonomy_info(user, id, force=False):
         return autonomy
     except NoSuchElementException:
         from models.region import get_region_info
+
         return get_region_info(user, id)
     except Exception as e:
         return error(user, e, "Error getting autonomy info")

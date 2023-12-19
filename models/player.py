@@ -1,11 +1,11 @@
-import time
-from butler import error, get_page, return_to_the_mainpage
-from misc.utils import dotless
 import re
+import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
+from butler import error, get_page, return_to_the_mainpage
+from misc.utils import dotless
 from models import get_autonomy, get_party, get_player, get_region, get_state
 
 

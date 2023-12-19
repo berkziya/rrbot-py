@@ -3,10 +3,10 @@ from functools import lru_cache
 
 from selenium.webdriver.common.by import By
 
-from models.state import get_state_info
 from butler import ajax, error, get_page, return_to_the_mainpage
 from misc.logger import log
 from misc.utils import sum_costs
+from models.state import get_state_info
 
 
 def remove_self_law(user):

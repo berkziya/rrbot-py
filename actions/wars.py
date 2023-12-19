@@ -4,7 +4,6 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from models.player import get_player_info
 from butler import (
     ajax,
     error,
@@ -17,6 +16,7 @@ from butler import (
 from misc.logger import log
 from misc.utils import dotless
 from models import get_region
+from models.player import get_player_info
 
 
 def get_war_info(user, id):

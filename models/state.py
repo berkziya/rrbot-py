@@ -1,11 +1,11 @@
 import time
 
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+
 from butler import error, get_page, return_to_the_mainpage
 from misc.utils import dotless
 from models import get_state
-
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
 
 
 class State:

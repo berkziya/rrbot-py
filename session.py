@@ -3,10 +3,7 @@ import schedule
 import events
 from actions.market import resources_to_money
 from actions.perks import upgrade_perk
-from actions.regions import (
-    build_military_academy,
-    work_state_department,
-)
+from actions.regions import build_military_academy, work_state_department
 from actions.status import set_money
 from actions.wars import attack
 from actions.work import auto_work_factory
