@@ -11,8 +11,7 @@ DELAY = 1.5
 
 
 def wait_some_time(user):
-    if time.time() - user.last_request_time < DELAY:
-        time.sleep(DELAY)
+    time.sleep(abs(time.time() - user.last_request_time + DELAY))
     user.set_last_request_time()
 
 
@@ -67,12 +66,10 @@ def internet_on(user):
 
 
 def wait_until_internet_is_back(user):
-    count = 1
     while internet_on(user) is False:
         alert(user, "Waiting for internet connection to be restored", False)
-        time.sleep(min(count * 60, 600))
-        count += 2
-    if count > 1:
+        time.sleep(60)
+    else:
         alert(user, "Internet connection restored", False)
         reload(user)
     return True
