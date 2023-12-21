@@ -11,7 +11,7 @@ DELAY = 1.5
 
 
 def wait_some_time(user):
-    time.sleep(abs(time.time() - user.last_request_time + DELAY))
+    time.sleep(min(time.time() - (user.last_request_time + DELAY), DELAY))
     user.set_last_request_time()
 
 
