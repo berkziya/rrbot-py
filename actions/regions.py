@@ -98,7 +98,8 @@ def get_citizens(user, id, is_state=False, get_residents=False):
                         link = f"listed/residency/{id}"
                     case False:
                         link = f"listed/region/{id}"
-        get_page(user, link)
+        if not get_page(user, link):
+            return False
         citizens = []
         data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in data:

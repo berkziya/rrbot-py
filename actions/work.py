@@ -24,7 +24,8 @@ RESOURCES = {
 
 def get_factories(user, id, resource="gold"):
     try:
-        get_page(user, f"factory/search/{id}/0/{RESOURCES[resource]}")
+        if not get_page(user, f"factory/search/{id}/0/{RESOURCES[resource]}"):
+            return False
         try:
             if user.driver.find_element(By.XPATH, "//*[contains(text(), 'Not found')]"):
                 return []
@@ -129,7 +130,8 @@ def get_factory_info(user, id, force=False):
         factory = get_factory(id)
         if factory.last_accessed > time.time() - 3600 and not force:
             return factory
-        get_page(user, f"factory/index/{id}")
+        if not get_page(user, f"factory/index/{id}"):
+            return False
         data = user.driver.find_elements(
             By.CSS_SELECTOR,
             "div.float_left.margin_left_20 > div",

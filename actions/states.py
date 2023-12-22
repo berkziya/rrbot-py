@@ -16,7 +16,8 @@ def remove_self_law(user):
 
 
 def accept_law(user, text):
-    get_page(user, "parliament")
+    if not get_page(user, "parliament"):
+        return False
     time.sleep(1)
     try:
         parliament_div = user.driver.find_element(
@@ -94,7 +95,8 @@ def get_indexes(user):
         }
         for link in indexes:
             index = 10
-            get_page(user, f"listed/country/-2/0/{link}")
+            if not get_page(user, f"listed/country/-2/0/{link}"):
+                return False
             data = user.driver.find_elements(
                 By.CSS_SELECTOR, "td.list_level.tip.yellow"
             )

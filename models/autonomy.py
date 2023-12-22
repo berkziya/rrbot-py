@@ -74,7 +74,8 @@ def get_autonomy_info(user, id, force=False):
             and not force
         ):
             return autonomy
-        get_page(user, f"map/autonomy_details/{id}")
+        if not get_page(user, f"map/autonomy_details/{id}"):
+            return False
         autonomy.set_state(
             get_state(
                 user.driver.find_element(By.CSS_SELECTOR, "div.margin > h1 > span")

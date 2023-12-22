@@ -133,7 +133,8 @@ def get_player_info(user, id=None, force=False):
     ):
         return player
     try:
-        get_page(user, f"slide/profile/{id}")
+        if not get_page(user, f"slide/profile/{id}"):
+            return False
         level_text = user.driver.find_element(
             By.CSS_SELECTOR, "div.oil > div:nth-child(2)"
         ).text

@@ -29,7 +29,8 @@ def get_war_info(user, id):
             typez = "Revolution"
         else:
             typez = "War"
-        get_page(user, f"war/details/{id}")
+        if not get_page(user, f"war/details/{id}"):
+            return False
         attacker = get_region(0)
         if typez == "War":
             attacker = get_region(
@@ -167,7 +168,8 @@ def get_wars(user, id=None):
         return False
     wars = []
     try:
-        get_page(user, f"listed/statewars/{id}")
+        if not get_page(user, f"listed/statewars/{id}"):
+            return False
         tbody = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in tbody:
             war_id = int(

@@ -112,7 +112,8 @@ def get_state_info(user, id, force=False):
             and not force
         ):
             return state
-        get_page(user, f"map/state_details/{id}")
+        if not get_page(user, f"map/state_details/{id}"):
+            return False
         state.set_budget(
             "money",
             dotless(

@@ -68,7 +68,8 @@ market_ids = {
 
 def get_market_price(user, resource):
     try:
-        get_page(user, f"storage/listed/{market_ids[resource]}")
+        if not get_page(user, f"storage/listed/{market_ids[resource]}"):
+            return False
         prices = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for price in prices:
             if (

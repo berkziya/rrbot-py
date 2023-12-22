@@ -7,26 +7,40 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from misc.logger import alert
 
-DELAY = 1.5
+DELAY = 2
 
 
 def wait_some_time(user):
-    time.sleep(min(time.time() - (user.last_request_time + DELAY), DELAY))
+    current_time = time.time()
+    time_since_last_request = current_time - user.last_request_time
+
+    if time_since_last_request < DELAY:
+        time_to_wait = DELAY - time_since_last_request
+        time.sleep(time_to_wait)
     user.set_last_request_time()
 
 
 def wait_for_page_load(driver, timeout=30):
-    WebDriverWait(driver, timeout).until(
-        lambda driver: driver.execute_script("return document.readyState") == "complete"
-    )
+    try:
+        WebDriverWait(driver, timeout).until(
+            lambda driver: driver.execute_script("return document.readyState")
+            == "complete"
+        )
+        return True
+    except Exception as e:
+        return error(driver, e, "Error waiting for page load")
 
 
 def get_page(user, url):
-    wait_until_internet_is_back(user)
-    user.driver.switch_to.window(user.data_window)
-    wait_some_time(user)
-    user.driver.get(f"https://rivalregions.com/{url}")
-    wait_for_page_load(user.driver)
+    try:
+        wait_until_internet_is_back(user)
+        user.driver.switch_to.window(user.data_window)
+        wait_some_time(user)
+        user.driver.get(f"https://rivalregions.com/{url}")
+        wait_for_page_load(user.driver)
+        return True
+    except Exception as e:
+        return error(user, e, f"Error getting page {url}")
 
 
 def return_to_the_mainpage(user):
@@ -66,12 +80,13 @@ def internet_on(user):
 
 
 def wait_until_internet_is_back(user):
+    count = 0
     while internet_on(user) is False:
         alert(user, "Waiting for internet connection to be restored", False)
         time.sleep(60)
-    else:
+        count += 1
+    if count > 0:
         alert(user, "Internet connection restored", False)
-        reload(user)
     return True
 
 

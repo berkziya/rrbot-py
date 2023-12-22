@@ -185,7 +185,8 @@ def get_region_info(user, id, force=False):
             and not force
         ):
             return region
-        get_page(user, f"map/details/{id}")
+        if not get_page(user, f"map/details/{id}"):
+            return False
         upper = (
             user.driver.find_element(By.CSS_SELECTOR, "div.margin > h1 > span")
             .get_attribute("action")
