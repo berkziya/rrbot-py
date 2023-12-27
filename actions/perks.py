@@ -24,6 +24,7 @@ def check_training_status(user):
 
 def upgrade_perk(user):
     if not (set_perks(user) and set_money(user, energy=True)):
+        user.s.enter(600, 1, upgrade_perk, (user,))
         return False
 
     training_time = check_training_status(user)
@@ -56,10 +57,13 @@ def upgrade_perk(user):
 
     def isgoldperk(perk, time):
         goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
-        currency = "gold"
+        worth = (1e4 + time) / goldprice
+        currency = "money"
+        if worth > 205:
+            currency = "gold"
         conditions = [
             perk not in user.perkoptions["goldperks"],
-            (10 - user.perkoptions["goldweight"]) > (user.player.perks[perk] + 6) % 10,
+            # (10 - user.perkoptions["goldweight"]) > (user.player.perks[perk] + 6) % 10,
             user.player.perks[perk] < user.perkoptions["minlvl4gold"],
             user.player.money["energy"] // 10 + user.player.money["gold"] < 10000,
             goldprice > user.player.money["gold"],

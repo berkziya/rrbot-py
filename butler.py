@@ -81,7 +81,7 @@ def internet_on(user):
 
 def wait_until_internet_is_back(user):
     count = 0
-    while internet_on(user) is False:
+    while not internet_on(user):
         alert(user, "Waiting for internet connection to be restored", False)
         time.sleep(60)
         count += 1

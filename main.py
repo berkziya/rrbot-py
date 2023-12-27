@@ -75,6 +75,8 @@ def create_user_from_config(config, general):
 
 
 def main():
+    os.environ["WDM_LOCAL"] = "1"
+
     if not os.path.exists("config.ini"):
         with open("config.ini", "w") as f:
             f.write(DEFAULT_CONFIG)
@@ -86,6 +88,8 @@ def main():
     # Read config
     config = configparser.ConfigParser()
     config.read("config.ini")
+    if config["general"].get("token", fallback=None):
+        os.environ["GH_TOKEN"] = config["general"]["token"]
 
     # Create users from config
     for section in config.sections():

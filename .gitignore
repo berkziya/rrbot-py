@@ -2,6 +2,7 @@ config.ini
 geckodriver.log
 log.txt
 database.db
+.wdm
 
 ### macOS ###
 # General

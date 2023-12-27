@@ -1,4 +1,5 @@
 import schedule
+import pytz
 
 import events
 from actions.market import resources_to_money
@@ -112,6 +113,9 @@ def session(user):
 
     events.initiate_all_events(user, eventsToBeDone)
     schedule.every(3).to(5).hours.do(events.initiate_all_events, user, eventsToBeDone)
+    schedule.every().day.at("18:01", pytz.utc.zone).do(
+        events.initiate_all_events, user, eventsToBeDone
+    )
     schedule.every(4).to(6).hours.do(reset_browser, user)
     schedule.every(5).to(7).hours.do(user.save_database)
 

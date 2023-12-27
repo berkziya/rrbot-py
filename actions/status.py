@@ -37,7 +37,7 @@ def set_money(user, energy=False):
                 By.CSS_SELECTOR, "div.item_menu:nth-child(6)"
             )
             user.driver.execute_script("arguments[0].click();", storage_button)
-            time.sleep(2)
+            time.sleep(3)
             energy = user.driver.find_element(
                 By.CSS_SELECTOR,
                 "div.storage_item:nth-child(11) > .storage_number > .storage_number_change",
