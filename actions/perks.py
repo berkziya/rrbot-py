@@ -47,20 +47,18 @@ def upgrade_perk(user):
     edu = user.player.perks["edu"]
     end = user.player.perks["end"]
 
-    strtime = (str + 1) ** 2 / 2
-    edutime = (edu + 1) ** 2 * (1 - user.perkoptions["eduweight"] / 100)
-    endtime = (end + 1) ** 2
+    def get_time(perk):
+        time = (perk + 1) ** 2
+        time = time / (4 if perk < 50 else (2 if perk < 100 else 1))
+        return time
 
-    strtime = strtime / (4 if str < 50 else (2 if str < 100 else 1))
-    edutime = edutime / (4 if edu < 50 else (2 if edu < 100 else 1))
-    endtime = endtime / (4 if end < 50 else (2 if end < 100 else 1))
-
-    def isgoldperk(perk, time):
+    def get_currency(perk, time):
         goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
         worth = (1e4 + time) / goldprice
         currency = "money"
-        if worth > 205:
+        if worth > 210:
             currency = "gold"
+
         conditions = [
             perk not in user.perkoptions["goldperks"],
             # (10 - user.perkoptions["goldweight"]) > (user.player.perks[perk] + 6) % 10,
@@ -72,21 +70,27 @@ def upgrade_perk(user):
             if condition:
                 currency = "money"
                 break
-        return currency, (time if currency == "money" else time * 0.075)
+        return currency
 
-    strcurrency, strtime = isgoldperk("str", strtime)
-    educurrency, edutime = isgoldperk("edu", edutime)
-    endcurrency, endtime = isgoldperk("end", endtime)
+    strcurrency, strtime = 0, 0
+    endcurrency, endtime = 0, 0
+    educurrency, edutime = 0, 0
 
-    if educurrency == "gold":
-        edutime *= 0.075
-    if strcurrency == "gold":
-        strtime *= 0.075
-    if endcurrency == "gold":
-        endtime *= 0.075
+    for i in range(9, 0, -1):
+        strtime_i = get_time(str + i) / 2
+        endtime_i = get_time(end + i) * (1 - user.perkoptions["eduweight"] / 100)
+        edutime_i = get_time(edu + i)
 
-    if edu < 100:
-        perk, currency = "edu", educurrency
+        strcurrency = get_currency("str", strtime)
+        endcurrency = get_currency("end", endtime)
+        educurrency = get_currency("edu", edutime)
+
+        strtime += strtime_i * (1 if strcurrency == "money" else 0.075)
+        endtime += endtime_i * (1 if endcurrency == "money" else 0.075)
+        edutime += edutime_i * (1 if educurrency == "money" else 0.075)
+
+    if end < 100:
+        perk, currency = "end", endcurrency
     elif (edutime <= strtime) and (edutime <= endtime):
         perk, currency = "edu", educurrency
     elif strtime <= endtime:

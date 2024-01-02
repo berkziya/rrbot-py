@@ -22,18 +22,18 @@ def initiate_database(user, name):
         cursor = conn.cursor()
         # Create tables if they don't exist
         for table in tables:
-            create_table(user, table)
+            create_table(conn, cursor, table)
         return conn, cursor
     except Exception as e:
         error(user, f"Database initiation failed: {e}")
         return None, None
 
 
-def create_table(user, table):
-    user.cursor.execute(
+def create_table(conn, cursor, table):
+    cursor.execute(
         f"CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY, data BLOB, last_accessed TIMESTAMP)"
     )
-    user.conn.commit()
+    conn.commit()
 
 
 def save(user):
