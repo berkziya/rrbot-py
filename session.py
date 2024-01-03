@@ -1,5 +1,5 @@
-import schedule
 import pytz
+import schedule
 
 import events
 from actions.market import resources_to_money

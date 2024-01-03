@@ -8,7 +8,7 @@ class Party:
         self.id = id
         self.last_accessed = 0
         self.leader = None
-        self.location = None
+        self.region = None
         self.secretaries = []
         self.members = []
 
@@ -18,8 +18,8 @@ class Party:
     def set_leader(self, value):
         self.leader = value
 
-    def set_location(self, value):
-        self.location = value
+    def set_region(self, value):
+        self.region = value
 
     def set_secretaries(self, value):
         self.secretaries = value
@@ -35,7 +35,7 @@ class Party:
             "id": self.id,
             "last_accessed": self.last_accessed,
             "leader": self.leader.id if self.leader else None,
-            "location": self.location.id if self.location else None,
+            "region": self.region.id if self.region else None,
             "secretaries": [player.id for player in self.secretaries],
             "members": [player.id for player in self.members],
         }
@@ -44,6 +44,6 @@ class Party:
         self.id = state["id"]
         self.last_accessed = state["last_accessed"]
         self.leader = get_player(state["leader"]) if state["leader"] else None
-        self.location = get_region(state["location"]) if state["location"] else None
+        self.region = get_region(state["region"]) if state["region"] else None
         self.secretaries = [get_player(player) for player in state["secretaries"]]
         self.members = [get_player(player) for player in state["members"]]

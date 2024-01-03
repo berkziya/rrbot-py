@@ -22,18 +22,23 @@ def initiate_database(user, name):
         cursor = conn.cursor()
         # Create tables if they don't exist
         for table in tables:
-            create_table(conn, cursor, table)
+            create_table(user, conn, cursor, table)
         return conn, cursor
     except Exception as e:
         error(user, f"Database initiation failed: {e}")
         return None, None
 
 
-def create_table(conn, cursor, table):
-    cursor.execute(
-        f"CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY, data BLOB, last_accessed TIMESTAMP)"
-    )
-    conn.commit()
+def create_table(user, conn, cursor, table):
+    try:
+        cursor.execute(
+            f"CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY, data BLOB, last_accessed TIMESTAMP)"
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        error(user, f"Table creation failed: {e}")
+        return False
 
 
 def save(user):
@@ -53,6 +58,7 @@ def save(user):
                         (id, pickle.dumps(item), item.last_accessed),
                     )
         user.conn.commit()
+        return True
     except Exception as e:
         error(user, f"Database save failed: {e}")
         return False
@@ -65,26 +71,27 @@ def load(user):
             for row in user.cursor.fetchall():
                 if table == "players":
                     player = models.get_player(row[0])
-                    player.__dict__ = pickle.loads(row[1]).__dict__
+                    player = pickle.loads(row[1])
                 elif table == "states":
                     state = models.get_state(row[0])
-                    state.__dict__ = pickle.loads(row[1]).__dict__
+                    state = pickle.loads(row[1])
                 elif table == "autonomies":
                     autonomy = models.get_autonomy(row[0])
-                    autonomy.__dict__ = pickle.loads(row[1]).__dict__
+                    autonomy = pickle.loads(row[1])
                 elif table == "regions":
                     region = models.get_region(row[0])
-                    region.__dict__ = pickle.loads(row[1]).__dict__
+                    region = pickle.loads(row[1])
                 elif table == "parties":
                     party = models.get_party(row[0])
-                    party.__dict__ = pickle.loads(row[1]).__dict__
+                    party = pickle.loads(row[1])
                 elif table == "factories":
                     factory = models.get_factory(row[0])
-                    factory.__dict__ = pickle.loads(row[1]).__dict__
+                    factory = pickle.loads(row[1])
                 elif table == "blocs":
                     bloc = models.get_bloc(row[0])
-                    bloc.__dict__ = pickle.loads(row[1]).__dict__
+                    bloc = pickle.loads(row[1])
         user.conn.commit()
+        return True
     except Exception as e:
         error(user, f"Database load failed: {e}")
         return False
