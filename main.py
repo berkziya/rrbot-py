@@ -2,7 +2,6 @@ import atexit
 import concurrent.futures
 import configparser
 import os
-import platform
 import subprocess
 import sys
 
@@ -12,6 +11,7 @@ from user import Client
 
 DEFAULT_CONFIG = """[general]
 browser = firefox
+binary = C:\\Program Files\\Mozilla Firefox\\firefox.exe
 database = database.db
 
 [user1]
@@ -38,11 +38,6 @@ minlvl4gold = 30
 users = []
 
 
-my_os = platform.system().lower()
-futures = []
-caffeinate = None
-
-
 def create_user_from_config(config, general):
     headless = general.getboolean("headless", fallback=True)
     binary = general.get("binary", fallback=None)
@@ -56,7 +51,7 @@ def create_user_from_config(config, general):
     user.set_driveroptions("binary_location", binary)
     user.set_driveroptions("headless", is_headless)
 
-    goldperks = str.lower(config.get("goldperks", fallback="")).strip()
+    goldperks = str.lower(config.get("goldperks", fallback=""))
     eduweight = config.getint("eduweight", fallback=0)
     goldweight = config.getint("goldweight", fallback=10)
     minlvl4gold = config.getint("minlvl4gold", fallback=0)
@@ -75,6 +70,7 @@ def create_user_from_config(config, general):
 
 
 def main():
+    global users
     os.environ["WDM_LOCAL"] = "1"
 
     if not os.path.exists("config.ini"):
@@ -113,11 +109,11 @@ def main():
         sys.exit()
 
     # Start session
-    my_os = platform.system().lower()
-    futures = []
     caffeinate = None
-    if my_os != "windows":
+    try:
         caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i"])
+    except FileNotFoundError:
+        print("caffeinate not found. Continuing without it.")
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(session, user) for user in users]
@@ -129,11 +125,12 @@ def main():
             else:
                 print(f"Result: {result}")
 
-    if caffeinate and my_os != "windows":
+    if caffeinate:
         caffeinate.terminate()
 
 
 def cleanup():
+    global users
     for user in users:
         if user:
             del user
