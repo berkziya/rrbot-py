@@ -1,3 +1,5 @@
+import json
+import os
 import sched
 import time
 
@@ -95,27 +97,45 @@ class Client:
             return False
 
         try:
-            self.wait = WebDriverWait(self.driver, 20)
+            self.wait = WebDriverWait(self.driver, 10)
             self.driver.get("https://rivalregions.com")
 
-            email_input = self.wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "input[name='mail']"))
-            )
-            email_input.send_keys(self.email)
-            log(self, "Logging in...")
+            if os.path.exists(f"{self.name}_cookies.json"):
+                log(self, "Loading cookies...")
+                cookies = json.load(open(f"{self.name}_cookies.json", "r"))
+                for cookie in cookies:
+                    self.driver.add_cookie(cookie)
+                time.sleep(1)
+            try:
+                self.driver.get("https://rivalregions.com")
+                time.sleep(1)
+                self.wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
+                )
+            except Exception as e:
+                error(self, e, "Error loading cookies")
+                email_input = self.wait.until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, "input[name='mail']")
+                    )
+                )
+                email_input.send_keys(self.email)
+                log(self, "Logging in...")
 
-            password_input = self.driver.find_element(
-                By.CSS_SELECTOR, "input[name='p']"
-            )
-            password_input.send_keys(self.password)
+                password_input = self.driver.find_element(
+                    By.CSS_SELECTOR, "input[name='p']"
+                )
+                password_input.send_keys(self.password)
 
-            submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[name='s']")
-            self.driver.execute_script("arguments[0].click();", submit_button)
+                submit_button = self.driver.find_element(
+                    By.CSS_SELECTOR, "input[name='s']"
+                )
+                self.driver.execute_script("arguments[0].click();", submit_button)
 
-            self.wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
-            )
-            time.sleep(1)
+                self.wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
+                )
+                time.sleep(1)
             self.main_window = self.driver.current_window_handle
             self.driver.execute_script("window.open('');")
             self.data_window = self.driver.window_handles[1]
@@ -133,6 +153,7 @@ class Client:
         if self.boot_browser():
             self.id = self.driver.execute_script("return id;")
             self.player = get_player(self.id)
+            json.dump(self.driver.get_cookies(), open(f"{self.name}_cookies.json", "w"))
             return True
 
     def __del__(self):

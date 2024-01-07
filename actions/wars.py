@@ -14,56 +14,9 @@ from butler import (
     wait_until_internet_is_back,
 )
 from misc.logger import log
-from misc.utils import dotless
-from models import get_region
+from models import get_war
 from models.player import get_player_info
-
-
-def get_war_info(user, id):
-    result = {}
-    try:
-        typez = user.driver.find_element(
-            By.CSS_SELECTOR, "#war_w_ata > div.imp > span.no_pointer"
-        ).text
-        if "Revolution powers" in typez or "Coup powers" in typez:
-            typez = "Revolution"
-        else:
-            typez = "War"
-        if not get_page(user, f"war/details/{id}"):
-            return False
-        attacker = get_region(0)
-        if typez == "War":
-            attacker = get_region(
-                user.driver.find_element(
-                    By.CSS_SELECTOR, "#war_w_ata_s > div.imp > span:nth-child(3)"
-                )
-                .get_attribute("action")
-                .split("/")[-1]
-            )
-        defender = get_region(
-            user.driver.find_element(
-                By.CSS_SELECTOR, "#war_w_def_s > span:nth-child(3)"
-            )
-            .get_attribute("action")
-            .split("/")[-1]
-        )
-        result[attacker] = dotless(
-            user.driver.find_element(
-                By.CSS_SELECTOR,
-                "#war_w_ata_s > div.imp > span:nth-child(5) > span"
-                if typez == "War"
-                else "#war_w_ata > div.imp > span.hov2 > span",
-            ).text
-        )
-        result[defender] = dotless(
-            user.driver.find_element(
-                By.CSS_SELECTOR, "#war_w_def_s > span:nth-child(5) > span"
-            ).text
-        )
-        return_to_the_mainpage(user)
-        return result
-    except Exception as e:
-        return error(user, e, "Error getting war info")
+from models.war import get_war_info
 
 
 def cancel_autoattack(user):
@@ -76,20 +29,28 @@ def cancel_autoattack(user):
     )
 
 
-def attack(user, id=None, side=None, max=False, drones=False):
+def attack(user, id=None, side=0, max=False, drones=False):
     wait_until_internet_is_back(user)
-    warname = id
     stringified_troops = ""
 
     if not get_player_info(user):
+        error(user, "Error getting player info")
         return False
     if not id:
-        id = get_training_link(user)
+        war = get_training_war(user)
+        if not get_war_info(user, war.id):
+            log(user, f"No war info found for {war.id}")
+            return False
         side = 0
         warname = "training war"
-        if not id:
-            log(user, "No training link found")
+        if war.ending_time:
+            user.s.enterabs(war.ending_time + 60, 1, attack, (user,))
+    else:
+        if not get_war_info(user, id):
+            log(user, "No war info found")
             return False
+        war = get_war(id)
+        warname = war.id
 
     # "free_ene": "1", hourly
     # "c": "3f116409cf4c01f2c853d9a17591b061",
@@ -149,7 +110,7 @@ def attack(user, id=None, side=None, max=False, drones=False):
             type: 'POST',
         });"""
         wait_some_time(user)
-        user.driver.execute_script(js_ajax, hourly, n_json, side, id)
+        user.driver.execute_script(js_ajax, hourly, n_json, side, war.id)
         log(
             user,
             f"{'Defending' if side else 'Attacking'} {warname} {'hourly' if hourly else 'at max'} with {stringified_troops.removesuffix(', ')}",
@@ -161,6 +122,7 @@ def attack(user, id=None, side=None, max=False, drones=False):
 
 
 def get_wars(user, id=None):
+    wait_until_internet_is_back(user)
     if not id:
         id = user.player.region.state.id
     if not id:
@@ -185,7 +147,7 @@ def get_wars(user, id=None):
         return error(user, e, "Error getting wars")
 
 
-def get_training_link(user):
+def get_training_war(user):
     wait_until_internet_is_back(user)
     try:
         element = user.driver.find_element(
@@ -193,8 +155,8 @@ def get_training_link(user):
         )
         user.driver.execute_script("arguments[0].click();", element)
         time.sleep(2)
-        link = int(user.driver.current_url.split("/")[-1])
+        link = user.driver.current_url.split("/")[-1]
         reload(user)
-        return link
+        return get_war(link)
     except Exception as e:
         return error(user, e, "Error getting training link")

@@ -54,16 +54,16 @@ def upgrade_perk(user):
 
     def get_currency(perk, time):
         goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
-        worth = (1e4 + time) / goldprice
+        worth = (4e4 + time) / goldprice
         currency = "money"
-        if worth > 210:
+        if worth > 385:
             currency = "gold"
 
         conditions = [
             perk not in user.perkoptions["goldperks"],
             # (10 - user.perkoptions["goldweight"]) > (user.player.perks[perk] + 6) % 10,
             user.player.perks[perk] < user.perkoptions["minlvl4gold"],
-            user.player.money["energy"] // 10 + user.player.money["gold"] < 10000,
+            user.player.money["energy"] // 10 + user.player.money["gold"] < 20000,
             goldprice > user.player.money["gold"],
         ]
         for condition in conditions:

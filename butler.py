@@ -57,7 +57,7 @@ def reload(user):
         time.sleep(1)
         return True
     except Exception as e:
-        return error(user, e, "Error returning to mainpage")
+        return error(user, e, "Error reloading the mainpage")
 
 
 def delay_tasks(scheduler, delay):

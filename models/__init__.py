@@ -5,6 +5,7 @@ regions = {}
 parties = {}
 factories = {}
 blocs = {}
+wars = {}
 
 
 def get_player(id):
@@ -82,3 +83,14 @@ def get_bloc(id):
     else:
         blocs[id] = Bloc(id)
         return blocs[id]
+
+
+def get_war(id):
+    from .war import War
+
+    id = int(id)
+    if id in wars:
+        return wars[id]
+    else:
+        wars[id] = War(id)
+        return wars[id]

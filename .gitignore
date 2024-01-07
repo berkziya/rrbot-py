@@ -3,6 +3,7 @@ geckodriver.log
 log.txt
 database.db
 .wdm
+*_cookies.json
 
 ### macOS ###
 # General

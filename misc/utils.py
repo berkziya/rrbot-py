@@ -1,5 +1,6 @@
 import re
 from collections import defaultdict
+from datetime import datetime, timedelta
 
 
 def dotless(number):
@@ -46,3 +47,24 @@ def subtract_costs(cost1, cost2):
     for key, value in cost2.items():
         costs[key] -= value
     return {key: value for key, value in costs.items() if value > 0}
+
+
+def get_ending_timestamp(text):
+    match = re.search(r"ends ((\w+ \d+:\d+)|(\d+ \w+ \d+ \d+:\d+))", text)
+    if match:
+        date_time_str = match.group(1)
+        if "today" in date_time_str:
+            date_time_str = date_time_str.replace(
+                "today", datetime.now().strftime("%d %B %Y")
+            )
+        elif "tomorrow" in date_time_str:
+            date_time_str = date_time_str.replace(
+                "tomorrow", (datetime.now() + timedelta(days=1)).strftime("%d %B %Y")
+            )
+        for fmt in ("%d %B %Y %H:%M", "%d %m %Y %H:%M", "%d %B %H:%M"):
+            try:
+                dt = datetime.strptime(date_time_str, fmt)
+                return dt.timestamp()
+            except ValueError:
+                pass
+    return None
