@@ -98,7 +98,6 @@ def get_autonomy_info(user, id, force=False):
             elif "regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 regions = []
                 for region in div.find_elements(By.CSS_SELECTOR, "slide_profile_data"):
-                    print(region)
                     regions.append(
                         get_region(region.get_attribute("action").split("/")[-1])
                     )

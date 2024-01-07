@@ -32,7 +32,6 @@ def accept_law(user, text):
                 break
         else:
             # Handle case where no matching law was found
-            print("No matching law found")
             return_to_the_mainpage(user)
             return False
     except Exception as e:
