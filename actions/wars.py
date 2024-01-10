@@ -8,9 +8,9 @@ from butler import (
     ajax,
     error,
     get_page,
-    reload,
-    return_to_the_mainpage,
-    wait_some_time,
+    reload_mainpage,
+    return_to_mainwindow,
+    delay_before_actions,
     wait_until_internet_is_back,
 )
 from misc.logger import log
@@ -109,13 +109,13 @@ def attack(user, id=None, side=0, max=False, drones=False):
             data: { free_ene: hourly, c: c_html, n: n_json, aim: side, edit: link},
             type: 'POST',
         });"""
-        wait_some_time(user)
+        delay_before_actions(user)
         user.driver.execute_script(js_ajax, hourly, n_json, side, war.id)
         log(
             user,
             f"{'Defending' if side else 'Attacking'} {warname} {'hourly' if hourly else 'at max'} with {stringified_troops.removesuffix(', ')}",
         )
-        reload(user)
+        reload_mainpage(user)
         return True
     except Exception as e:
         return error(user, e, "Error attacking")
@@ -138,10 +138,10 @@ def get_wars(user, id=None):
                 tr.find_element(By.CSS_SELECTOR, "div[url]").get_attribute("url")
             )
             wars.append(war_id)
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return wars if wars else False
     except NoSuchElementException:
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting wars")
@@ -156,7 +156,7 @@ def get_training_war(user):
         user.driver.execute_script("arguments[0].click();", element)
         time.sleep(2)
         link = user.driver.current_url.split("/")[-1]
-        reload(user)
+        reload_mainpage(user)
         return get_war(link)
     except Exception as e:
         return error(user, e, "Error getting training link")

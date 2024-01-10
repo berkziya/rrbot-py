@@ -3,7 +3,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import ajax, error, get_page, return_to_the_mainpage
+from butler import ajax, error, get_page, return_to_mainwindow
 from misc.logger import alert
 from misc.utils import dotless
 from models import get_factory, get_region
@@ -47,7 +47,7 @@ def get_factories(user, id, resource="gold"):
             factory.set_wage(float(wage))
             factories.append(factory)
         get_region(id).set_factories(factories)
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return factories
     except Exception as e:
         return error(user, e, "Error getting factories")
@@ -181,10 +181,10 @@ def get_factory_info(user, id, force=False):
                     )
                 )
         factory.set_last_accessed()
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return factory
     except NoSuchElementException:
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting factory info")

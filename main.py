@@ -36,6 +36,7 @@ minlvl4gold = 30
 """
 
 users = []
+caffeinate = None
 
 
 def create_user_from_config(config, general):
@@ -69,25 +70,22 @@ def create_user_from_config(config, general):
     return user
 
 
-def main():
-    global users
-    os.environ["WDM_LOCAL"] = "1"
+def create_config_file():
+    with open("config.ini", "w") as f:
+        f.write(DEFAULT_CONFIG)
+    print("Created a config file. Please edit config.ini and run the program again.")
+    sys.exit()
 
-    if not os.path.exists("config.ini"):
-        with open("config.ini", "w") as f:
-            f.write(DEFAULT_CONFIG)
-        print(
-            "Created a config file. Please edit config.ini and run the program again."
-        )
-        sys.exit()
 
-    # Read config
+def read_config():
     config = configparser.ConfigParser()
     config.read("config.ini")
     if config["general"].get("token", fallback=None):
         os.environ["GH_TOKEN"] = config["general"]["token"]
+    return config
 
-    # Create users from config
+
+def initiate_users(config):
     for section in config.sections():
         if section == "general":
             continue
@@ -104,17 +102,17 @@ def main():
         users.append(user)
         log(user, "Login successful.")
 
-    if not users:
-        print("No users enabled. Aborting...")
-        sys.exit()
 
-    # Start session
-    caffeinate = None
+def start_session():
+    global users, caffeinate
     try:
         caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i"])
     except FileNotFoundError:
         print("caffeinate not found. Continuing without it.")
 
+    if len(users) == 1:
+        session(users[0])
+        return
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(session, user) for user in users]
         for future in concurrent.futures.as_completed(futures):
@@ -125,15 +123,32 @@ def main():
             else:
                 print(f"Result: {result}")
 
+
+def cleanup():
+    global users, caffeinate
+    for user in users:
+        if user:
+            del user
     if caffeinate:
         caffeinate.terminate()
 
 
-def cleanup():
-    global users
-    for user in users:
-        if user:
-            del user
+def main():
+    global users, caffeinate
+    os.environ["WDM_LOCAL"] = "1"
+
+    if not os.path.exists("config.ini"):
+        create_config_file()
+
+    config = read_config()
+
+    initiate_users(config)
+
+    if not users:
+        print("No users enabled. Aborting...")
+        sys.exit()
+
+    start_session()
 
 
 if __name__ == "__main__":

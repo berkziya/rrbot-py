@@ -1,8 +1,9 @@
 import time
 
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, get_page, return_to_the_mainpage, wait_until_internet_is_back
+from butler import error, get_page, return_to_mainwindow, wait_until_internet_is_back
 from misc.utils import dotless, get_ending_timestamp
 from models import get_region, get_war
 
@@ -102,7 +103,7 @@ def get_war_info(user, id):
         war.set_attacking_region(attacker)
 
         if type == "training":
-            return_to_the_mainpage(user)
+            return_to_mainwindow(user)
             return war
 
         defender = get_region(
@@ -128,10 +129,10 @@ def get_war_info(user, id):
             ).text
         )
 
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return war
-    # except NoSuchElementException:
-    #     return_to_the_mainpage(user)
-    #     return None
+    except NoSuchElementException:
+        return_to_mainwindow(user)
+        return None
     except Exception as e:
         return error(user, e, "Error getting war info")

@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 
-from butler import error, get_page, return_to_the_mainpage
+from butler import error, get_page, return_to_mainwindow
 
 market_limits = {
     "oil": 614.4e6,
@@ -85,7 +85,7 @@ def get_market_price(user, resource):
                         By.CSS_SELECTOR, "td:nth-child(5)"
                     ).get_attribute("rat")
                 )
-                return_to_the_mainpage(user)
+                return_to_mainwindow(user)
                 return daprice
         return False
     except Exception as e:

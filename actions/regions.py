@@ -7,9 +7,9 @@ from butler import (
     ajax,
     error,
     get_page,
-    reload,
-    return_to_the_mainpage,
-    wait_some_time,
+    reload_mainpage,
+    return_to_mainwindow,
+    delay_before_actions,
     wait_until_internet_is_back,
 )
 from misc.logger import log
@@ -69,10 +69,10 @@ def work_state_department(user, id=None, dept="gold"):
             data: { c: c_html, what: what_json},
             type: 'POST',
         });"""
-        wait_some_time(user)
+        delay_before_actions(user)
         user.driver.execute_script(js_ajax, what_json)
         log(user, f"Worked for state department: {dept}")
-        reload(user)
+        reload_mainpage(user)
         return True
     except Exception as e:
         return error(user, e, "Error working for state department")
@@ -104,10 +104,10 @@ def get_citizens(user, id, is_state=False, get_residents=False):
         data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in data:
             citizens.append(get_player((tr.get_attribute("user"))))
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return citizens if citizens else False
     except NoSuchElementException:
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting citizens")

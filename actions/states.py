@@ -3,7 +3,7 @@ from functools import lru_cache
 
 from selenium.webdriver.common.by import By
 
-from butler import ajax, error, get_page, return_to_the_mainpage
+from butler import ajax, error, get_page, return_to_mainwindow
 from misc.logger import log
 from misc.utils import sum_costs
 from models.state import get_state_info
@@ -32,11 +32,11 @@ def accept_law(user, text):
                 break
         else:
             # Handle case where no matching law was found
-            return_to_the_mainpage(user)
+            return_to_mainwindow(user)
             return False
     except Exception as e:
         return error(user, e, "Something went wrong while accepting a law")
-    return_to_the_mainpage(user)
+    return_to_mainwindow(user)
     return ajax(
         user,
         f"/parliament/votelaw/{law_action}/pro",
@@ -107,7 +107,7 @@ def get_indexes(user):
                 level = int(float(tr.get_attribute("rat")))
                 if index < 2:
                     break
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return {
             "health": indexes["hospital"],
             "military": indexes["military"],

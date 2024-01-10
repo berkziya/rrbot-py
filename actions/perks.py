@@ -4,14 +4,14 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from actions.status import set_money, set_perks
-from butler import ajax, error, reload
+from butler import ajax, error, reload_mainpage
 from misc.logger import log
 from misc.utils import time_to_secs
 
 
 def check_training_status(user):
     try:
-        reload(user)
+        reload_mainpage(user)
         perk_counter = user.driver.find_element(By.ID, "perk_counter_2")
         perk_counter = perk_counter.text
         total_seconds = time_to_secs(perk_counter)
@@ -43,9 +43,9 @@ def upgrade_perk(user):
     perkurl = {"str": 1, "edu": 2, "end": 3}
     currencyurl = {"money": 1, "gold": 2}
 
-    str = user.player.perks["str"]
-    edu = user.player.perks["edu"]
-    end = user.player.perks["end"]
+    strength = user.player.perks["str"]
+    education = user.player.perks["edu"]
+    endurance = user.player.perks["end"]
 
     def get_time(perk):
         time = (perk + 1) ** 2
@@ -76,20 +76,20 @@ def upgrade_perk(user):
     endcurrency, endtime = 0, 0
     educurrency, edutime = 0, 0
 
-    for i in range(9, 0, -1):
-        strtime_i = get_time(str + i) / 2
-        endtime_i = get_time(end + i) * (1 - user.perkoptions["eduweight"] / 100)
-        edutime_i = get_time(edu + i)
+    for i in range(19, 0, -1):
+        strtime_i = get_time(strength + i) / 2
+        endtime_i = get_time(endurance + i) * (1 - user.perkoptions["eduweight"] / 100)
+        edutime_i = get_time(education + i)
 
-        strcurrency = get_currency("str", strtime)
-        endcurrency = get_currency("end", endtime)
-        educurrency = get_currency("edu", edutime)
+        strcurrency = get_currency("str", strtime_i)
+        endcurrency = get_currency("end", endtime_i)
+        educurrency = get_currency("edu", edutime_i)
 
-        strtime += strtime_i * (1 if strcurrency == "money" else 0.075)
-        endtime += endtime_i * (1 if endcurrency == "money" else 0.075)
-        edutime += edutime_i * (1 if educurrency == "money" else 0.075)
+        strtime += strtime_i * (0.075 if strcurrency == "gold" else 1)
+        endtime += endtime_i * (0.075 if endcurrency == "gold" else 1)
+        edutime += edutime_i * (0.075 if educurrency == "gold" else 1)
 
-    if end < 100:
+    if endurance < 100:
         perk, currency = "end", endcurrency
     elif (edutime <= strtime) and (edutime <= endtime):
         perk, currency = "edu", educurrency

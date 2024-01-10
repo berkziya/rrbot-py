@@ -3,6 +3,7 @@ import os
 import sched
 import time
 
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
@@ -99,21 +100,22 @@ class Client:
         try:
             self.wait = WebDriverWait(self.driver, 10)
             self.driver.get("https://rivalregions.com")
+            time.sleep(1)
 
-            if os.path.exists(f"{self.name}_cookies.json"):
+            try:
+                if not os.path.exists(f"{self.name}_cookies.json"):
+                    raise NoSuchElementException
                 log(self, "Loading cookies...")
                 cookies = json.load(open(f"{self.name}_cookies.json", "r"))
                 for cookie in cookies:
                     self.driver.add_cookie(cookie)
-                time.sleep(1)
-            try:
                 self.driver.get("https://rivalregions.com")
-                time.sleep(1)
                 self.wait.until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
                 )
-            except Exception as e:
-                error(self, e, "Error loading cookies")
+            except NoSuchElementException:
+                self.driver.delete_all_cookies()
+                self.driver.get("https://rivalregions.com")
                 email_input = self.wait.until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, "input[name='mail']")
@@ -135,13 +137,12 @@ class Client:
                 self.wait.until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
                 )
-                time.sleep(1)
             self.main_window = self.driver.current_window_handle
             self.driver.execute_script("window.open('');")
             self.data_window = self.driver.window_handles[1]
             return True
         except Exception as e:
-            error(self, e, "Error logging in, check your credentials")
+            error(self, e, "Error logging in")
             self.driver.quit()
             time.sleep(2)
             self.wait = None

@@ -3,13 +3,13 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, reload
+from butler import error, reload_mainpage
 from misc.utils import dotless
 
 
 def set_perks(user):
     try:
-        reload(user)
+        reload_mainpage(user)
         str = user.driver.find_element(
             By.CSS_SELECTOR, "div.perk_item:nth-child(4) > .perk_source_2"
         ).text
@@ -27,7 +27,7 @@ def set_perks(user):
 
 def set_money(user, energy=False):
     try:
-        reload(user)
+        reload_mainpage(user)
         money = user.driver.find_element(By.CSS_SELECTOR, "#m").text
         gold = user.driver.find_element(By.CSS_SELECTOR, "#g").text
         user.player.set_money("money", dotless(money))
@@ -43,7 +43,7 @@ def set_money(user, energy=False):
                 "div.storage_item:nth-child(11) > .storage_number > .storage_number_change",
             ).text
             user.player.set_money("energy", dotless(energy))
-            reload(user)
+            reload_mainpage(user)
         return True
     except Exception as e:
         return error(user, e, "Error setting money")
@@ -51,7 +51,7 @@ def set_money(user, energy=False):
 
 def check_traveling_status(user):  # TODO: Fix this
     try:
-        reload(user)
+        reload_mainpage(user)
         user.driver.find_element(By.CSS_SELECTOR, ".gototravel")
         return True
     except NoSuchElementException:

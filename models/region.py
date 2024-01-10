@@ -3,7 +3,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, get_page, return_to_the_mainpage
+from butler import error, get_page, return_to_mainwindow
 from misc.utils import dotless
 from models import get_autonomy, get_factory, get_player, get_region, get_state
 from models.autonomy import get_autonomy_info
@@ -369,10 +369,10 @@ def get_region_info(user, id, force=False):
             get_autonomy_info(user, region.autonomy.id)
             region.set_state(region.autonomy.state)
         region.set_last_accessed()
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return region
     except NoSuchElementException:
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         return None
     except Exception as e:
         return error(user, e, "Error getting region info")

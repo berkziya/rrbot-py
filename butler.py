@@ -10,14 +10,24 @@ from misc.logger import alert
 DELAY = 2
 
 
-def wait_some_time(user):
+def delay_before_actions(user):
     current_time = time.time()
     time_since_last_request = current_time - user.last_request_time
-
     if time_since_last_request < DELAY:
         time_to_wait = DELAY - time_since_last_request
         time.sleep(time_to_wait)
     user.set_last_request_time()
+
+
+def am_i_alive(user):
+    wait_until_internet_is_back(user)
+    try:
+        id = user.driver.execute_script("return id;")
+        if id == user.id:
+            return True
+    except:
+        pass
+    return False
 
 
 def wait_for_page_load(driver, timeout=30):
@@ -35,7 +45,7 @@ def get_page(user, url):
     try:
         wait_until_internet_is_back(user)
         user.driver.switch_to.window(user.data_window)
-        wait_some_time(user)
+        delay_before_actions(user)
         user.driver.get(f"https://rivalregions.com/{url}")
         wait_for_page_load(user.driver)
         return True
@@ -43,15 +53,15 @@ def get_page(user, url):
         return error(user, e, f"Error getting page {url}")
 
 
-def return_to_the_mainpage(user):
+def return_to_mainwindow(user):
     user.driver.switch_to.window(user.main_window)
 
 
-def reload(user):
+def reload_mainpage(user):
     try:
-        return_to_the_mainpage(user)
+        return_to_mainwindow(user)
         wait_until_internet_is_back(user)
-        wait_some_time(user)
+        delay_before_actions(user)
         user.driver.get("https://rivalregions.com")
         user.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
         time.sleep(1)
@@ -70,7 +80,7 @@ def delay_tasks(scheduler, delay):
             scheduler.enter(delay, event.priority, event.action, event.argument)
 
 
-def internet_on(user):
+def is_internet_on(user):
     try:
         requests.get("https://rivalregions.com", timeout=5)
         return True
@@ -81,7 +91,7 @@ def internet_on(user):
 
 def wait_until_internet_is_back(user):
     count = 0
-    while not internet_on(user):
+    while not is_internet_on(user):
         alert(user, "Waiting for internet connection to be restored", False)
         time.sleep(60)
         count += 1
@@ -91,43 +101,38 @@ def wait_until_internet_is_back(user):
 
 
 def reset_browser(user):
-    if user.is_resetting:
-        return False
-    user.set_is_resetting(True)
     try:
-        wait_until_internet_is_back(user)
-        id = user.driver.execute_script("return id;")
-        if id == user.id:
+        if user.is_resetting:
+            return False
+        user.set_is_resetting(True)
+        try:
+            return am_i_alive(user)
+        except:
+            pass
+        if user.driver:
+            user.driver.quit()
+            time.sleep(2)
+        user.wait = None
+        user.driver = None
+        if not user.boot_browser():
+            alert(user, "Browser failed to reset, will try again in 10 minutes.")
+            delay_tasks(user.s, 666)
+            user.s.enter(600, 1, reset_browser, (user,))
             user.set_is_resetting(False)
-            return True
-    except:
-        pass
-    if user.driver:
-        user.driver.quit()
-        time.sleep(2)
-    user.wait = None
-    user.driver = None
-    if not user.boot_browser():
-        alert(user, "Browser failed to reset, will try again in 10 minutes.")
-        delay_tasks(user.s, 666)
-        user.s.enter(600, 1, reset_browser, (user,))
+            return False
+        user.set_is_resetting(False)
+        return True
+    except Exception as e:
+        alert(user, f"Error resetting browser: {e}")
         user.set_is_resetting(False)
         return False
-    user.set_is_resetting(False)
-    return True
 
 
 def error(user, error, text=None):
     if text:
         alert(user, f"{text}: {error}")
-    if "ReferenceError: $ is not defined" in str(error):
-        link = user.driver.current_url
-        alert(user, f"Redirecting to mainpage from {link}")
-        reload(user)
     try:
-        id = user.driver.execute_script("return id;")
-        if not id == user.id:
-            raise Exception("Bro wtf")
+        am_i_alive(user)
     except Exception as e:
         alert(user, f"Browser error: {e}")
         reset_browser(user)
@@ -136,7 +141,7 @@ def error(user, error, text=None):
 
 def ajax(user, url, data, text=None, relad_after=False):
     wait_until_internet_is_back(user)
-    return_to_the_mainpage(user)
+    return_to_mainwindow(user)
     try:
         js_ajax = f"""
         $.ajax({{
@@ -144,11 +149,11 @@ def ajax(user, url, data, text=None, relad_after=False):
             data: {{ c: c_html, {data} }},
             type: 'POST',
         }});"""
-        wait_some_time(user)
+        delay_before_actions(user)
         user.driver.execute_script(js_ajax)
         if relad_after:
             time.sleep(2)
-            reload(user)
+            reload_mainpage(user)
         return True
     except Exception as e:
         return error(user, e, text)
