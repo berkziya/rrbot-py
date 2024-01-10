@@ -124,6 +124,10 @@ class Region:
     def set_factories(self, value):
         self.factories = value
 
+    def add_factory(self, value):
+        if value not in self.factories:
+            self.factories.append(value)
+
     def __str__(self):
         return str(self.id)
 

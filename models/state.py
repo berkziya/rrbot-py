@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 
 from butler import error, get_page, return_to_mainwindow
 from misc.utils import dotless
-from models import get_state
+from models import get_autonomy, get_player, get_region, get_state
 
 
 class State:
@@ -101,6 +101,44 @@ class State:
 
     def __str__(self):
         return str(self.id)
+
+    def __getstate__(self):
+        return {
+            "id": self.id,
+            "last_accessed": self.last_accessed,
+            "leader": self.leader.id if self.leader else None,
+            "commander": self.commander.id if self.commander else None,
+            "economics": self.economics.id if self.economics else None,
+            "foreign": self.foreign.id if self.foreign else None,
+            "government_form": self.government_form,
+            "autonomies": [x.id for x in self.autonomies],
+            "regions": [x.id for x in self.regions],
+            "num_of_regions": self.num_of_regions,
+            "citizens": [x.id for x in self.citizens],
+            "num_of_citizens": self.num_of_citizens,
+            "residents": [x.id for x in self.residents],
+            "num_of_residents": self.num_of_residents,
+            "budget": self.budget,
+            "borders": self.borders,
+        }
+
+    def __setstate__(self, state):
+        self.id = state["id"]
+        self.last_accessed = state["last_accessed"]
+        self.leader = get_player(state["leader"]) if state["leader"] else None
+        self.commander = get_player(state["commander"]) if state["commander"] else None
+        self.economics = get_player(state["economics"]) if state["economics"] else None
+        self.foreign = get_player(state["foreign"]) if state["foreign"] else None
+        self.government_form = state["government_form"]
+        self.autonomies = [get_autonomy(x) for x in state["autonomies"]]
+        self.regions = [get_region(x) for x in state["regions"]]
+        self.num_of_regions = state["num_of_regions"]
+        self.citizens = [get_player(x) for x in state["citizens"]]
+        self.num_of_citizens = state["num_of_citizens"]
+        self.residents = [get_player(x) for x in state["residents"]]
+        self.num_of_residents = state["num_of_residents"]
+        self.budget = state["budget"]
+        self.borders = state["borders"]
 
 
 def get_state_info(user, id, force=False):

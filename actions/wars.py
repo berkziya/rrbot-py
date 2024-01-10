@@ -6,16 +6,17 @@ from selenium.webdriver.common.by import By
 
 from butler import (
     ajax,
+    delay_before_actions,
     error,
     get_page,
     reload_mainpage,
     return_to_mainwindow,
-    delay_before_actions,
     wait_until_internet_is_back,
 )
 from misc.logger import log
 from models import get_war
 from models.player import get_player_info
+from models.region import get_region_info
 from models.war import get_war_info
 
 
@@ -124,6 +125,8 @@ def attack(user, id=None, side=0, max=False, drones=False):
 def get_wars(user, id=None):
     wait_until_internet_is_back(user)
     if not id:
+        get_player_info(user)
+        get_region_info(user, user.player.region.id)
         id = user.player.region.state.id
     if not id:
         log(user, "No state id found")

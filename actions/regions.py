@@ -5,11 +5,11 @@ from selenium.webdriver.common.by import By
 
 from butler import (
     ajax,
+    delay_before_actions,
     error,
     get_page,
     reload_mainpage,
     return_to_mainwindow,
-    delay_before_actions,
     wait_until_internet_is_back,
 )
 from misc.logger import log

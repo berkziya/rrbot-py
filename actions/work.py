@@ -1,19 +1,20 @@
 import time
 
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import ajax, error, get_page, return_to_mainwindow
-from misc.logger import alert
-from misc.utils import dotless
+from butler import ajax, error, get_page, return_to_mainwindow, reload_mainpage
+from misc.logger import alert, log
+from misc.utils import dotless, numba
 from models import get_factory, get_region
+from models.factory import get_factory_info
+from models.player import get_player_info
 
 RESOURCES = {
     "gold": 6,
     "oil": 2,
     "ore": 5,
     "uranium": 11,
-    "diamond": 15,
+    "diamonds": 15,
     "lox": 21,
     "liquefaction": 21,
     "helium": 24,
@@ -22,8 +23,11 @@ RESOURCES = {
 }
 
 
-def get_factories(user, id, resource="gold"):
+def get_factories(user, id=None, resource="gold"):
     try:
+        if not id:
+            get_player_info(user)
+            id = user.player.region.id
         if not get_page(user, f"factory/search/{id}/0/{RESOURCES[resource]}"):
             return False
         try:
@@ -33,20 +37,23 @@ def get_factories(user, id, resource="gold"):
             pass
         factories = []
         data = user.driver.find_elements(By.CSS_SELECTOR, "#list_tbody > tr")
-        for tr in data[1:]:
+        for tr in data:
             factory = get_factory(tr.get_attribute("user"))
             factory.set_type(resource)
-            factory.set_location(get_region(id))
+            factory.set_region(get_region(id))
             factory.set_level(
                 int(tr.find_element(By.CSS_SELECTOR, "td:nth-child(4)").text)
             )
             wage = tr.find_element(By.CSS_SELECTOR, "td:nth-child(6)").text
             if "%" in wage:
-                wage = wage.replace("%", "")
-                wage = float(wage) / 100
+                wage = float(wage.replace("%", "")) / 100
+            else:
+                factory.set_fixed_wage(True)
+                wage = dotless(wage.split(" ")[0])
             factory.set_wage(float(wage))
             factories.append(factory)
-        get_region(id).set_factories(factories)
+        for factory in factories:
+            get_region(id).add_factory(factory)
         return_to_mainwindow(user)
         return factories
     except Exception as e:
@@ -60,17 +67,24 @@ def resign_factory(user):
 
 
 def assign_factory(user, id):
-    if not id:
-        return alert(user, "No factory set")
-    resign_factory(user)
-    time.sleep(2)
-    return ajax(
-        user,
-        "/factory/assign",
-        f"factory: {id}",
-        "Error assigning factory",
-        relad_after=True,
-    )
+    try:
+        if not id:
+            return alert(user, "No factory set")
+        resign_factory(user)
+        time.sleep(2)
+        if not ajax(
+            user,
+            "/factory/assign",
+            f"factory: {id}",
+            "Error assigning factory",
+            relad_after=True,
+        ):
+            return False
+        time.sleep(2)
+        reload_mainpage(user)
+        return True
+    except Exception as e:
+        return error(user, e, "Error assigning factory")
 
 
 def cancel_auto_work(user):
@@ -79,28 +93,26 @@ def cancel_auto_work(user):
     )
 
 
-def auto_work_factory(user, id):
+def auto_work_factory(user, id=None):
     try:
-        # if not id:
-        #     factory = get_best_factory(user)
-        # else:
-        #     factory = get_factory_info(user, id)
-        # if not factory:
-        #     alert(user, "No factory found")
-        #     return False
-        # log(user, f"Auto working factory: {factory.id}, type: {RESOURCES[factory.type]}")
-        # assign_factory(user, factory.id)
-        # time.sleep(3)
-        # log(user, f"Auto working factory: {factory.id}, type: {RESOURCES[factory.type]}")
-        # factory = get_factory_info(user, id)
-        # if factory.region.id != user.player.region.id:
-        #     return False
+        if not id:
+            factory = get_best_factory(user)
+        else:
+            factory = get_factory_info(user, id)
+        if not factory:
+            alert(user, "No factory found")
+            return False
+        log(
+            user,
+            f"Auto working factory: {factory.id}, type: {factory.type}, wage: {numba(factory.wage)}",
+        )
+        assign_factory(user, factory.id)
         cancel_auto_work(user)
         time.sleep(3)
         return ajax(
             user,
             "/work/autoset",
-            f"mentor: 0, factory: {id}, type: {6}, lim: 0",
+            f"mentor: 0, factory: {factory.id}, type: {RESOURCES[factory.type]}, lim: 0",
             "Error setting auto work",
             relad_after=True,
         )
@@ -108,83 +120,22 @@ def auto_work_factory(user, id):
         return error(user, e, "Error auto working factory")
 
 
-def get_best_factory(user, resource="gold", fix_wage=False):
+def get_best_factory(user, resource="gold", include_fix_wage=False):
     try:
         factories = get_factories(user, user.player.region.id, resource)
         if not factories:
             return False
-        fix_wage_factory = max(factories, key=lambda x: x.wage)
-        factories = [factory for factory in factories if factory.wage < 2]
-        max_wage_factory = max(factories, key=lambda x: x.wage * (x.level**0.8))
-        if fix_wage_factory.wage > 1 and fix_wage:
-            get_factory_info(user, max_wage_factory.id)
-            if fix_wage_factory.wage > max_wage_factory.potential_wage:
-                max_wage_factory = fix_wage_factory
-        return max_wage_factory
+        def get_wage(factory):
+            return (
+                factory.wage
+                if factory.fixed_wage
+                else factory.wage * (factory.level**0.8)
+            )
+        if include_fix_wage:
+            max(factories, key=get_wage)
+        else:
+            return max(
+                filter(lambda factory: not factory.fixed_wage, factories), key=get_wage
+            )
     except Exception as e:
         return error(user, e, "Error getting best factory")
-
-
-def get_factory_info(user, id, force=False):
-    try:
-        factory = get_factory(id)
-        if factory.last_accessed > time.time() - 3600 and not force:
-            return factory
-        if not get_page(user, f"factory/index/{id}"):
-            return False
-        data = user.driver.find_elements(
-            By.CSS_SELECTOR,
-            "div.float_left.margin_left_20 > div",
-        )
-        if "change_paper_about_target" in data[0].get_attribute("class"):
-            factory.set_level(
-                int(data[0].find_element(By.CSS_SELECTOR, "apn").text.split(" ")[-1])
-            )
-            factory.set_type(
-                data[0].find_element(By.CSS_SELECTOR, "apn").text.split(" ")[0].lower()
-            )
-        for div in data[1:]:
-            if "Factory region:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                factory.set_region(
-                    get_region(
-                        div.find_element(
-                            By.CSS_SELECTOR, "div:nth-child(2) > div:nth-child(1)"
-                        )
-                        .get_attribute("action")
-                        .split("/")[-1]
-                    )
-                )
-            elif "Owner:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                factory.set_owner(
-                    div.find_element(
-                        By.CSS_SELECTOR, "div:nth-child(2) > div:nth-child(1)"
-                    )
-                    .get_attribute("action")
-                    .split("/")[-1]
-                )
-            elif "Wage:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                wage = div.find_element(
-                    By.CSS_SELECTOR, "div:nth-child(2) > div:nth-child(1)"
-                ).text
-                if "%" in wage:
-                    wage = wage.replace("%", "")
-                    wage = float(wage) / 100
-                else:
-                    wage = dotless(wage)
-                factory.set_wage(wage)
-            elif "Potential wage" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                factory.set_potential_wage(
-                    dotless(
-                        div.find_element(
-                            By.CSS_SELECTOR, "div:nth-child(2) > div:nth-child(1)"
-                        ).text.split(" ")[0]
-                    )
-                )
-        factory.set_last_accessed()
-        return_to_mainwindow(user)
-        return factory
-    except NoSuchElementException:
-        return_to_mainwindow(user)
-        return None
-    except Exception as e:
-        return error(user, e, "Error getting factory info")

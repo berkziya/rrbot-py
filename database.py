@@ -57,11 +57,12 @@ def save(user):
                         f"INSERT OR REPLACE INTO {table} (id, data, last_accessed) VALUES (?, ?, ?)",
                         (id, pickle.dumps(item), item.last_accessed),
                     )
-        user.conn.commit()
-        return True
     except Exception as e:
         error(user, f"Database save failed: {e}")
         return False
+    finally:
+        user.conn.commit()
+    return True
 
 
 def load(user):

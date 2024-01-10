@@ -1,7 +1,8 @@
 config.ini
 geckodriver.log
 log.txt
-database.db
+*.db
+*.db-journal
 .wdm
 *_cookies.json
 
