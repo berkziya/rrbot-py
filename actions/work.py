@@ -2,9 +2,9 @@ import time
 
 from selenium.webdriver.common.by import By
 
-from butler import ajax, error, get_page, return_to_mainwindow, reload_mainpage
+from butler import ajax, error, get_page, reload_mainpage, return_to_mainwindow
 from misc.logger import alert, log
-from misc.utils import dotless, numba
+from misc.utils import dotless
 from models import get_factory, get_region
 from models.factory import get_factory_info
 from models.player import get_player_info
@@ -93,10 +93,10 @@ def cancel_auto_work(user):
     )
 
 
-def auto_work_factory(user, id=None):
+def auto_work_factory(user, id=None, resource="gold"):
     try:
         if not id:
-            factory = get_best_factory(user)
+            factory = get_best_factory(user, resource)
         else:
             factory = get_factory_info(user, id)
         if not factory:
@@ -104,7 +104,7 @@ def auto_work_factory(user, id=None):
             return False
         log(
             user,
-            f"Auto working factory: {factory.id}, type: {factory.type}, wage: {numba(factory.wage)}",
+            f"Auto working factory: {factory.id}, type: {factory.type}",
         )
         assign_factory(user, factory.id)
         cancel_auto_work(user)
