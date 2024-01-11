@@ -13,7 +13,7 @@ from butler import (
     wait_until_internet_is_back,
 )
 from misc.logger import log
-from models import get_player
+from models import get_player, get_state
 from models.player import get_player_info
 from models.region import get_region_info
 
@@ -21,7 +21,7 @@ from models.region import get_region_info
 def build_military_academy(user):
     try:
         get_player_info(user)
-        if user.player.residency.id != user.player.region.id:
+        if user.player.residency != user.player.region:
             user.s.enter(3600, 1, build_military_academy, (user,))
         return ajax(user, "/slide/academy_do/", "", "Error building military academy")
     except Exception as e:
@@ -35,13 +35,17 @@ def work_state_department(user, id=None, dept="gold"):
             get_player_info(user)
             get_region_info(user, user.player.region.id)
             get_region_info(user, user.player.residency.id)
-            if user.player.region.state.id != user.player.residency.state.id:
+            if (
+                user.player.region.state != user.player.residency.state
+                or user.player.region.state not in user.player.workpermits
+            ):
                 user.s.enter(3600, 1, work_state_department, (user,))
                 return False
             id = user.player.region.state.id
         if not id:
             user.s.enter(3600, 1, work_state_department, (user,))
             return False
+        state = get_state(id)
         dept_ids = {
             "building": 1,
             "gold": 2,
@@ -55,7 +59,7 @@ def work_state_department(user, id=None, dept="gold"):
             "spacestations": 10,
             "battleships": 11,
         }
-        what_dict = {"state": id}
+        what_dict = {"state": state.id}
         for key, value in dept_ids.items():
             if key == dept:
                 what_dict[f"w{value}"] = 10
@@ -78,26 +82,26 @@ def work_state_department(user, id=None, dept="gold"):
         return error(user, e, "Error working for state department")
 
 
-def get_citizens(user, id, is_state=False, get_residents=False):
+def get_citizens(user, region=None, state=None, get_residents=False):
     try:
         # https://rivalregions.com/listed/state_population/4600
         # https://rivalregions.com/listed/residency_state/4600
         # https://rivalregions.com/listed/region/16007
         # https://rivalregions.com/listed/residency/16007
-        link = ""
-        match is_state:
-            case True:
-                match get_residents:
-                    case True:
-                        link = f"listed/residency_state/{id}"
-                    case False:
-                        link = f"listed/state_population/{id}"
-            case False:
-                match get_residents:
-                    case True:
-                        link = f"listed/residency/{id}"
-                    case False:
-                        link = f"listed/region/{id}"
+        id = None
+        link = None
+        if state:
+            match get_residents:
+                case True:
+                    link = f"listed/residency_state/{id}"
+                case False:
+                    link = f"listed/state_population/{id}"
+        elif region:
+            match get_residents:
+                case True:
+                    link = f"listed/residency/{id}"
+                case False:
+                    link = f"listed/region/{id}"
         if not get_page(user, link):
             return False
         citizens = []
