@@ -12,6 +12,8 @@ def get_player(id):
     from .player import Player
 
     id = int(id)
+    if not id:
+        return None
     if id in players:
         return players[id]
     else:
@@ -23,6 +25,8 @@ def get_state(id):
     from .state import State
 
     id = int(id)
+    if not id:
+        return None
     if id in states:
         return states[id]
     else:
@@ -34,6 +38,8 @@ def get_autonomy(id):
     from .autonomy import Autonomy
 
     id = int(id)
+    if not id:
+        return None
     if id in autonomies:
         return autonomies[id]
     else:
@@ -45,6 +51,8 @@ def get_region(id):
     from .region import Region
 
     id = int(id)
+    if not id:
+        return None
     if id in regions:
         return regions[id]
     else:
@@ -56,6 +64,8 @@ def get_party(id):
     from .party import Party
 
     id = int(id)
+    if not id:
+        return None
     if id in parties:
         return parties[id]
     else:
@@ -67,6 +77,8 @@ def get_factory(id):
     from .factory import Factory
 
     id = int(id)
+    if not id:
+        return None
     if id in factories:
         return factories[id]
     else:
@@ -78,6 +90,8 @@ def get_bloc(id):
     from .bloc import Bloc
 
     id = int(id)
+    if not id:
+        return None
     if id in blocs:
         return blocs[id]
     else:
@@ -89,6 +103,8 @@ def get_war(id):
     from .war import War
 
     id = int(id)
+    if not id:
+        return None
     if id in wars:
         return wars[id]
     else:

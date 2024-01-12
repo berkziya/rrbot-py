@@ -93,10 +93,10 @@ def cancel_auto_work(user):
     )
 
 
-def auto_work_factory(user, id=None, resource="gold"):
+def auto_work_factory(user, id=None):
     try:
         if not id:
-            factory = get_best_factory(user, resource)
+            factory = get_best_factory(user, resource="gold")
         else:
             factory = get_factory_info(user, id)
         if not factory:

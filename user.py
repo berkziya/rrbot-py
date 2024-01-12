@@ -1,6 +1,7 @@
 import json
 import os
 import sched
+import sqlite3
 import time
 
 from selenium.common.exceptions import NoSuchElementException
@@ -52,9 +53,9 @@ class Client:
 
     def load_database(self):
         if self.database_name:
-            self.conn, self.cursor = database.initiate_database(
-                self, self.database_name
-            )
+            self.conn = sqlite3.connect(self.database_name)
+            self.cursor = self.conn.cursor()
+            database.initiate_database(self)
             database.load(self)
 
     def save_database(self):

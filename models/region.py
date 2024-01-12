@@ -194,15 +194,13 @@ def get_region_info(user, id, force=False):
         upper = (
             user.driver.find_element(By.CSS_SELECTOR, "div.margin > h1 > span")
             .get_attribute("action")
-            .split("/")
         )
-        if upper[1] == "state_details":
-            state = get_state(upper[-1])
+        if "state" in upper:
+            state = get_state(upper.split("/")[-1])
             region.set_state(state)
             state.add_region(region)
-
-        elif upper[1] == "autonomy_details":
-            autonomy = get_autonomy(upper[-1])
+        elif "autonomy" in upper:
+            autonomy = get_autonomy(upper.split("/")[-1])
             region.set_autonomy(autonomy)
             autonomy.add_region(region)
             state = get_state(
@@ -215,8 +213,8 @@ def get_region_info(user, id, force=False):
             region.set_state(state)
             state.add_region(region)
 
-        data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll")
-        for div in data:
+        data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll > div")
+        for div in data[1:]:
             if "Governor:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 autonomy = get_autonomy(id)
                 autonomy.set_state(region.state)
@@ -302,37 +300,37 @@ def get_region_info(user, id, force=False):
                 )
             elif "Tax rate:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_tax(
-                    int(div.find_element(By.CSS_SELECTOR, "span").text.split(" ")[0])
+                    int(div.find_element(By.CSS_SELECTOR, "div.short_details").text.split(" ")[0])
                 )
             elif "Market taxes:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_market_tax(
-                    int(div.find_element(By.CSS_SELECTOR, "span").text.split(" ")[0])
+                    int(div.find_element(By.CSS_SELECTOR, "div.short_details").text.split(" ")[0])
                 )
             elif "Sea access:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_sea_access(
                     True
-                    if div.find_element(By.CSS_SELECTOR, "span").text == "Yes"
+                    if ("Yes" in div.find_element(By.CSS_SELECTOR, "div.short_details").text)
                     else False
                 )
             elif "Gold resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_resources(
-                    "gold", dotless(div.find_element(By.CSS_SELECTOR, "span").text)
+                    "gold", float(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
             elif "Oil resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_resources(
-                    "oil", dotless(div.find_element(By.CSS_SELECTOR, "span").text)
+                    "oil", float(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
             elif "Ore resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_resources(
-                    "ore", dotless(div.find_element(By.CSS_SELECTOR, "span").text)
+                    "ore", float(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
             elif "Uranium resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_resources(
-                    "uranium", dotless(div.find_element(By.CSS_SELECTOR, "span").text)
+                    "uranium", float(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
             elif "Diamonds resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_resources(
-                    "diamonds", dotless(div.find_element(By.CSS_SELECTOR, "span").text)
+                    "diamonds", float(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
             elif "Health index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_indexes(
@@ -379,4 +377,4 @@ def get_region_info(user, id, force=False):
         return_to_mainwindow(user)
         return None
     except Exception as e:
-        return error(user, e, "Error getting region info")
+        return error(user, e, f"Error getting region info {id}")

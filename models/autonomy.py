@@ -157,7 +157,7 @@ def get_autonomy_info(user, id, force=False):
         return autonomy
     except NoSuchElementException:
         from models.region import get_region_info
-
-        return get_region_info(user, id)
+        a = get_region_info(user, id)
+        return a.autonomy
     except Exception as e:
         return error(user, e, "Error getting autonomy info")

@@ -2,7 +2,6 @@ import pytz
 import schedule
 
 import events
-from actions.market import resources_to_money
 from actions.perks import upgrade_perk
 from actions.regions import build_military_academy, work_state_department
 from actions.status import set_money
@@ -92,8 +91,7 @@ def session(user):
                                 Oil: {numba(user.player.governor.budget['oil'])}
                                 Ore: {numba(user.player.governor.budget['ore'])}
                                 Uranium: {numba(user.player.governor.budget['uranium'])}
-                                Diamonds: {numba(user.player.governor.budget['diamonds'])}
-                                TOTAL: {numba(resources_to_money(user, user.player.governor.budget)['mone'])}""",
+                                Diamonds: {numba(user.player.governor.budget['diamonds'])}""",
         )
 
     if user.player.economics:
@@ -117,7 +115,7 @@ def session(user):
         events.initiate_all_events, user, eventsToBeDone
     )
     schedule.every(4).to(6).hours.do(reset_browser, user)
-    schedule.every(5).to(7).hours.do(user.save_database)
+    schedule.every(1).to(2).hours.do(user.save_database)
 
     def activate_scheduler():
         schedule.run_pending()

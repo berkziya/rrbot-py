@@ -16,7 +16,6 @@ class Player:
         self.level = 0
         self.money = {"money": 0, "gold": 0, "energy": 0}
         self.state_leader = None
-        self.commander = None
         self.rating = 0
         self.perks = {"str": 0, "edu": 0, "end": 0}
         self.region = None
@@ -38,9 +37,6 @@ class Player:
 
     def set_state_leader(self, value):
         self.state_leader = value
-
-    def set_commander(self, value):
-        self.commander = value
 
     def set_rating(self, value):
         self.rating = value
@@ -82,10 +78,7 @@ class Player:
             "id": self.id,
             "last_accessed": self.last_accessed,
             "level": self.level,
-            "money": self.money,
             "state_leader": self.state_leader.id if self.state_leader else None,
-            "commander": self.commander.id if self.commander else None,
-            "rating": self.rating,
             "perks": self.perks,
             "region": self.region.id if self.region else None,
             "residency": self.residency.id if self.residency else None,
@@ -103,12 +96,9 @@ class Player:
         self.id = state["id"]
         self.last_accessed = state["last_accessed"]
         self.level = state["level"]
-        self.money = state["money"]
         self.state_leader = (
             get_player(state["state_leader"]) if state["state_leader"] else None
         )
-        self.commander = get_player(state["commander"]) if state["commander"] else None
-        self.rating = state["rating"]
         self.perks = state["perks"]
         self.region = get_region(state["region"]) if state["region"] else None
         self.residency = get_region(state["residency"]) if state["residency"] else None
@@ -143,7 +133,7 @@ def get_player_info(user, id=None, force=False):
         data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
         for tr in data:
             try:
-                if tr.find_element(By.CSS_SELECTOR, "div.leader_link"):
+                if tr.find_element(By.CSS_SELECTOR, "h2"):
                     player.set_state_leader(
                         get_state(
                             tr.find_element(By.CSS_SELECTOR, "h2")
@@ -151,12 +141,6 @@ def get_player_info(user, id=None, force=False):
                             .split("/")[-1]
                         )
                     )
-                if (
-                    "commander"
-                    in tr.find_element(By.CSS_SELECTOR, "h2").get_attribute("title")
-                    and player.state_leader
-                ):
-                    player.set_commander(player.state_leader)
             except:
                 pass
             if "Rating place:" in tr.text:
@@ -204,10 +188,21 @@ def get_player_info(user, id=None, force=False):
                 )
             elif "Work permit:" in tr.text:
                 permits = {}
-                for div in tr.find_elements(By.CSS_SELECTOR, "span[state]"):
-                    permits[get_state(div.get_attribute("state"))] = get_region(
-                        div.get_attribute("region")
-                    )
+                if player.id == user.player.id:
+                    for span in tr.find_elements(By.CSS_SELECTOR, "span[state]"):
+                        permits[get_state(span.get_attribute("state"))] = get_region(
+                            span.get_attribute("region")
+                        )
+                else:
+                    for div in tr.find_elements(By.CSS_SELECTOR, "div[title]"):
+                        if "state" in div.get_attribute("action"):
+                            permits[get_state(div.get_attribute("action").split("/")[-1])] = 0
+                        else:
+                            try:
+                                region = get_region(user, div.get_attribute("action").split("/")[-1])
+                                permits[region.state] = region
+                            except:
+                                pass #TODO: fix this
                 player.set_workpermits(permits)
             elif "Governor:" in tr.text:
                 player.set_governor(

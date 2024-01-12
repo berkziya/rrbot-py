@@ -1,5 +1,4 @@
 import pickle
-import sqlite3
 
 import models
 from butler import error
@@ -15,29 +14,58 @@ tables = {
 }
 
 
-# Connect to the database
-def initiate_database(user, name):
+def initiate_database(user):
     try:
-        conn = sqlite3.connect(name)
-        cursor = conn.cursor()
-        # Create tables if they don't exist
         for table in tables:
-            create_table(user, conn, cursor, table)
-        return conn, cursor
+            create_table(user, table)
+        return True
     except Exception as e:
         error(user, f"Database initiation failed: {e}")
-        return None, None
+        return False
 
 
-def create_table(user, conn, cursor, table):
+def create_table(user, table):
     try:
-        cursor.execute(
+        user.cursor.execute(
             f"CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY, data BLOB, last_accessed TIMESTAMP)"
         )
-        conn.commit()
+        user.conn.commit()
         return True
     except Exception as e:
         error(user, f"Table creation failed: {e}")
+        return False
+
+
+def load(user):
+    try:
+        for table in tables:
+            user.cursor.execute(f"SELECT * FROM {table}")
+            for row in user.cursor.fetchall():
+                if table == "players":
+                    player = models.get_player(row[0])
+                    player.__setstate__(pickle.loads(row[1]))
+                elif table == "states":
+                    state = models.get_state(row[0])
+                    state.__setstate__(pickle.loads(row[1]))
+                elif table == "autonomies":
+                    autonomy = models.get_autonomy(row[0])
+                    autonomy.__setstate__(pickle.loads(row[1]))
+                elif table == "regions":
+                    region = models.get_region(row[0])
+                    region.__setstate__(pickle.loads(row[1]))
+                elif table == "parties":
+                    party = models.get_party(row[0])
+                    party.__setstate__(pickle.loads(row[1]))
+                elif table == "factories":
+                    factory = models.get_factory(row[0])
+                    factory.__setstate__(pickle.loads(row[1]))
+                elif table == "blocs":
+                    bloc = models.get_bloc(row[0])
+                    bloc.__setstate__(pickle.loads(row[1]))
+        user.conn.commit()
+        return True
+    except Exception as e:
+        error(user, f"Database load failed: {e}")
         return False
 
 
@@ -63,36 +91,3 @@ def save(user):
     finally:
         user.conn.commit()
     return True
-
-
-def load(user):
-    try:
-        for table in tables:
-            user.cursor.execute(f"SELECT * FROM {table}")
-            for row in user.cursor.fetchall():
-                if table == "players":
-                    player = models.get_player(row[0])
-                    player = pickle.loads(row[1])
-                elif table == "states":
-                    state = models.get_state(row[0])
-                    state = pickle.loads(row[1])
-                elif table == "autonomies":
-                    autonomy = models.get_autonomy(row[0])
-                    autonomy = pickle.loads(row[1])
-                elif table == "regions":
-                    region = models.get_region(row[0])
-                    region = pickle.loads(row[1])
-                elif table == "parties":
-                    party = models.get_party(row[0])
-                    party = pickle.loads(row[1])
-                elif table == "factories":
-                    factory = models.get_factory(row[0])
-                    factory = pickle.loads(row[1])
-                elif table == "blocs":
-                    bloc = models.get_bloc(row[0])
-                    bloc = pickle.loads(row[1])
-        user.conn.commit()
-        return True
-    except Exception as e:
-        error(user, f"Database load failed: {e}")
-        return False

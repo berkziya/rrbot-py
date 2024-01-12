@@ -13,7 +13,6 @@ class State:
         self.id = id
         self.last_accessed = 0
         self.leader = None
-        self.commander = None
         self.economics = None
         self.foreign = None
         self.government_form = ""
@@ -41,9 +40,6 @@ class State:
 
     def set_leader(self, value):
         self.leader = value
-
-    def set_commander(self, value):
-        self.commander = value
 
     def set_economics(self, value):
         self.economics = value
@@ -107,7 +103,6 @@ class State:
             "id": self.id,
             "last_accessed": self.last_accessed,
             "leader": self.leader.id if self.leader else None,
-            "commander": self.commander.id if self.commander else None,
             "economics": self.economics.id if self.economics else None,
             "foreign": self.foreign.id if self.foreign else None,
             "government_form": self.government_form,
@@ -126,7 +121,6 @@ class State:
         self.id = state["id"]
         self.last_accessed = state["last_accessed"]
         self.leader = get_player(state["leader"]) if state["leader"] else None
-        self.commander = get_player(state["commander"]) if state["commander"] else None
         self.economics = get_player(state["economics"]) if state["economics"] else None
         self.foreign = get_player(state["foreign"]) if state["foreign"] else None
         self.government_form = state["government_form"]
@@ -235,15 +229,7 @@ def get_state_info(user, id, force=False):
                 for x in ["leader:", "commander:", "Monarch:", "Dictator"]
             ):
                 state.set_leader(
-                    dotless(
-                        div.find_element(By.CSS_SELECTOR, "div.short_details")
-                        .get_attribute("action")
-                        .split("/")[-1]
-                    )
-                )
-            elif "commander:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                state.set_commander(
-                    dotless(
+                    get_player(
                         div.find_element(By.CSS_SELECTOR, "div.short_details")
                         .get_attribute("action")
                         .split("/")[-1]
@@ -254,7 +240,7 @@ def get_state_info(user, id, force=False):
                 for x in ["economics:", "adviser:"]
             ):
                 state.set_economics(
-                    dotless(
+                    get_player(
                         div.find_element(By.CSS_SELECTOR, "div.short_details")
                         .get_attribute("action")
                         .split("/")[-1]
@@ -262,7 +248,7 @@ def get_state_info(user, id, force=False):
                 )
             elif "minister:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 state.set_foreign(
-                    dotless(
+                    get_player(
                         div.find_element(By.CSS_SELECTOR, "div.short_details")
                         .get_attribute("action")
                         .split("/")[-1]

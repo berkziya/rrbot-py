@@ -76,7 +76,7 @@ def upgrade_perk(user):
     endcurrency, endtime = 0, 0
     educurrency, edutime = 0, 0
 
-    for i in range(19, 0, -1):
+    for i in range(1, 0, -1):
         strtime_i = get_time(strength + i) / 2
         endtime_i = get_time(endurance + i) * (1 - user.perkoptions["eduweight"] / 100)
         edutime_i = get_time(education + i)
