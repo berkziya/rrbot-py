@@ -50,7 +50,7 @@ def subtract_costs(cost1, cost2):
 
 
 def get_ending_timestamp(text):
-    match = re.search(r"ends ((\w+ \d+:\d+)|(\d+ \w+ \d+ \d+:\d+))", text)
+    match = re.search(r"((\w+ \d+:\d+)|(\d+ \w+ \d+ \d+:\d+))", text)
     if match:
         date_time_str = match.group(1)
         if "today" in date_time_str:

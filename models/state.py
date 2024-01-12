@@ -108,11 +108,8 @@ class State:
             "government_form": self.government_form,
             "autonomies": [x.id for x in self.autonomies],
             "regions": [x.id for x in self.regions],
-            "num_of_regions": self.num_of_regions,
             "citizens": [x.id for x in self.citizens],
-            "num_of_citizens": self.num_of_citizens,
             "residents": [x.id for x in self.residents],
-            "num_of_residents": self.num_of_residents,
             "budget": self.budget,
             "borders": self.borders,
         }

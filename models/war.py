@@ -121,7 +121,7 @@ def get_war_info(user, id):
 
         time_str = user.driver.find_element(
             By.CSS_SELECTOR, "body > div.margin > h1 > div.small"
-        ).text
+        ).text.split("ends ")[-1]
         war.set_ending_time(get_ending_timestamp(time_str))
 
         if type not in ["revolution", "coup", "training"]:

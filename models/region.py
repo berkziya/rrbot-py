@@ -141,16 +141,12 @@ class Region:
             "buildings": self.buildings,
             "rating": self.rating,
             "residents": [player.id for player in self.residents],
-            "num_of_residents": self.num_of_residents,
             "citizens": [player.id for player in self.citizens],
-            "num_of_citizens": self.num_of_citizens,
             "initial_attack_damage": self.initial_attack_damage,
             "initial_defend_damage": self.initial_defend_damage,
             "tax": self.tax,
             "market_tax": self.market_tax,
             "sea_access": self.sea_access,
-            "resources": self.resources,
-            "deep_resources": self.deep_resources,
             "indexes": self.indexes,
             "border_regions": [region.id for region in self.border_regions],
             "factories": [factory.id for factory in self.factories],
@@ -165,16 +161,12 @@ class Region:
         self.buildings = state["buildings"]
         self.rating = state["rating"]
         self.residents = [get_player(player) for player in state["residents"]]
-        self.num_of_residents = state["num_of_residents"]
         self.citizens = [get_player(player) for player in state["citizens"]]
-        self.num_of_citizens = state["num_of_citizens"]
         self.initial_attack_damage = state["initial_attack_damage"]
         self.initial_defend_damage = state["initial_defend_damage"]
         self.tax = state["tax"]
         self.market_tax = state["market_tax"]
         self.sea_access = state["sea_access"]
-        self.resources = state["resources"]
-        self.deep_resources = state["deep_resources"]
         self.indexes = state["indexes"]
         self.border_regions = [get_region(region) for region in state["border_regions"]]
         self.factories = [get_factory(factory) for factory in state["factories"]]
