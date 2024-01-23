@@ -3,6 +3,7 @@ import sched
 import sqlite3
 import threading
 import time
+import os
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Firefox
@@ -14,7 +15,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 
 import database
-from butler import error
+from butler import error, wait_for_page_load
 from misc.logger import log
 from models import get_player
 
@@ -119,19 +120,20 @@ class Client:
             time.sleep(1)
 
             try:
-                raise NoSuchElementException
-                # if not os.path.exists(f"{self.name}_cookies.json"):
-                #     raise NoSuchElementException
-                # log(self, "Loading cookies...")
-                # cookies = json.load(open(f"{self.name}_cookies.json", "r"))
-                # for cookie in cookies:
-                #     self.driver.add_cookie(cookie)
-                # self.driver.get("https://rivalregions.com")
-                # self.wait.until(
-                #     EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
-                # )
+                if not os.path.exists(f"{self.name}_cookies.json"):
+                    raise NoSuchElementException
+                log(self, "Loading cookies...")
+                cookies = json.load(open(f"{self.name}_cookies.json", "r"))
+                for cookie in cookies:
+                    self.driver.add_cookie(cookie)
+                self.driver.get("https://rivalregions.com")
+                self.wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
+                )
             except NoSuchElementException:
                 self.driver.delete_all_cookies()
+                self.driver.get("https://rivalregions.com")
+                wait_for_page_load(self)
                 self.driver.get("https://rivalregions.com")
                 email_input = self.wait.until(
                     EC.presence_of_element_located(
