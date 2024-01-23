@@ -13,7 +13,7 @@ from butler import (
     return_to_mainwindow,
     wait_until_internet_is_back,
 )
-from misc.logger import log
+from misc.logger import alert, log
 from models import get_war
 from models.player import get_player_info
 from models.region import get_region_info
@@ -35,7 +35,7 @@ def attack(user, id=None, side=0, max=False, drones=False):
     stringified_troops = ""
 
     if not get_player_info(user):
-        error(user, "Error getting player info")
+        alert(user, "Error getting player info")
         return False
     if not id:
         war = get_training_war(user)
@@ -157,7 +157,7 @@ def get_training_war(user):
             By.CSS_SELECTOR, "span.pointer.index_training.hov2.dot"
         )
         user.driver.execute_script("arguments[0].click();", element)
-        time.sleep(2)
+        time.sleep(3)
         link = user.driver.current_url.split("/")[-1]
         reload_mainpage(user)
         return get_war(link)

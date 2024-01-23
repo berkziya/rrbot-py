@@ -3,7 +3,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, get_page, return_to_mainwindow
+from butler import error, get_page, return_to_mainwindow, wait_until_internet_is_back
 from misc.utils import dotless
 from models import get_autonomy, get_player, get_region, get_state
 
@@ -59,13 +59,14 @@ class Autonomy:
     def __setstate__(self, state):
         self.id = state["id"]
         self.last_accessed = state["last_accessed"]
-        self.state = get_state(state["state"]) if state["state"] else None
-        self.governor = get_player(state["governor"]) if state["governor"] else None
+        self.state = get_state(state["state"])
+        self.governor = get_player(state["governor"])
         self.regions = [get_region(region) for region in state["regions"]]
         self.budget = state["budget"]
 
 
 def get_autonomy_info(user, id, force=False):
+    wait_until_internet_is_back(user)
     try:
         autonomy = get_autonomy(id)
         if (
@@ -157,7 +158,8 @@ def get_autonomy_info(user, id, force=False):
         return autonomy
     except NoSuchElementException:
         from models.region import get_region_info
+
         a = get_region_info(user, id)
         return a.autonomy
     except Exception as e:
-        return error(user, e, "Error getting autonomy info")
+        return error(user, e, f"Error getting autonomy info {id}")

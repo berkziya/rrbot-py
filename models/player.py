@@ -4,7 +4,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, get_page, return_to_mainwindow
+from butler import error, get_page, return_to_mainwindow, wait_until_internet_is_back
 from misc.utils import dotless
 from models import get_autonomy, get_party, get_player, get_region, get_state
 
@@ -96,33 +96,32 @@ class Player:
         self.id = state["id"]
         self.last_accessed = state["last_accessed"]
         self.level = state["level"]
-        self.state_leader = (
-            get_player(state["state_leader"]) if state["state_leader"] else None
-        )
+        self.state_leader = get_player(state["state_leader"])
         self.perks = state["perks"]
-        self.region = get_region(state["region"]) if state["region"] else None
-        self.residency = get_region(state["residency"]) if state["residency"] else None
+        self.region = get_region(state["region"])
+        self.residency = get_region(state["residency"])
         self.workpermits = {
             get_state(key): (get_region(value) if value else 0)
             for key, value in state["workpermits"].items()
         }
-        self.governor = get_autonomy(state["governor"]) if state["governor"] else None
-        self.economics = get_state(state["economics"]) if state["economics"] else None
-        self.foreign = get_state(state["foreign"]) if state["foreign"] else None
-        self.party = get_party(state["party"]) if state["party"] else None
+        self.governor = get_autonomy(state["governor"])
+        self.economics = get_state(state["economics"])
+        self.foreign = get_state(state["foreign"])
+        self.party = get_party(state["party"])
 
 
 def get_player_info(user, id=None, force=False):
-    if not id:
-        id = user.player.id
-    player = get_player(id)
-    if (
-        player.last_accessed
-        and player.last_accessed < time.time() - 900
-        and (not force)
-    ):
-        return player
+    wait_until_internet_is_back(user)
     try:
+        if not id:
+            id = user.player.id
+        player = get_player(id)
+        if (
+            player.last_accessed
+            and player.last_accessed < time.time() - 900
+            and (not force)
+        ):
+            return player
         if not get_page(user, f"slide/profile/{id}"):
             return False
         level_text = user.driver.find_element(
@@ -196,13 +195,17 @@ def get_player_info(user, id=None, force=False):
                 else:
                     for div in tr.find_elements(By.CSS_SELECTOR, "div[title]"):
                         if "state" in div.get_attribute("action"):
-                            permits[get_state(div.get_attribute("action").split("/")[-1])] = 0
+                            permits[
+                                get_state(div.get_attribute("action").split("/")[-1])
+                            ] = 0
                         else:
                             try:
-                                region = get_region(user, div.get_attribute("action").split("/")[-1])
+                                region = get_region(
+                                    user, div.get_attribute("action").split("/")[-1]
+                                )
                                 permits[region.state] = region
                             except:
-                                pass #TODO: fix this
+                                pass  # TODO: fix this
                 player.set_workpermits(permits)
             elif "Governor:" in tr.text:
                 player.set_governor(
@@ -251,4 +254,4 @@ def get_player_info(user, id=None, force=False):
         return_to_mainwindow(user)
         return None
     except Exception as e:
-        return error(user, e, "Error getting player info")
+        return error(user, e, f"Error getting player info {id}")

@@ -14,16 +14,6 @@ tables = {
 }
 
 
-def initiate_database(user):
-    try:
-        for table in tables:
-            create_table(user, table)
-        return True
-    except Exception as e:
-        error(user, f"Database initiation failed: {e}")
-        return False
-
-
 def create_table(user, table):
     try:
         user.cursor.execute(
@@ -32,8 +22,14 @@ def create_table(user, table):
         user.conn.commit()
         return True
     except Exception as e:
-        error(user, f"Table creation failed: {e}")
+        error(user, e, f"Table creation failed for {table}")
         return False
+
+
+def create_tables(user):
+    for table in tables:
+        create_table(user, table)
+    return True
 
 
 def load(user):
@@ -65,7 +61,7 @@ def load(user):
         user.conn.commit()
         return True
     except Exception as e:
-        error(user, f"Database load failed: {e}")
+        error(user, e, "Database load failed")
         return False
 
 
@@ -83,10 +79,10 @@ def save(user):
                 if result is None or result[0] < item.last_accessed:
                     user.cursor.execute(
                         f"INSERT OR REPLACE INTO {table} (id, data, last_accessed) VALUES (?, ?, ?)",
-                        (id, pickle.dumps(item), item.last_accessed),
+                        (id, pickle.dumps(item.__getstate__), item.last_accessed),
                     )
     except Exception as e:
-        error(user, f"Database save failed: {e}")
+        error(user, e, "Database save failed")
         return False
     finally:
         user.conn.commit()

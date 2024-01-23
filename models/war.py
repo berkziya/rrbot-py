@@ -169,4 +169,4 @@ def get_war_info(user, id):
         return_to_mainwindow(user)
         return None
     except Exception as e:
-        return error(user, e, "Error getting war info")
+        return error(user, e, f"Error getting war info {id}")

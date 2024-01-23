@@ -120,17 +120,22 @@ def auto_work_factory(user, id=None):
         return error(user, e, "Error auto working factory")
 
 
-def get_best_factory(user, resource="gold", include_fix_wage=False):
+def get_best_factory(user, id=None, resource="gold", include_fix_wage=False):
     try:
-        factories = get_factories(user, user.player.region.id, resource)
+        if not id:
+            get_player_info(user)
+            id = user.player.region.id
+        factories = get_factories(user, id=id, resource=resource)
         if not factories:
             return False
+
         def get_wage(factory):
             return (
                 factory.wage
                 if factory.fixed_wage
                 else factory.wage * (factory.level**0.8)
             )
+
         if include_fix_wage:
             max(factories, key=get_wage)
         else:

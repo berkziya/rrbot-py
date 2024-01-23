@@ -3,7 +3,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, get_page, return_to_mainwindow
+from butler import error, get_page, return_to_mainwindow, wait_until_internet_is_back
 from misc.utils import dotless
 from models import get_autonomy, get_factory, get_player, get_region, get_state
 from models.autonomy import get_autonomy_info
@@ -155,8 +155,8 @@ class Region:
     def __setstate__(self, state):
         self.id = state["id"]
         self.last_accessed = state["last_accessed"]
-        self.state = get_state(state["state"]) if state["state"] else None
-        self.autonomy = get_autonomy(state["autonomy"]) if state["autonomy"] else None
+        self.state = get_state(state["state"])
+        self.autonomy = get_autonomy(state["autonomy"])
         self.location = state["location"]
         self.buildings = state["buildings"]
         self.rating = state["rating"]
@@ -173,6 +173,7 @@ class Region:
 
 
 def get_region_info(user, id, force=False):
+    wait_until_internet_is_back(user)
     try:
         region = get_region(id)
         if (
@@ -183,10 +184,9 @@ def get_region_info(user, id, force=False):
             return region
         if not get_page(user, f"map/details/{id}"):
             return False
-        upper = (
-            user.driver.find_element(By.CSS_SELECTOR, "div.margin > h1 > span")
-            .get_attribute("action")
-        )
+        upper = user.driver.find_element(
+            By.CSS_SELECTOR, "div.margin > h1 > span"
+        ).get_attribute("action")
         if "state" in upper:
             state = get_state(upper.split("/")[-1])
             region.set_state(state)
@@ -292,16 +292,27 @@ def get_region_info(user, id, force=False):
                 )
             elif "Tax rate:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_tax(
-                    int(div.find_element(By.CSS_SELECTOR, "div.short_details").text.split(" ")[0])
+                    int(
+                        div.find_element(
+                            By.CSS_SELECTOR, "div.short_details"
+                        ).text.split(" ")[0]
+                    )
                 )
             elif "Market taxes:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_market_tax(
-                    int(div.find_element(By.CSS_SELECTOR, "div.short_details").text.split(" ")[0])
+                    int(
+                        div.find_element(
+                            By.CSS_SELECTOR, "div.short_details"
+                        ).text.split(" ")[0]
+                    )
                 )
             elif "Sea access:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_sea_access(
                     True
-                    if ("Yes" in div.find_element(By.CSS_SELECTOR, "div.short_details").text)
+                    if (
+                        "Yes"
+                        in div.find_element(By.CSS_SELECTOR, "div.short_details").text
+                    )
                     else False
                 )
             elif "Gold resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:

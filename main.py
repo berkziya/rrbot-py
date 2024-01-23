@@ -12,7 +12,6 @@ from user import Client
 DEFAULT_CONFIG = """[general]
 browser = firefox
 binary = C:\\Program Files\\Mozilla Firefox\\firefox.exe
-database = database.db
 
 [user1]
 enabled = true
@@ -39,37 +38,6 @@ users = []
 caffeinate = None
 
 
-def create_user_from_config(config, general):
-    headless = general.getboolean("headless", fallback=True)
-    binary = general.get("binary", fallback=None)
-
-    email = config.get("email")
-    password = config.get("password")
-    is_headless = config.getboolean("headless", fallback=headless) or not binary
-    database = general.get("database", fallback=None)
-
-    user = Client(config.name, database, email, password)
-    user.set_driveroptions("binary_location", binary)
-    user.set_driveroptions("headless", is_headless)
-
-    goldperks = str.lower(config.get("goldperks", fallback=""))
-    eduweight = config.getint("eduweight", fallback=0)
-    goldweight = config.getint("goldweight", fallback=10)
-    minlvl4gold = config.getint("minlvl4gold", fallback=0)
-
-    user.set_perkoptions("goldperks", goldperks)
-    user.set_perkoptions("eduweight", eduweight)
-    user.set_perkoptions("goldweight", goldweight)
-    user.set_perkoptions("minlvl4gold", minlvl4gold)
-
-    statedept = config.get("statedept", fallback=None)
-    user.set_statedept(statedept)
-
-    factory = config.get("factory", fallback=None)
-    user.set_factory(factory)
-    return user
-
-
 def create_config_file():
     with open("config.ini", "w") as f:
         f.write(DEFAULT_CONFIG)
@@ -80,9 +48,41 @@ def create_config_file():
 def read_config():
     config = configparser.ConfigParser()
     config.read("config.ini")
+
     if config["general"].get("token", fallback=None):
         os.environ["GH_TOKEN"] = config["general"]["token"]
+
     return config
+
+
+def create_user_from_config(config, general):
+    headless = general.getboolean("headless", fallback=True)
+    binary = general.get("binary", fallback=None)
+
+    email = config.get("email")
+    password = config.get("password")
+    is_headless = config.getboolean("headless", fallback=headless) or not binary
+
+    user = Client(config.name, email, password)
+    user.set_driveroptions("binary_location", binary)
+    user.set_driveroptions("headless", is_headless)
+
+    goldperks = str.lower(config.get("goldperks", fallback=""))
+    eduweight = config.getint("eduweight", fallback=0)
+    goldweight = config.getint("goldweight", fallback=10)
+    minlvl4gold = config.getint("minlvl4gold", fallback=0)
+    user.set_perkoptions("goldperks", goldperks)
+    user.set_perkoptions("eduweight", eduweight)
+    user.set_perkoptions("goldweight", goldweight)
+    user.set_perkoptions("minlvl4gold", minlvl4gold)
+
+    statedept = config.get("statedept", fallback=None)
+    user.set_statedept(statedept)
+
+    factory = config.get("factory", fallback=None)
+    user.set_factory(factory)
+
+    return user
 
 
 def initiate_users(config):
@@ -113,6 +113,7 @@ def start_session():
     if len(users) == 1:
         session(users[0])
         return
+
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(session, user) for user in users]
         for future in concurrent.futures.as_completed(futures):

@@ -43,7 +43,7 @@ class Party:
     def __setstate__(self, state):
         self.id = state["id"]
         self.last_accessed = state["last_accessed"]
-        self.leader = get_player(state["leader"]) if state["leader"] else None
-        self.region = get_region(state["region"]) if state["region"] else None
+        self.leader = get_player(state["leader"])
+        self.region = get_region(state["region"])
         self.secretaries = [get_player(player) for player in state["secretaries"]]
         self.members = [get_player(player) for player in state["members"]]

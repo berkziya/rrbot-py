@@ -52,16 +52,13 @@ def upgrade_perk(user):
         time = time / (4 if perk < 50 else (2 if perk < 100 else 1))
         return time
 
-    def get_currency(perk, time):
+    def get_currency(perk):
         goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
-        worth = (4e4 + time) / goldprice
-        currency = "money"
-        if worth > 385:
-            currency = "gold"
+
+        currency = "gold"
 
         conditions = [
             perk not in user.perkoptions["goldperks"],
-            # (10 - user.perkoptions["goldweight"]) > (user.player.perks[perk] + 6) % 10,
             user.player.perks[perk] < user.perkoptions["minlvl4gold"],
             user.player.money["energy"] // 10 + user.player.money["gold"] < 20000,
             goldprice > user.player.money["gold"],
@@ -72,22 +69,13 @@ def upgrade_perk(user):
                 break
         return currency
 
-    strcurrency, strtime = 0, 0
-    endcurrency, endtime = 0, 0
-    educurrency, edutime = 0, 0
+    strcurrency = get_currency("str")
+    endcurrency = get_currency("end")
+    educurrency = get_currency("edu")
 
-    for i in range(1, 0, -1):
-        strtime_i = get_time(strength + i) / 2
-        endtime_i = get_time(endurance + i) * (1 - user.perkoptions["eduweight"] / 100)
-        edutime_i = get_time(education + i)
-
-        strcurrency = get_currency("str", strtime_i)
-        endcurrency = get_currency("end", endtime_i)
-        educurrency = get_currency("edu", edutime_i)
-
-        strtime += strtime_i * (0.075 if strcurrency == "gold" else 1)
-        endtime += endtime_i * (0.075 if endcurrency == "gold" else 1)
-        edutime += edutime_i * (0.075 if educurrency == "gold" else 1)
+    strtime = get_time(strength) * (0.075 if strcurrency == "gold" else 1)
+    endtime = get_time(education) * (0.075 if endcurrency == "gold" else 1)
+    edutime = get_time(endurance) * (0.075 if educurrency == "gold" else 1)
 
     if endurance < 100:
         perk, currency = "end", endcurrency

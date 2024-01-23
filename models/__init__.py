@@ -9,6 +9,8 @@ wars = {}
 
 
 def get_player(id):
+    if id is None:
+        return None
     from .player import Player
 
     id = int(id)
@@ -22,6 +24,8 @@ def get_player(id):
 
 
 def get_state(id):
+    if id is None:
+        return None
     from .state import State
 
     id = int(id)
@@ -35,6 +39,8 @@ def get_state(id):
 
 
 def get_autonomy(id):
+    if id is None:
+        return None
     from .autonomy import Autonomy
 
     id = int(id)
@@ -48,6 +54,8 @@ def get_autonomy(id):
 
 
 def get_region(id):
+    if id is None:
+        return None
     from .region import Region
 
     id = int(id)
@@ -61,6 +69,8 @@ def get_region(id):
 
 
 def get_party(id):
+    if id is None:
+        return None
     from .party import Party
 
     id = int(id)
@@ -74,6 +84,8 @@ def get_party(id):
 
 
 def get_factory(id):
+    if id is None:
+        return None
     from .factory import Factory
 
     id = int(id)
@@ -87,6 +99,8 @@ def get_factory(id):
 
 
 def get_bloc(id):
+    if id is None:
+        return None
     from .bloc import Bloc
 
     id = int(id)
@@ -100,6 +114,8 @@ def get_bloc(id):
 
 
 def get_war(id):
+    if id is None:
+        return None
     from .war import War
 
     id = int(id)

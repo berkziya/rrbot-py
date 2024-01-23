@@ -2,6 +2,7 @@ import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 from butler import error, reload_mainpage
 from misc.utils import dotless
@@ -38,10 +39,15 @@ def set_money(user, energy=False):
             )
             user.driver.execute_script("arguments[0].click();", storage_button)
             time.sleep(3)
-            energy = user.driver.find_element(
-                By.CSS_SELECTOR,
-                "div.storage_item:nth-child(11) > .storage_number > .storage_number_change",
+            energy = user.wait.until(
+                EC.presence_of_element_located(
+                    (
+                        By.CSS_SELECTOR,
+                        "div.storage_item:nth-child(11) > .storage_number > .storage_number_change",
+                    )
+                )
             ).text
+            time.sleep(1)
             user.player.set_money("energy", dotless(energy))
             reload_mainpage(user)
         return True

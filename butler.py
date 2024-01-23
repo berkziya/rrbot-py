@@ -7,7 +7,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from misc.logger import alert
 
-DELAY = 2
+DELAY = 3
 
 
 def delay_before_actions(user):
@@ -129,7 +129,6 @@ def reset_browser(user):
 
 
 def error(user, error, text=None):
-    user.driver.get_screenshot_as_file(f"errors/error_screenshot_{time.time()}.png")
     if text:
         alert(user, f"{text}: {error}")
     try:

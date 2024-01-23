@@ -3,7 +3,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, get_page, return_to_mainwindow
+from butler import error, get_page, return_to_mainwindow, wait_until_internet_is_back
 from misc.utils import dotless
 from models import get_factory, get_player, get_region
 
@@ -66,8 +66,8 @@ class Factory:
         self.id = state["id"]
         self.last_accessed = state["last_accessed"]
         self.type = state["type"]
-        self.region = get_region(state["region"]) if state["region"] else None
-        self.owner = get_player(state["owner"]) if state["owner"] else None
+        self.region = get_region(state["region"])
+        self.owner = get_player(state["owner"])
         self.level = state["level"]
         self.wage = state["wage"]
         self.fixed_wage = state["fixed_wage"]
@@ -75,9 +75,14 @@ class Factory:
 
 
 def get_factory_info(user, id, force=False):
+    wait_until_internet_is_back(user)
     try:
         factory = get_factory(id)
-        if factory.last_accessed > time.time() - 3600 and not force:
+        if (
+            factory.last_accessed
+            and factory.last_accessed < time.time() - 900
+            and (not force)
+        ):
             return factory
         if not get_page(user, f"factory/index/{id}"):
             return False
@@ -130,4 +135,4 @@ def get_factory_info(user, id, force=False):
         return_to_mainwindow(user)
         return None
     except Exception as e:
-        return error(user, e, "Error getting factory info")
+        return error(user, e, f"Error getting factory info {id}")

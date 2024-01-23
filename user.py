@@ -1,7 +1,7 @@
 import json
-import os
 import sched
 import sqlite3
+import threading
 import time
 
 from selenium.common.exceptions import NoSuchElementException
@@ -20,13 +20,12 @@ from models import get_player
 
 
 class Client:
-    def __init__(self, name, database_name, email, password):
+    def __init__(self, name, email, password):
         self.name = name
 
         self.id = 0
         self.player = None
-        self.database_name = database_name
-        self.conn, self.cursor = None, None
+        self.local_storage = threading.local()
 
         self.email = email
         self.password = password
@@ -51,12 +50,28 @@ class Client:
         self.statedept = None
         self.factory = None
 
+    @property
+    def conn(self):
+        if not hasattr(self.local_storage, "conn"):
+            self.local_storage.conn = self.create_connection()
+        return self.local_storage.conn
+
+    @property
+    def cursor(self):
+        if not hasattr(self.local_storage, "cursor"):
+            self.local_storage.cursor = self.conn.cursor()
+        return self.local_storage.cursor
+
+    def create_connection(self):
+        try:
+            return sqlite3.connect("database.db")
+        except Exception as e:
+            error(self, e, "Error creating database connection")
+            return None
+
     def load_database(self):
-        if self.database_name:
-            self.conn = sqlite3.connect(self.database_name)
-            self.cursor = self.conn.cursor()
-            database.initiate_database(self)
-            database.load(self)
+        database.create_tables(self)
+        database.load(self)
 
     def save_database(self):
         if self.conn and self.cursor:
@@ -104,16 +119,17 @@ class Client:
             time.sleep(1)
 
             try:
-                if not os.path.exists(f"{self.name}_cookies.json"):
-                    raise NoSuchElementException
-                log(self, "Loading cookies...")
-                cookies = json.load(open(f"{self.name}_cookies.json", "r"))
-                for cookie in cookies:
-                    self.driver.add_cookie(cookie)
-                self.driver.get("https://rivalregions.com")
-                self.wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
-                )
+                raise NoSuchElementException
+                # if not os.path.exists(f"{self.name}_cookies.json"):
+                #     raise NoSuchElementException
+                # log(self, "Loading cookies...")
+                # cookies = json.load(open(f"{self.name}_cookies.json", "r"))
+                # for cookie in cookies:
+                #     self.driver.add_cookie(cookie)
+                # self.driver.get("https://rivalregions.com")
+                # self.wait.until(
+                #     EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
+                # )
             except NoSuchElementException:
                 self.driver.delete_all_cookies()
                 self.driver.get("https://rivalregions.com")
