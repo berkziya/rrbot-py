@@ -79,7 +79,7 @@ def save(user):
                 if result is None or result[0] < item.last_accessed:
                     user.cursor.execute(
                         f"INSERT OR REPLACE INTO {table} (id, data, last_accessed) VALUES (?, ?, ?)",
-                        (id, pickle.dumps(item.__getstate__), item.last_accessed),
+                        (id, pickle.dumps(item.__getstate__()), item.last_accessed),
                     )
     except Exception as e:
         error(user, e, "Database save failed")
