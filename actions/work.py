@@ -71,7 +71,7 @@ def assign_factory(user, id):
         if not id:
             return alert(user, "No factory set")
         resign_factory(user)
-        time.sleep(2)
+        time.sleep(3)
         if not ajax(
             user,
             "/factory/assign",
@@ -80,7 +80,7 @@ def assign_factory(user, id):
             relad_after=True,
         ):
             return False
-        time.sleep(2)
+        time.sleep(3)
         reload_mainpage(user)
         return True
     except Exception as e:
@@ -107,7 +107,6 @@ def auto_work_factory(user, id=None):
             f"Auto working factory: {factory.id}, type: {factory.type}",
         )
         assign_factory(user, factory.id)
-        cancel_auto_work(user)
         time.sleep(3)
         return ajax(
             user,
