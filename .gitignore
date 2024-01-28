@@ -1,10 +1,10 @@
 config.ini
 geckodriver.log
-log.txt
 *.db
 *.db-journal
 .wdm
 *_cookies.json
+logs/*
 errors/*
 
 ### macOS ###

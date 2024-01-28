@@ -1,4 +1,13 @@
 import datetime
+import logging
+import logging.handlers
+
+logger = logging.getLogger("logger")
+logger.setLevel(logging.INFO)
+handler = logging.handlers.RotatingFileHandler(
+    "logs/log.txt", maxBytes=1000000, backupCount=5
+)
+logger.addHandler(handler)
 
 
 def thetime():
@@ -11,8 +20,7 @@ def log(user, str, save=True):
     print(str)
     if not save:
         return
-    with open("log.txt", "a") as f:
-        f.write("[INFO]" + str + "\n")
+    logger.info(str)
 
 
 def alert(user, str, save=True):
@@ -20,5 +28,4 @@ def alert(user, str, save=True):
     print(str)
     if not save:
         return
-    with open("log.txt", "a") as f:
-        f.write("[ALERT] " + str + "\n")
+    logger.warning(str)

@@ -33,17 +33,20 @@ def work_state_department(user, id=None, dept="gold"):
         wait_until_internet_is_back(user)
         if not id:
             get_player_info(user)
-            get_region_info(user, user.player.region.id)
             get_region_info(user, user.player.residency.id)
-            if (
-                user.player.region.state != user.player.residency.state
-                or user.player.region.state not in user.player.workpermits
-            ):
-                user.s.enter(3600, 1, work_state_department, (user,))
-                return False
+            if user.player.region.id == user.player.residency.id:
+                id = user.player.residency.state.id
+            else:
+                get_region_info(user, user.player.region.id)
+                if (user.player.region.state.id != user.player.residency.state.id) or (
+                    user.player.region.state.id
+                    not in [state.id for state in user.player.workpermits]
+                ):
+                    user.s.enter(3600, 1, work_state_department, (user, id, dept))
+                    return False
             id = user.player.region.state.id
         if not id:
-            user.s.enter(3600, 1, work_state_department, (user,))
+            user.s.enter(3600, 1, work_state_department, (user, id, dept))
             return False
         state = get_state(id)
         dept_ids = {
