@@ -57,12 +57,12 @@ class War:
             "last_accessed": self.last_accessed,
             "type": self.type,
             "ending_time": self.ending_time,
-            "attacking_region": self.attacking_region.id
-            if self.attacking_region
-            else None,
-            "defending_region": self.defending_region.id
-            if self.defending_region
-            else None,
+            "attacking_region": (
+                self.attacking_region.id if self.attacking_region else None
+            ),
+            "defending_region": (
+                self.defending_region.id if self.defending_region else None
+            ),
             "attackers": {k.id: v for k, v in self.attackers.items()},
             "defenders": {k.id: v for k, v in self.defenders.items()},
             "attacker_damage": self.attacker_damage,
@@ -152,9 +152,11 @@ def get_war_info(user, id):
         war.set_attacker_damage = dotless(
             user.driver.find_element(
                 By.CSS_SELECTOR,
-                "#war_w_ata_s > div.imp > span:nth-child(5) > span"
-                if type not in ["revolution", "coup"]
-                else "#war_w_ata > div.imp > span.hov2 > span",
+                (
+                    "#war_w_ata_s > div.imp > span:nth-child(5) > span"
+                    if type not in ["revolution", "coup"]
+                    else "#war_w_ata > div.imp > span.hov2 > span"
+                ),
             ).text
         )
         war.set_defender_damage = dotless(

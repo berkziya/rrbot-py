@@ -122,7 +122,7 @@ def auto_work_factory(user, id=None):
 def get_best_factory(user, id=None, resource="gold", include_fix_wage=False):
     try:
         if not id:
-            get_player_info(user)
+            get_player_info(user, force=True)
             id = user.player.region.id
         factories = get_factories(user, id=id, resource=resource)
         if not factories:

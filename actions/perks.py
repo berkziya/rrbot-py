@@ -60,7 +60,7 @@ def upgrade_perk(user):
         conditions = [
             perk not in user.perkoptions["goldperks"],
             user.player.perks[perk] < user.perkoptions["minlvl4gold"],
-            user.player.money["energy"] // 10 + user.player.money["gold"] < 20000,
+            (user.player.money["energy"] // 10 + user.player.money["gold"]) < 20000,
             goldprice > user.player.money["gold"],
         ]
         for condition in conditions:
@@ -70,12 +70,12 @@ def upgrade_perk(user):
         return currency
 
     strcurrency = get_currency("str")
-    endcurrency = get_currency("end")
     educurrency = get_currency("edu")
+    endcurrency = get_currency("end")
 
-    strtime = get_time(strength) * (0.075 if strcurrency == "gold" else 1)
-    endtime = get_time(education) * (0.075 if endcurrency == "gold" else 1)
-    edutime = get_time(endurance) * (0.075 if educurrency == "gold" else 1)
+    strtime = get_time(strength) * (0.075 if strcurrency == "gold" else 1) * 0.5
+    edutime = get_time(education) * (0.075 if educurrency == "gold" else 1) * (1 - user.perkoptions["eduweight"]/100)
+    endtime = get_time(endurance) * (0.075 if endcurrency == "gold" else 1)
 
     if endurance < 100:
         perk, currency = "end", endcurrency

@@ -34,11 +34,13 @@ def session(user):
             "desc": "work state department",
             "event": work_state_department,
             "args": (
-                None,
-                user.statedept,
-            )
-            if user.statedept
-            else (None,),
+                (
+                    None,
+                    user.statedept,
+                )
+                if user.statedept
+                else (None,)
+            ),
         },
         {"desc": "upcoming_events", "event": events.upcoming_events},
     ]

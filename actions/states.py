@@ -68,6 +68,27 @@ def explore_resource(user, resource="gold"):
     return result
 
 
+def budget_transfer(user, id, resource, amount):
+    resources = {
+        "money": 1,
+        "gold": 0,
+        "oil": 3,
+        "ore": 4,
+        "uranium": 11,
+        "diamonds": 15,
+    }
+    law = ajax(
+        user,
+        f"/parliament/donew/send_{resources[resource]}/{amount}/{id}",
+        "tmp_gov: '{id}'",
+        "Error exploring resource",
+        relad_after=True,
+    )
+    if law:
+        log(user, f"Transferred {amount} {resource} to {id}")
+    return law
+
+
 def border_control(user, border="opened"):
     if not user.player.foreign:
         log(user, "Not a foreign minister")

@@ -44,7 +44,6 @@ class Client:
         self.perkoptions = {
             "goldperks": None,
             "eduweight": 0,
-            "goldweight": 0,
             "minlvl4gold": 999,
         }
 

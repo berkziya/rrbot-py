@@ -7,7 +7,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from misc.logger import alert
 
-DELAY = 3
+DELAY = 2.5
 
 
 def delay_before_actions(user):
@@ -82,7 +82,9 @@ def delay_tasks(scheduler, delay):
 
 def is_internet_on(user):
     try:
-        requests.get("https://rivalregions.com", timeout=5)
+        requests.get("https://google.com", timeout=15)
+        delay_before_actions(user)
+        requests.get("https://rivalregions.com", timeout=15)
         return True
     except:
         alert(user, "No internet connection")
@@ -105,10 +107,6 @@ def reset_browser(user):
         if user.is_resetting:
             return False
         user.set_is_resetting(True)
-        try:
-            return am_i_alive(user)
-        except:
-            pass
         if user.driver:
             user.driver.quit()
             time.sleep(2)
