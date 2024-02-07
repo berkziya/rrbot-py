@@ -1,5 +1,5 @@
-config.ini
-geckodriver.log
+*.ini
+*.log
 *.db
 *.db-journal
 .wdm

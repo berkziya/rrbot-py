@@ -1,9 +1,8 @@
 import json
+import os
 import sched
 import sqlite3
-import threading
 import time
-import os
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Firefox
@@ -26,7 +25,6 @@ class Client:
 
         self.id = 0
         self.player = None
-        self.local_storage = threading.local()
 
         self.email = email
         self.password = password
@@ -37,6 +35,9 @@ class Client:
         self.wait = None
         self.main_window = None
         self.data_window = None
+
+        self.conn_ = None
+        self.cursor_ = None
 
         self.is_resetting = False
         self.last_request_time = 0
@@ -52,15 +53,15 @@ class Client:
 
     @property
     def conn(self):
-        if not hasattr(self.local_storage, "conn"):
-            self.local_storage.conn = self.create_connection()
-        return self.local_storage.conn
+        if not self.conn_:
+            self.conn_ = self.create_connection()
+        return self.conn_
 
     @property
     def cursor(self):
-        if not hasattr(self.local_storage, "cursor"):
-            self.local_storage.cursor = self.conn.cursor()
-        return self.local_storage.cursor
+        if not self.cursor_:
+            self.cursor_ = self.conn.cursor()
+        return self.cursor_
 
     def create_connection(self):
         try:

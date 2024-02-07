@@ -1,11 +1,9 @@
-import atexit
-import concurrent.futures
+import argparse
 import configparser
 import os
 import subprocess
-import sys
 
-from misc.logger import alert, log
+from misc.logger import alert
 from session import session
 from user import Client
 
@@ -13,7 +11,7 @@ DEFAULT_CONFIG = """[general]
 browser = firefox
 binary = C:\\Program Files\\Mozilla Firefox\\firefox.exe
 
-[user1]
+[user]
 enabled = true
 email = user1@example.com
 password = password1
@@ -22,30 +20,18 @@ eduweight = 55
 minlvl4gold = 666
 statedept = building
 factory = 45763
-
-[user2]
-enabled = false
-email = user2@example.com
-password = password2
-goldperks = str
-eduweight = 0
-minlvl4gold = 30
 """
 
-users = []
-caffeinate = None
 
-
-def create_config_file():
-    with open("config.ini", "w") as f:
+def create_config_file(config_path):
+    with open(config_path, "w") as f:
         f.write(DEFAULT_CONFIG)
     print("Created a config file. Please edit config.ini and run the program again.")
-    sys.exit()
 
 
-def read_config():
+def read_config(config_path):
     config = configparser.ConfigParser()
-    config.read("config.ini")
+    config.read(config_path)
 
     if config["general"].get("token", fallback=None):
         os.environ["GH_TOKEN"] = config["general"]["token"]
@@ -81,7 +67,7 @@ def create_user_from_config(config, general):
     return user
 
 
-def initiate_users(config):
+def initiate_user(config):
     for section in config.sections():
         if section == "general":
             continue
@@ -91,64 +77,33 @@ def initiate_users(config):
         user = create_user_from_config(config[section], config["general"])
 
         if not user.initiate_session():
-            alert(user, "Login failed. Aborting...}")
+            alert(user, "Login failed. Aborting...")
             del user
-            continue
-
-        users.append(user)
-        log(user, "Login successful.")
-
-
-def start_session():
-    global users, caffeinate
-    try:
-        caffeinate = subprocess.Popen(["/usr/bin/caffeinate", "-i"])
-    except FileNotFoundError:
-        print("caffeinate not found. Continuing without it.")
-
-    if len(users) == 1:
-        session(users[0])
-        return
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(session, user) for user in users]
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                result = future.result()
-            except Exception as e:
-                print(f"Exception: {e}")
-            else:
-                print(f"Result: {result}")
-
-
-def cleanup():
-    global users, caffeinate
-    for user in users:
-        if user:
-            del user
-    if caffeinate:
-        caffeinate.terminate()
+    return user
 
 
 def main():
-    global users, caffeinate
+    parser = argparse.ArgumentParser(description="Process config file.")
+    parser.add_argument("config_path", type=str, help="Path to the config file")
+
+    args = parser.parse_args()
+
     os.environ["WDM_LOCAL"] = "1"
 
-    if not os.path.exists("config.ini"):
-        create_config_file()
+    if not os.path.exists(args.config_path):
+        create_config_file(args.config_path)
+        return
 
-    config = read_config()
+    config = read_config(args.config_path)
+    user = initiate_user(config)
+    if user:
+        try:
+            subprocess.Popen(["/usr/bin/caffeinate", "-i"])
+        except FileNotFoundError:
+            print("caffeinate not found. Continuing without it.")
 
-    initiate_users(config)
-
-    if not users:
-        print("No users enabled. Aborting...")
-        sys.exit()
-
-    start_session()
+        session(user)
 
 
 if __name__ == "__main__":
     main()
-    atexit.register(cleanup)
-    exit()
