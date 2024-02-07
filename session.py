@@ -2,7 +2,6 @@ import pytz
 import schedule
 
 import events
-from actions.perks import upgrade_perk
 from actions.regions import build_military_academy, work_state_department
 from actions.states import budget_transfer
 from actions.status import set_money
@@ -24,7 +23,7 @@ def session(user):
     #     budget_transfer(user, 200022, "oil", 1000000000)
 
     eventsToBeDone = [
-        {"desc": "upgrade perks", "event": upgrade_perk},
+        {"desc": "upgrade perks", "event": events.upgrade_perk_event},
         {"desc": "build military academy", "event": build_military_academy},
         {"desc": "energy drink refill", "event": events.energy_drink_refill},
         {"desc": "attack training", "event": attack},

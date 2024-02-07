@@ -1,6 +1,8 @@
 import datetime
+from actions.perks import check_training_status, upgrade_perk
 
 from actions.states import explore_resource
+from actions.status import set_money, set_perks
 from actions.storage import produce_energy
 from butler import wait_until_internet_is_back
 from misc.logger import log
@@ -61,3 +63,33 @@ def close_borders_if_not_safe(user):
         return False
     # if not is_there_a_war_in_my_state(user): return True
     pass
+
+
+def upgrade_perk_event(user):
+    def fail():
+        user.s.enter(600, 1, upgrade_perk_event, (user,))
+        return False
+    if not (set_perks(user) and set_money(user, energy=True)):
+        return fail()
+
+    training_time = check_training_status(user)
+
+    if training_time:
+        user.s.enter(training_time, 1, upgrade_perk_event, (user,))
+        log(
+            user,
+            f"Perk upgrade in progress. Time remaining: {datetime.timedelta(seconds=training_time)}",
+        )
+        return False
+    elif training_time is False:
+        return fail()
+
+    result, perk, currency = upgrade_perk(user)
+
+    if result:
+        log(user, f"Upgraded {perk.upper()} with {currency.upper()}")
+        user.s.enter(600, 1, upgrade_perk_event, (user,))
+        return True
+
+    else:
+        return fail()
