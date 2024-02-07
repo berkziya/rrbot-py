@@ -4,6 +4,7 @@ import schedule
 import events
 from actions.perks import upgrade_perk
 from actions.regions import build_military_academy, work_state_department
+from actions.states import budget_transfer
 from actions.status import set_money
 from actions.wars import attack
 from actions.work import auto_work_factory
@@ -18,6 +19,9 @@ from models.state import get_state_info
 
 def session(user):
     user.load_database()
+
+    # if user.player.economics:
+    #     budget_transfer(user, 200022, "oil", 1000000000)
 
     eventsToBeDone = [
         {"desc": "upgrade perks", "event": upgrade_perk},
