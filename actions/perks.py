@@ -20,55 +20,58 @@ def check_training_status(user):
 
 
 def upgrade_perk(user, perk=None, currency="gold"):
-    if not perk:
-        perkurl = {"str": 1, "edu": 2, "end": 3}
-        currencyurl = {"money": 1, "gold": 2}
+    try:
+        if not perk:
+            perkurl = {"str": 1, "edu": 2, "end": 3}
+            currencyurl = {"money": 1, "gold": 2}
 
-        strength = user.player.perks["str"]
-        education = user.player.perks["edu"]
-        endurance = user.player.perks["end"]
+            strength = user.player.perks["str"]
+            education = user.player.perks["edu"]
+            endurance = user.player.perks["end"]
 
-        def get_time(perk):
-            time = (perk + 1) ** 2
-            time = time / (4 if perk < 50 else (2 if perk < 100 else 1))
-            return time
+            def get_time(perk):
+                time = (perk + 1) ** 2
+                time = time / (4 if perk < 50 else (2 if perk < 100 else 1))
+                return time
 
-        def get_currency(perk):
-            goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
-            conditions = [
-                perk not in user.perkoptions["goldperks"],
-                user.player.perks[perk] < user.perkoptions["minlvl4gold"],
-                (user.player.money["energy"] // 10 + user.player.money["gold"]) < 20000,
-                goldprice > user.player.money["gold"],
-            ]
-            for condition in conditions:
-                if condition:
-                    currency = "money"
-                    break
-            return currency
+            def get_currency(perk):
+                goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
+                conditions = [
+                    perk not in user.perkoptions["goldperks"],
+                    user.player.perks[perk] < user.perkoptions["minlvl4gold"],
+                    (user.player.money["energy"] // 10 + user.player.money["gold"]) < 20000,
+                    goldprice > user.player.money["gold"],
+                ]
+                for condition in conditions:
+                    if condition:
+                        currency = "money"
+                        break
+                return currency
 
-        strcurrency = get_currency("str")
-        educurrency = get_currency("edu")
-        endcurrency = get_currency("end")
+            strcurrency = get_currency("str")
+            educurrency = get_currency("edu")
+            endcurrency = get_currency("end")
 
-        strtime = get_time(strength) * (0.075 if strcurrency == "gold" else 1) * 0.5
-        edutime = get_time(education) * (0.075 if educurrency == "gold" else 1) * (1 - user.perkoptions["eduweight"]/100)
-        endtime = get_time(endurance) * (0.075 if endcurrency == "gold" else 1)
+            strtime = get_time(strength) * (0.075 if strcurrency == "gold" else 1) * 0.5
+            edutime = get_time(education) * (0.075 if educurrency == "gold" else 1) * (1 - user.perkoptions["eduweight"]/100)
+            endtime = get_time(endurance) * (0.075 if endcurrency == "gold" else 1)
 
-        if endurance < 100:
-            perk, currency = "end", endcurrency
-        elif (edutime <= strtime) and (edutime <= endtime):
-            perk, currency = "edu", educurrency
-        elif strtime <= endtime:
-            perk, currency = "str", strcurrency
-        else:
-            perk, currency = "end", endcurrency
+            if endurance < 100:
+                perk, currency = "end", endcurrency
+            elif (edutime <= strtime) and (edutime <= endtime):
+                perk, currency = "edu", educurrency
+            elif strtime <= endtime:
+                perk, currency = "str", strcurrency
+            else:
+                perk, currency = "end", endcurrency
 
-    result = ajax(
-        user,
-        f"/perks/up/{perkurl[perk]}/{currencyurl[currency]}",
-        "",
-        "Error upgrading perk",
-        relad_after=True,
-    )
-    return result, perk, currency
+        result = ajax(
+            user,
+            f"/perks/up/{perkurl[perk]}/{currencyurl[currency]}",
+            "",
+            "Error upgrading perk",
+            relad_after=True,
+        )
+        return result, perk, currency
+    except Exception as e:
+        return error(user, e, "Error upgrading perk")
