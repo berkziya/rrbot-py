@@ -96,13 +96,16 @@ def main():
 
     config = read_config(args.config_path)
     user = initiate_user(config)
-    if user:
-        try:
-            subprocess.Popen(["/usr/bin/caffeinate", "-i"])
-        except FileNotFoundError:
-            print("caffeinate not found. Continuing without it.")
 
-        session(user)
+    if not user:
+        return
+
+    try:
+        subprocess.Popen(["/usr/bin/caffeinate", "-i"])
+    except FileNotFoundError:
+        print("caffeinate not found. Continuing without it.")
+
+    session(user)
 
 
 if __name__ == "__main__":

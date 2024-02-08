@@ -1,8 +1,7 @@
-
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from butler import error, reload_mainpage, ajax, log
+from butler import ajax, error, reload_mainpage
 from misc.utils import time_to_secs
 
 
@@ -39,7 +38,8 @@ def upgrade_perk(user, perk=None, currency="gold"):
                 conditions = [
                     perk not in user.perkoptions["goldperks"],
                     user.player.perks[perk] < user.perkoptions["minlvl4gold"],
-                    (user.player.money["energy"] // 10 + user.player.money["gold"]) < 20000,
+                    (user.player.money["energy"] // 10 + user.player.money["gold"])
+                    < 20000,
                     goldprice > user.player.money["gold"],
                 ]
                 for condition in conditions:
@@ -53,7 +53,11 @@ def upgrade_perk(user, perk=None, currency="gold"):
             endcurrency = get_currency("end")
 
             strtime = get_time(strength) * (0.075 if strcurrency == "gold" else 1) * 0.5
-            edutime = get_time(education) * (0.075 if educurrency == "gold" else 1) * (1 - user.perkoptions["eduweight"]/100)
+            edutime = (
+                get_time(education)
+                * (0.075 if educurrency == "gold" else 1)
+                * (1 - user.perkoptions["eduweight"] / 100)
+            )
             endtime = get_time(endurance) * (0.075 if endcurrency == "gold" else 1)
 
             if endurance < 100:

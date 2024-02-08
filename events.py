@@ -1,6 +1,6 @@
 import datetime
-from actions.perks import check_training_status, upgrade_perk
 
+from actions.perks import check_training_status, upgrade_perk
 from actions.states import explore_resource
 from actions.status import set_money, set_perks
 from actions.storage import produce_energy
@@ -69,6 +69,7 @@ def upgrade_perk_event(user):
     def fail():
         user.s.enter(600, 1, upgrade_perk_event, (user,))
         return False
+
     if not (set_perks(user) and set_money(user, energy=True)):
         return fail()
 
