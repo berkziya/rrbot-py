@@ -20,7 +20,7 @@ def session(user):
     user.load_database()
 
     # if user.player.economics:
-    #     budget_transfer(user, 200022, "oil", 1000000000)
+    #     budget_transfer(user, 307, "oil", 15000000000)
 
     eventsToBeDone = [
         {"desc": "upgrade perks", "event": events.upgrade_perk_event},

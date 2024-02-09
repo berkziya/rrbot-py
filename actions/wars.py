@@ -31,75 +31,75 @@ def cancel_autoattack(user):
 
 
 def attack(user, id=None, side=0, max=False, drones=False):
-    wait_until_internet_is_back(user)
-    stringified_troops = ""
-
-    if not get_player_info(user):
-        alert(user, "Error getting player info")
-        return False
-    if not id:
-        war = get_training_war(user)
-        if not get_war_info(user, war.id):
-            log(user, f"No war info found for {war.id}")
-            return False
-        side = 0
-        warname = "training war"
-        if war.ending_time:
-            user.s.enterabs(war.ending_time + 60, 1, attack, (user,))
-    else:
-        if not get_war_info(user, id):
-            log(user, "No war info found")
-            return False
-        war = get_war(id)
-        warname = war.id
-
-    # "free_ene": "1", hourly
-    # "c": "3f116409cf4c01f2c853d9a17591b061",
-    # "n": "{\"t1\":+\"3698\",\"t2\":+\"15\",\"t16\":+\"0\",\"t27\":+\"0\"}",
-    # "aim": "0", # "aim": f"{region_id},
-    # "edit": "538591"
-
-    alpha = 125000 + 2500 * (user.player.level - 30)
-
-    troop_admg = {
-        "t27": 6000,  # laserdrones
-        "t2": 10,  # tanks
-        "t1": 150,  # aircraft
-        "t16": 800,  # bombers
-    }
-
-    troop_names = {
-        "t27": "laserdrones",
-        "t1": "aircrafts",
-        "t2": "tanks",
-        "t16": "bombers",
-    }
-
-    hourly = 0 if max else 1
-
-    n = {}
-
-    for troop in troop_admg:
-        count = alpha // troop_admg[troop]
-        if troop == "t27" and not drones:
-            count = 0
-        alpha -= count * troop_admg[troop]
-        if troop == "t1":
-            count = count * 2
-        n[troop] = str(count)
-        if count > 0:
-            stringified_troops += f"{count} {troop}, "
-
-    for troop in troop_names:
-        stringified_troops = stringified_troops.replace(
-            troop + ",", troop_names[troop] + ","
-        )
-
-    n_json = json.dumps(n).replace("'", '"').replace(" ", "")
-
-    cancel_autoattack(user)
-    time.sleep(2)
     try:
+        wait_until_internet_is_back(user)
+        stringified_troops = ""
+
+        if not get_player_info(user):
+            alert(user, "Error getting player info")
+            return False
+        if not id:
+            war = get_training_war(user)
+            if not get_war_info(user, war.id):
+                log(user, f"No war info found for {war.id}")
+                return False
+            side = 0
+            warname = "training war"
+            if war.ending_time:
+                user.s.enterabs(war.ending_time + 60, 1, attack, (user,))
+        else:
+            if not get_war_info(user, id):
+                log(user, "No war info found")
+                return False
+            war = get_war(id)
+            warname = war.id
+
+        # "free_ene": "1", hourly
+        # "c": "3f116409cf4c01f2c853d9a17591b061",
+        # "n": "{\"t1\":+\"3698\",\"t2\":+\"15\",\"t16\":+\"0\",\"t27\":+\"0\"}",
+        # "aim": "0", # "aim": f"{region_id},
+        # "edit": "538591"
+
+        alpha = 125000 + 2500 * (user.player.level - 30)
+
+        troop_admg = {
+            "t27": 6000,  # laserdrones
+            "t2": 10,  # tanks
+            "t1": 150,  # aircraft
+            "t16": 800,  # bombers
+        }
+
+        troop_names = {
+            "t27": "laserdrones",
+            "t1": "aircrafts",
+            "t2": "tanks",
+            "t16": "bombers",
+        }
+
+        hourly = 0 if max else 1
+
+        n = {}
+
+        for troop in troop_admg:
+            count = alpha // troop_admg[troop]
+            if troop == "t27" and not drones:
+                count = 0
+            alpha -= count * troop_admg[troop]
+            if troop == "t1":
+                count = count * 2
+            n[troop] = str(count)
+            if count > 0:
+                stringified_troops += f"{count} {troop}, "
+
+        for troop in troop_names:
+            stringified_troops = stringified_troops.replace(
+                troop + ",", troop_names[troop] + ","
+            )
+
+        n_json = json.dumps(n).replace("'", '"').replace(" ", "")
+
+        cancel_autoattack(user)
+        time.sleep(2)
         js_ajax = """
         var hourly = arguments[0];
         var n_json = arguments[1];

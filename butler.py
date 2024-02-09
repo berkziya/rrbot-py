@@ -30,15 +30,15 @@ def am_i_alive(user):
     return False
 
 
-def wait_for_page_load(driver, timeout=30):
+def wait_for_page_load(user, timeout=30):
     try:
-        WebDriverWait(driver, timeout).until(
+        WebDriverWait(user.driver, timeout).until(
             lambda driver: driver.execute_script("return document.readyState")
             == "complete"
         )
         return True
     except Exception as e:
-        return error(driver, e, "Error waiting for page load")
+        return error(user, e, "Error waiting for page load")
 
 
 def get_page(user, url):
@@ -47,7 +47,7 @@ def get_page(user, url):
         user.driver.switch_to.window(user.data_window)
         delay_before_actions(user)
         user.driver.get(f"https://rivalregions.com/{url}")
-        wait_for_page_load(user.driver)
+        wait_for_page_load(user)
         return True
     except Exception as e:
         return error(user, e, f"Error getting page {url}")

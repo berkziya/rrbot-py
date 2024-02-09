@@ -71,20 +71,19 @@ def initiate_user(config):
     for section in config.sections():
         if section == "general":
             continue
-        if not config.getboolean(section, "enabled"):
-            continue
 
         user = create_user_from_config(config[section], config["general"])
 
         if not user.initiate_session():
             alert(user, "Login failed. Aborting...")
             del user
+            return None
     return user
 
 
 def main():
     parser = argparse.ArgumentParser(description="Process config file.")
-    parser.add_argument("config_path", type=str, help="Path to the config file")
+    parser.add_argument("config_path", default="config.ini", type=str, help="Path to the config file")
 
     args = parser.parse_args()
 
