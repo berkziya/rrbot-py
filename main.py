@@ -83,7 +83,9 @@ def initiate_user(config):
 
 def main():
     parser = argparse.ArgumentParser(description="Process config file.")
-    parser.add_argument("config_path", default="config.ini", type=str, help="Path to the config file")
+    parser.add_argument(
+        "config_path", default="config.ini", type=str, help="Path to the config file"
+    )
 
     args = parser.parse_args()
 

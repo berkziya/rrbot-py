@@ -96,7 +96,7 @@ class Client:
     def set_factory(self, value):
         self.factory = value
 
-    def boot_browser(self):
+    def boot_browser(self, cookies=True):
         try:
             print(f"Booting browser for {self.name}...")
             options = FirefoxOptions()
@@ -114,48 +114,53 @@ class Client:
             error(self, e, "Error setting up Firefox driver")
             return False
 
+        def add_cookies():
+            if not os.path.exists(f"{self.name}_cookies.json"):
+                return False
+            cookies = json.load(open(f"{self.name}_cookies.json", "r"))
+            for cookie in cookies:
+                self.driver.add_cookie(cookie)
+            return True
+
+        def login():
+            email_input = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "input[name='mail']")
+                )
+            )
+            email_input.send_keys(self.email)
+            log(self, "Logging in...")
+
+            password_input = self.driver.find_element(
+                By.CSS_SELECTOR, "input[name='p']"
+            )
+            password_input.send_keys(self.password)
+
+            submit_button = self.driver.find_element(
+                By.CSS_SELECTOR, "input[name='s']"
+            )
+            self.driver.execute_script("arguments[0].click();", submit_button)
+
+        def logged_in():
+            try:
+                return self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
+            except:
+                return False
+
         try:
             self.wait = WebDriverWait(self.driver, 10)
             self.driver.get("https://rivalregions.com")
-            time.sleep(1)
+            time.sleep(2)
 
-            try:
-                if not os.path.exists(f"{self.name}_cookies.json"):
-                    raise NoSuchElementException
-                log(self, "Loading cookies...")
-                cookies = json.load(open(f"{self.name}_cookies.json", "r"))
-                for cookie in cookies:
-                    self.driver.add_cookie(cookie)
+            if cookies and add_cookies():
                 self.driver.get("https://rivalregions.com")
-                self.wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
-                )
-            except NoSuchElementException:
-                self.driver.delete_all_cookies()
-                self.driver.get("https://rivalregions.com")
-                wait_for_page_load(self)
-                self.driver.get("https://rivalregions.com")
-                email_input = self.wait.until(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, "input[name='mail']")
-                    )
-                )
-                email_input.send_keys(self.email)
-                log(self, "Logging in...")
+                if not logged_in():
+                    raise "Possibly invalid cookies"
+            else:
+                login()
+                if not logged_in():
+                    raise "Possibly invalid login"
 
-                password_input = self.driver.find_element(
-                    By.CSS_SELECTOR, "input[name='p']"
-                )
-                password_input.send_keys(self.password)
-
-                submit_button = self.driver.find_element(
-                    By.CSS_SELECTOR, "input[name='s']"
-                )
-                self.driver.execute_script("arguments[0].click();", submit_button)
-
-                self.wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
-                )
             self.main_window = self.driver.current_window_handle
             self.driver.execute_script("window.open('');")
             self.data_window = self.driver.window_handles[1]
@@ -163,6 +168,8 @@ class Client:
         except Exception as e:
             error(self, e, "Error logging in")
             self.driver.quit()
+            if cookies:
+                return self.boot_browser(cookies=False)
             time.sleep(2)
             self.wait = None
             self.driver = None

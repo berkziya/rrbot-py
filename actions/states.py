@@ -69,6 +69,8 @@ def explore_resource(user, resource="gold"):
 
 
 def budget_transfer(user, id, resource, amount):
+    if "k" in amount:
+        amount = int(amount.replace("k", "000"))
     resources = {
         "money": 1,
         "gold": 0,

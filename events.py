@@ -85,10 +85,10 @@ def upgrade_perk_event(user):
     elif training_time is False:
         return fail()
 
-    result, perk, currency = upgrade_perk(user)
+    result = upgrade_perk(user)
 
     if result:
-        log(user, f"Upgraded {perk.upper()} with {currency.upper()}")
+        log(user, f"Upgraded {result[0].upper()} with {result[1].upper()}")
         user.s.enter(600, 1, upgrade_perk_event, (user,))
         return True
 

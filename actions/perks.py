@@ -33,7 +33,7 @@ def upgrade_perk(user, perk=None, currency="gold"):
                 time = time / (4 if perk < 50 else (2 if perk < 100 else 1))
                 return time
 
-            def get_currency(perk):
+            def get_currency(perk, currency="gold"):
                 goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
                 conditions = [
                     perk not in user.perkoptions["goldperks"],
@@ -48,9 +48,9 @@ def upgrade_perk(user, perk=None, currency="gold"):
                         break
                 return currency
 
-            strcurrency = get_currency("str")
-            educurrency = get_currency("edu")
-            endcurrency = get_currency("end")
+            strcurrency = get_currency("str", currency)
+            educurrency = get_currency("edu", currency)
+            endcurrency = get_currency("end", currency)
 
             strtime = get_time(strength) * (0.075 if strcurrency == "gold" else 1) * 0.5
             edutime = (
@@ -76,6 +76,6 @@ def upgrade_perk(user, perk=None, currency="gold"):
             "Error upgrading perk",
             relad_after=True,
         )
-        return result, perk, currency
+        return (perk, currency) if result else False
     except Exception as e:
         return error(user, e, "Error upgrading perk")

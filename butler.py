@@ -54,7 +54,11 @@ def get_page(user, url):
 
 
 def return_to_mainwindow(user):
-    user.driver.switch_to.window(user.main_window)
+    try:
+        user.driver.switch_to.window(user.main_window)
+        return True
+    except Exception as e:
+        return error(user, e, "Error returning to main window")
 
 
 def reload_mainpage(user):
