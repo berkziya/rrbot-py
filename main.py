@@ -51,12 +51,14 @@ def create_user_from_config(config, general):
     user.set_driveroptions("binary_location", binary)
     user.set_driveroptions("headless", is_headless)
 
-    goldperks = str.lower(config.get("goldperks", fallback=""))
+    goldperks = str.lower(config.get("goldperks", fallback="streduend"))
     eduweight = config.getint("eduweight", fallback=0)
-    minlvl4gold = config.getint("minlvl4gold", fallback=0)
+    minlvl4gold = config.getint("minlvl4gold", fallback=float("inf"))
+    mingold4gold = config.getint("mingold4gold", fallback=float("inf"))
     user.set_perkoptions("goldperks", goldperks)
     user.set_perkoptions("eduweight", eduweight)
     user.set_perkoptions("minlvl4gold", minlvl4gold)
+    user.set_perkoptions("mingold4gold", mingold4gold)
 
     statedept = config.get("statedept", fallback=None)
     user.set_statedept(statedept)

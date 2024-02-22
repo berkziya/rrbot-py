@@ -41,11 +41,7 @@ class Client:
         self.is_resetting = False
         self.last_request_time = 0
 
-        self.perkoptions = {
-            "goldperks": None,
-            "eduweight": 0,
-            "minlvl4gold": 999,
-        }
+        self.perkoptions = {}
 
         self.statedept = None
         self.factory = None
