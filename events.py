@@ -6,6 +6,7 @@ from actions.status import set_money, set_perks
 from actions.storage import produce_energy
 from butler import wait_until_internet_is_back
 from misc.logger import log
+from models.player import get_player_info
 
 
 def initiate_all_events(user, events):
@@ -41,7 +42,10 @@ def upcoming_events(user):
 
 
 def hourly_state_gold_refill(user):
-    if not user.player.state_leader and not user.player.economics:
+    if not get_player_info(user) and not (
+        user.player.state_leader or user.player.economics
+    ):
+        user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
         return False
     if explore_resource(user, "gold"):
         log(user, "Refilled the state gold reserves")
@@ -59,7 +63,9 @@ def energy_drink_refill(user):
 
 
 def close_borders_if_not_safe(user):
-    if not user.player.state_leader or not user.player.foreign:
+    if not get_player_info(user) and not (
+        user.player.state_leader or user.player.foreign
+    ):
         return False
     # if not is_there_a_war_in_my_state(user): return True
     pass
