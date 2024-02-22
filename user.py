@@ -4,7 +4,6 @@ import sched
 import sqlite3
 import time
 
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
@@ -14,7 +13,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 
 import database
-from butler import error, wait_for_page_load
+from butler import error
 from misc.logger import log
 from models import get_player
 
@@ -124,9 +123,7 @@ class Client:
 
         def login():
             email_input = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, "input[name='mail']")
-                )
+                EC.presence_of_element_located((By.CSS_SELECTOR, "input[name='mail']"))
             )
             email_input.send_keys(self.email)
             log(self, "Logging in...")
@@ -136,14 +133,14 @@ class Client:
             )
             password_input.send_keys(self.password)
 
-            submit_button = self.driver.find_element(
-                By.CSS_SELECTOR, "input[name='s']"
-            )
+            submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[name='s']")
             self.driver.execute_script("arguments[0].click();", submit_button)
 
         def logged_in():
             try:
-                return self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send")))
+                return self.wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
+                )
             except:
                 return False
 
@@ -155,11 +152,11 @@ class Client:
             if cookies and add_cookies():
                 self.driver.get("https://rivalregions.com")
                 if not logged_in():
-                    raise "Possibly invalid cookies"
+                    raise
             else:
                 login()
                 if not logged_in():
-                    raise "Possibly invalid login"
+                    raise
 
             self.main_window = self.driver.current_window_handle
             self.driver.execute_script("window.open('');")
@@ -177,7 +174,7 @@ class Client:
 
     def initiate_session(self):
         self.s = sched.scheduler(time.time, time.sleep)
-        if self.boot_browser():
+        if self.boot_browser(cookies=False):
             self.id = self.driver.execute_script("return id;")
             self.player = get_player(self.id)
             json.dump(self.driver.get_cookies(), open(f"{self.name}_cookies.json", "w"))
