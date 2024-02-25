@@ -15,7 +15,7 @@ class State:
         self.leader = None
         self.economics = None
         self.foreign = None
-        self.government_form = ""
+        self.form = ""
         self.autonomies = []
         self.regions = []
         self.num_of_regions = 0
@@ -47,8 +47,8 @@ class State:
     def set_foreign(self, value):
         self.foreign = value
 
-    def set_government_form(self, value):
-        self.government_form = value
+    def set_form(self, value):
+        self.form = value
 
     def set_budget(self, element, value):
         self.budget[element] = value
@@ -101,11 +101,11 @@ class State:
     def __getstate__(self):
         return {
             "id": self.id,
-            "last_accessed": self.last_accessed,
-            "leader": self.leader.id if self.leader else None,
-            "economics": self.economics.id if self.economics else None,
+            "time": self.last_accessed,
+            "lead": self.leader.id if self.leader else None,
+            "econ": self.economics.id if self.economics else None,
             "foreign": self.foreign.id if self.foreign else None,
-            "government_form": self.government_form,
+            "form": self.form,
             "autonomies": [x.id for x in self.autonomies],
             "regions": [x.id for x in self.regions],
             "citizens": [x.id for x in self.citizens],
@@ -116,11 +116,11 @@ class State:
 
     def __setstate__(self, state):
         self.id = state["id"]
-        self.last_accessed = state["last_accessed"]
-        self.leader = get_player(state["leader"])
-        self.economics = get_player(state["economics"])
+        self.last_accessed = state["time"]
+        self.leader = get_player(state["lead"])
+        self.economics = get_player(state["econ"])
         self.foreign = get_player(state["foreign"])
-        self.government_form = state["government_form"]
+        self.form = state["form"]
         self.autonomies = [get_autonomy(x) for x in state["autonomies"]]
         self.regions = [get_region(x) for x in state["regions"]]
         self.citizens = [get_player(x) for x in state["citizens"]]
@@ -141,6 +141,9 @@ def get_state_info(user, id, force=False):
             return state
         if not get_page(user, f"map/state_details/{id}"):
             return False
+        state.set_leader(None)
+        state.set_economics(None)
+        state.set_foreign(None)
         state.set_budget(
             "money",
             dotless(
@@ -214,9 +217,7 @@ def get_state_info(user, id, force=False):
             # elif "consumption:" in div.find_element(By.CSS_SELECTOR, "h2").text:
             #     state_status['power_consumption'] = dotless(div.find_element(By.CSS_SELECTOR, "div.short_details").text)
             elif "form:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                state.set_government_form(
-                    div.find_element(By.CSS_SELECTOR, "span").text
-                )
+                state.set_form(div.find_element(By.CSS_SELECTOR, "span").text)
             # elif "bloc:" in div.find_element(By.CSS_SELECTOR, "h2").text:
             #     state_status['bloc'] = dotless(div.find_element(By.CSS_SELECTOR, "div.short_details").get_attribute('action').split('/')[-1])
             elif any(
@@ -249,6 +250,13 @@ def get_state_info(user, id, force=False):
                         .split("/")[-1]
                     )
                 )
+            elif "tate regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                regions_ = []
+                for region_ in div.find_elements(By.CSS_SELECTOR, "div.short_details"):
+                    regions_.append(
+                        get_region(region_.get_attribute("action").split("/")[-1])
+                    )
+                state.set_regions(regions_)
         state.set_last_accessed()
         return_to_mainwindow(user)
         return state

@@ -52,26 +52,26 @@ class Factory:
     def __getstate__(self):
         return {
             "id": self.id,
-            "last_accessed": self.last_accessed,
+            "time": self.last_accessed,
             "type": self.type,
             "region": self.region.id if self.region else None,
             "owner": self.owner.id if self.owner else None,
             "level": self.level,
             "wage": self.wage,
-            "fixed_wage": self.fixed_wage,
-            "potential_wage": self.potential_wage,
+            "fwage": self.fixed_wage,
+            "pwage": self.potential_wage,
         }
 
     def __setstate__(self, state):
         self.id = state["id"]
-        self.last_accessed = state["last_accessed"]
+        self.last_accessed = state["time"]
         self.type = state["type"]
         self.region = get_region(state["region"])
         self.owner = get_player(state["owner"])
         self.level = state["level"]
         self.wage = state["wage"]
-        self.fixed_wage = state["fixed_wage"]
-        self.potential_wage = state["potential_wage"]
+        self.fixed_wage = state["fwage"]
+        self.potential_wage = state["pwage"]
 
 
 def get_factory_info(user, id, force=False):

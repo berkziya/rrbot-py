@@ -49,7 +49,7 @@ class Autonomy:
     def __getstate__(self):
         return {
             "id": self.id,
-            "last_accessed": self.last_accessed,
+            "time": self.last_accessed,
             "state": self.state.id if self.state else None,
             "governor": self.governor.id if self.governor else None,
             "regions": [region.id for region in self.regions],
@@ -58,7 +58,7 @@ class Autonomy:
 
     def __setstate__(self, state):
         self.id = state["id"]
-        self.last_accessed = state["last_accessed"]
+        self.last_accessed = state["time"]
         self.state = get_state(state["state"])
         self.governor = get_player(state["governor"])
         self.regions = [get_region(region) for region in state["regions"]]
@@ -96,13 +96,13 @@ def get_autonomy_info(user, id, force=False):
                         .split("/")[-1]
                     )
                 )
-            elif "regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                regions = []
-                for region in div.find_elements(By.CSS_SELECTOR, "slide_profile_data"):
-                    regions.append(
-                        get_region(region.get_attribute("action").split("/")[-1])
+            elif "utonomy regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                regions_ = []
+                for region_ in div.find_elements(By.CSS_SELECTOR, "div.short_details"):
+                    regions_.append(
+                        get_region(region_.get_attribute("action").split("/")[-1])
                     )
-                autonomy.set_regions(regions)
+                autonomy.set_regions(regions_)
         if autonomy.regions:
             regionid = autonomy.regions[0].id
             autonomy.set_budget(

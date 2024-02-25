@@ -54,36 +54,28 @@ class War:
     def __getstate__(self):
         return {
             "id": self.id,
-            "last_accessed": self.last_accessed,
+            "time": self.last_accessed,
             "type": self.type,
-            "ending_time": self.ending_time,
-            "attacking_region": (
-                self.attacking_region.id if self.attacking_region else None
-            ),
-            "defending_region": (
-                self.defending_region.id if self.defending_region else None
-            ),
-            "attackers": {k.id: v for k, v in self.attackers.items()},
-            "defenders": {k.id: v for k, v in self.defenders.items()},
-            "attacker_damage": self.attacker_damage,
-            "defender_damage": self.defender_damage,
+            "end": self.ending_time,
+            "att": (self.attacking_region.id if self.attacking_region else None),
+            "def": (self.defending_region.id if self.defending_region else None),
+            "atts": {k.id: v for k, v in self.attackers.items()},
+            "defs": {k.id: v for k, v in self.defenders.items()},
+            "attdmg": self.attacker_damage,
+            "defdmg": self.defender_damage,
         }
 
     def __setstate__(self, state):
         self.id = state["id"]
-        self.last_accessed = state["last_accessed"]
+        self.last_accessed = state["time"]
         self.type = state["type"]
-        self.ending_time = state["ending_time"]
-        self.attacking_region = (
-            get_region(state["attacking_region"]) if state["attacking_region"] else None
-        )
-        self.defending_region = (
-            get_region(state["defending_region"]) if state["defending_region"] else None
-        )
-        self.attackers = {get_player(k): v for k, v in state["attackers"].items()}
-        self.defenders = {get_player(k): v for k, v in state["defenders"].items()}
-        self.attacker_damage = state["attacker_damage"]
-        self.defender_damage = state["defender_damage"]
+        self.ending_time = state["end"]
+        self.attacking_region = get_region(state["att"]) if state["att"] else None
+        self.defending_region = get_region(state["def"]) if state["def"] else None
+        self.attackers = {get_player(k): v for k, v in state["atts"].items()}
+        self.defenders = {get_player(k): v for k, v in state["defs"].items()}
+        self.attacker_damage = state["attdmg"]
+        self.defender_damage = state["defdmg"]
 
 
 def get_war_info(user, id):

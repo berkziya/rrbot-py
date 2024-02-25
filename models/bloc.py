@@ -25,11 +25,11 @@ class Bloc:
     def __getstate__(self):
         return {
             "id": self.id,
-            "last_accessed": self.last_accessed,
+            "time": self.last_accessed,
             "states": [state.id for state in self.states],
         }
 
     def __setstate__(self, state):
         self.id = state["id"]
-        self.last_accessed = state["last_accessed"]
+        self.last_accessed = state["time"]
         self.states = [get_state(state) for state in state["states"]]

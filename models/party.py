@@ -33,17 +33,17 @@ class Party:
     def __getstate__(self):
         return {
             "id": self.id,
-            "last_accessed": self.last_accessed,
+            "time": self.last_accessed,
             "leader": self.leader.id if self.leader else None,
             "region": self.region.id if self.region else None,
-            "secretaries": [player.id for player in self.secretaries],
+            "secs": [player.id for player in self.secretaries],
             "members": [player.id for player in self.members],
         }
 
     def __setstate__(self, state):
         self.id = state["id"]
-        self.last_accessed = state["last_accessed"]
+        self.last_accessed = state["time"]
         self.leader = get_player(state["leader"])
         self.region = get_region(state["region"])
-        self.secretaries = [get_player(player) for player in state["secretaries"]]
+        self.secretaries = [get_player(player) for player in state["secs"]]
         self.members = [get_player(player) for player in state["members"]]

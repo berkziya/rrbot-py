@@ -5,8 +5,9 @@ from actions.states import explore_resource
 from actions.status import set_money, set_perks
 from actions.storage import produce_energy
 from butler import wait_until_internet_is_back
-from misc.logger import log
+from misc.logger import alert, log
 from models.player import get_player_info
+from models.state import get_state_info
 
 
 def initiate_all_events(user, events):
@@ -14,7 +15,7 @@ def initiate_all_events(user, events):
     list(map(user.s.cancel, user.s.queue))
     for event in events:
         user.s.enter(
-            1, 1, event["event"], (user, *event["args"]) if "args" in event else (user,)
+            1, 2, event["event"], (user, *event["args"]) if "args" in event else (user,)
         )
 
 
@@ -30,7 +31,7 @@ def upcoming_events(user):
     if upcoming:
         log(user, "Upcoming events:", False)
         for event_time, event in upcoming:
-            if event.action.__name__ in ["energy_drink_refill", "activate_scheduler"]:
+            if event.priority == 2:
                 continue
             log(
                 user,
@@ -42,23 +43,44 @@ def upcoming_events(user):
 
 
 def hourly_state_gold_refill(user):
-    if not get_player_info(user) and not (
-        user.player.state_leader or user.player.economics
-    ):
-        user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
+    def fail():
+        user.s.enter(600, 2, hourly_state_gold_refill, (user,))
         return False
+
+    if not get_player_info(user):
+        return fail()
+
+    if user.player.state_leader:
+        state = get_state_info(user, user.player.state_leader.id)
+        if (
+            state
+            and state.form not in ["Dictatorship", "Executive monarchy"]
+            and user.player.region.id not in [x.id for x in state.regions]
+        ):
+            return fail()
+
+    if user.player.economics:
+        state = get_state_info(user, user.player.economics.id)
+        if state and user.player.region.id not in [x.id for x in state.regions]:
+            alert(user, "Not in the state of their economics, can't refill gold")
+            return fail()
+
+    if not user.player.state_leader and not user.player.economics:
+        return fail()
+
     if explore_resource(user, "gold"):
         log(user, "Refilled the state gold reserves")
+        user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
+        return True
     else:
-        log(user, "Failed to refill state gold, will try again in an hour")
-    user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
+        fail()
 
 
 def energy_drink_refill(user):
     if not produce_energy(user):
-        user.s.enter(600, 1, energy_drink_refill, (user,))
+        user.s.enter(600, 2, energy_drink_refill, (user,))
         return False
-    user.s.enter(3600, 1, energy_drink_refill, (user,))
+    user.s.enter(3600, 2, energy_drink_refill, (user,))
     return True
 
 

@@ -3,6 +3,8 @@ import schedule
 
 import events
 from actions.regions import build_military_academy, work_state_department
+
+# trunk-ignore(ruff/F401)
 from actions.states import budget_transfer
 from actions.status import set_money
 from actions.wars import attack
@@ -124,7 +126,7 @@ def session(user):
 
     def activate_scheduler():
         schedule.run_pending()
-        user.s.enter(1, 1, activate_scheduler, ())
+        user.s.enter(3, 2, activate_scheduler, ())
 
     activate_scheduler()
     user.s.run(blocking=True)

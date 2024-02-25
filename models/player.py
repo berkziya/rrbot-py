@@ -76,36 +76,36 @@ class Player:
     def __getstate__(self):
         return {
             "id": self.id,
-            "last_accessed": self.last_accessed,
+            "time": self.last_accessed,
             "level": self.level,
-            "state_leader": self.state_leader.id if self.state_leader else None,
+            "lead": self.state_leader.id if self.state_leader else None,
             "perks": self.perks,
             "region": self.region.id if self.region else None,
             "residency": self.residency.id if self.residency else None,
-            "workpermits": {
+            "wperm": {
                 key.id: (value.id if value else 0)
                 for key, value in self.workpermits.items()
             },
             "governor": self.governor.id if self.governor else None,
-            "economics": self.economics.id if self.economics else None,
+            "econ": self.economics.id if self.economics else None,
             "foreign": self.foreign.id if self.foreign else None,
             "party": self.party.id if self.party else None,
         }
 
     def __setstate__(self, state):
         self.id = state["id"]
-        self.last_accessed = state["last_accessed"]
+        self.last_accessed = state["time"]
         self.level = state["level"]
-        self.state_leader = get_player(state["state_leader"])
+        self.state_leader = get_player(state["lead"])
         self.perks = state["perks"]
         self.region = get_region(state["region"])
         self.residency = get_region(state["residency"])
         self.workpermits = {
             get_state(key): (get_region(value) if value else 0)
-            for key, value in state["workpermits"].items()
+            for key, value in state["wperm"].items()
         }
         self.governor = get_autonomy(state["governor"])
-        self.economics = get_state(state["economics"])
+        self.economics = get_state(state["econ"])
         self.foreign = get_state(state["foreign"])
         self.party = get_party(state["party"])
 
@@ -130,6 +130,11 @@ def get_player_info(user, id=None, force=False):
         level = re.search(r"\d+", level_text).group()
         player.set_level(dotless(level))
         data = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
+        player.set_state_leader(None)
+        player.set_economics(None)
+        player.set_foreign(None)
+        player.set_governor(None)
+        player.set_workpermits({})
         for tr in data:
             try:
                 if tr.find_element(By.CSS_SELECTOR, "h2"):
@@ -238,15 +243,18 @@ def get_player_info(user, id=None, force=False):
                     )
                 )
             elif "Party" in tr.text:
-                player.set_party(
-                    get_party(
-                        tr.find_element(
-                            By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)"
+                try:
+                    player.set_party(
+                        get_party(
+                            tr.find_element(
+                                By.CSS_SELECTOR, "td:nth-child(2) > div:nth-child(1)"
+                            )
+                            .get_attribute("action")
+                            .split("/")[-1]
                         )
-                        .get_attribute("action")
-                        .split("/")[-1]
                     )
-                )
+                except:
+                    player.set_party(None)
         player.set_last_accessed()
         return_to_mainwindow(user)
         return player

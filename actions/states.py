@@ -56,8 +56,8 @@ def explore_resource(user, resource="gold"):
     )
     try:
         if (
-            user.player.economics.government_form == "Executive monarchy"
-            or user.player.economics.government_form == "Dictatorship"
+            user.player.economics.form == "Executive monarchy"
+            or user.player.economics.form == "Dictatorship"
         ):
             return True
     except:

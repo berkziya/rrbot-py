@@ -134,7 +134,7 @@ class Region:
     def __getstate__(self):
         return {
             "id": self.id,
-            "last_accessed": self.last_accessed,
+            "time": self.last_accessed,
             "state": self.state.id if self.state else None,
             "autonomy": self.autonomy.id if self.autonomy else None,
             "location": self.location,
@@ -142,19 +142,19 @@ class Region:
             "rating": self.rating,
             "residents": [player.id for player in self.residents],
             "citizens": [player.id for player in self.citizens],
-            "initial_attack_damage": self.initial_attack_damage,
-            "initial_defend_damage": self.initial_defend_damage,
+            "attdmg": self.initial_attack_damage,
+            "defdmg": self.initial_defend_damage,
             "tax": self.tax,
-            "market_tax": self.market_tax,
-            "sea_access": self.sea_access,
+            "mtax": self.market_tax,
+            "sea": self.sea_access,
             "indexes": self.indexes,
-            "border_regions": [region.id for region in self.border_regions],
+            "border_regs": [region.id for region in self.border_regions],
             "factories": [factory.id for factory in self.factories],
         }
 
     def __setstate__(self, state):
         self.id = state["id"]
-        self.last_accessed = state["last_accessed"]
+        self.last_accessed = state["time"]
         self.state = get_state(state["state"])
         self.autonomy = get_autonomy(state["autonomy"])
         self.location = state["location"]
@@ -162,13 +162,13 @@ class Region:
         self.rating = state["rating"]
         self.residents = [get_player(player) for player in state["residents"]]
         self.citizens = [get_player(player) for player in state["citizens"]]
-        self.initial_attack_damage = state["initial_attack_damage"]
-        self.initial_defend_damage = state["initial_defend_damage"]
+        self.initial_attack_damage = state["attdmg"]
+        self.initial_defend_damage = state["defdmg"]
         self.tax = state["tax"]
-        self.market_tax = state["market_tax"]
-        self.sea_access = state["sea_access"]
+        self.market_tax = state["mtax"]
+        self.sea_access = state["sea"]
         self.indexes = state["indexes"]
-        self.border_regions = [get_region(region) for region in state["border_regions"]]
+        self.border_regions = [get_region(region) for region in state["border_regs"]]
         self.factories = [get_factory(factory) for factory in state["factories"]]
 
 
@@ -191,6 +191,7 @@ def get_region_info(user, id, force=False):
             state = get_state(upper.split("/")[-1])
             region.set_state(state)
             state.add_region(region)
+            region.set_autonomy(None)
         elif "autonomy" in upper:
             autonomy = get_autonomy(upper.split("/")[-1])
             region.set_autonomy(autonomy)
@@ -363,13 +364,13 @@ def get_region_info(user, id, force=False):
                         div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0]
                     ),
                 )
-            elif "Border regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                for element in div.find_elements(By.CSS_SELECTOR, "slide_profile_data"):
-                    border_region = get_region(
-                        element.get_attribute("action").split("/")[-1]
+            elif "regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
+                regions_ = []
+                for region_ in div.find_elements(By.CSS_SELECTOR, "div.short_details"):
+                    regions_.append(
+                        get_region(region_.get_attribute("action").split("/")[-1])
                     )
-                    region.add_border_region(border_region)
-                    border_region.add_border_region(region)
+                region.set_border_regions(regions_)
         if region.autonomy and not region.state:
             get_autonomy_info(user, region.autonomy.id)
             region.set_state(region.autonomy.state)
