@@ -84,20 +84,18 @@ def initiate_user(config):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Process config file.")
-    parser.add_argument(
-        "config_path", default="config.ini", type=str, help="Path to the config file"
-    )
+    os.environ["WDM_LOCAL"] = "1"
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config", default="config.ini", type=str)
 
     args = parser.parse_args()
 
-    os.environ["WDM_LOCAL"] = "1"
-
-    if not os.path.exists(args.config_path):
-        create_config_file(args.config_path)
+    if not os.path.exists(args.config):
+        create_config_file(args.config)
         return
 
-    config = read_config(args.config_path)
+    config = read_config(args.config)
     user = initiate_user(config)
 
     if not user:

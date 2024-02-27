@@ -131,8 +131,8 @@ def reset_browser(user):
 
 
 def error(user, error, text=None):
-    if user.driver:
-        user.driver.get_screenshot_as_file(f"errors/error_screenshot_{time.time()}.png")
+    # if user.driver:
+    #     user.driver.get_screenshot_as_file(f"errors/error_screenshot_{time.time()}.png")
     if text:
         alert(user, f"{text}: {error}")
     try:
