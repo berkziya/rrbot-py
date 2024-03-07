@@ -4,10 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-webdriver-manager = "*"
 selenium = "*"
 pytz = "*"
 schedule = "*"
+undetected-chromedriver = "*"
+setuptools = "*"
 
 [dev-packages]
 

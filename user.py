@@ -4,16 +4,13 @@ import sched
 import sqlite3
 import time
 
-from selenium.webdriver import Firefox
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from webdriver_manager.firefox import GeckoDriverManager
 
 import database
-from butler import error
+from butler import error, wait_for_page_load
 from misc.logger import log
 from models import get_player
 
@@ -94,19 +91,11 @@ class Client:
     def boot_browser(self, cookies=True):
         try:
             print(f"Booting browser for {self.name}...")
-            options = FirefoxOptions()
-            if (
-                self.driveroptions["headless"]
-                or not self.driveroptions["binary_location"]
-            ):
-                options.add_argument("--headless")
-            else:
-                options.binary_location = self.driveroptions["binary_location"]
-            self.driver = Firefox(
-                options=options, service=FirefoxService(GeckoDriverManager().install())
+            self.driver = uc.Chrome(
+                headless=self.driveroptions["headless"], use_subprocess=False
             )
         except Exception as e:
-            error(self, e, "Error setting up Firefox driver")
+            error(self, e, "Error setting up webdriver")
             return False
 
         def add_cookies():
@@ -140,10 +129,17 @@ class Client:
             except:
                 return False
 
+        def ready_data_tab():
+            self.main_window = self.driver.current_window_handle
+            self.driver.find_element(By.CSS_SELECTOR, "a[href='/terms']").click()
+            self.data_window = self.driver.window_handles[1]
+            self.driver.switch_to.window(self.main_window)
+
         try:
             self.wait = WebDriverWait(self.driver, 10)
             self.driver.get("https://rivalregions.com")
-            time.sleep(2)
+            wait_for_page_load(self)
+            ready_data_tab()
 
             if cookies and add_cookies():
                 self.driver.get("https://rivalregions.com")
@@ -154,9 +150,6 @@ class Client:
                 if not logged_in():
                     raise
 
-            self.main_window = self.driver.current_window_handle
-            self.driver.execute_script("window.open('');")
-            self.data_window = self.driver.window_handles[1]
             return True
         except Exception as e:
             error(self, e, "Error logging in")
@@ -175,6 +168,7 @@ class Client:
             self.player = get_player(self.id)
             json.dump(self.driver.get_cookies(), open(f"{self.name}_cookies.json", "w"))
             return True
+        return False
 
     def __del__(self):
         if self.driver:

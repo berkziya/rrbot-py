@@ -87,8 +87,6 @@ def delay_tasks(scheduler, delay):
 def is_internet_on(user):
     try:
         requests.get("https://google.com", timeout=15)
-        delay_before_actions(user)
-        requests.get("https://rivalregions.com", timeout=15)
         return True
     except:
         alert(user, "No internet connection")
