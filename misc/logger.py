@@ -5,7 +5,7 @@ import logging.handlers
 logger = logging.getLogger("logger")
 logger.setLevel(logging.INFO)
 handler = logging.handlers.RotatingFileHandler(
-    "logs/log.txt", maxBytes=1000000, backupCount=5
+    "log.txt", maxBytes=1000000, backupCount=5
 )
 logger.addHandler(handler)
 
