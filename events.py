@@ -78,9 +78,9 @@ def hourly_state_gold_refill(user):
 
 def energy_drink_refill(user):
     if not produce_energy(user):
-        user.s.enter(600, 2, energy_drink_refill, (user,))
+        user.s.enter(3600, 2, energy_drink_refill, (user,))
         return False
-    user.s.enter(3600, 2, energy_drink_refill, (user,))
+    user.s.enter(21600, 2, energy_drink_refill, (user,))
     return True
 
 
