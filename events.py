@@ -12,10 +12,18 @@ from models.state import get_state_info
 
 def initiate_all_events(user, events, daily=False):
     wait_until_internet_is_back(user)
-    list(map(user.s.cancel, filter(lambda x: (x[1] == 2 if daily else True) in events, user.s.queue)))
+    list(
+        map(
+            user.s.cancel,
+            filter(lambda x: (x[1] == 2 if daily else True) in events, user.s.queue),
+        )
+    )
     for event in events:
         user.s.enter(
-            1, (2 if event["daily"] else 3 if event["mute"] else 1), event["event"], (user, *event["args"]) if "args" in event else (user,)
+            1,
+            (2 if event["daily"] else 3 if event["mute"] else 1),
+            event["event"],
+            (user, *event["args"]) if "args" in event else (user,),
         )
 
 

@@ -23,9 +23,23 @@ def session(user):
     #     budget_transfer(user, 1728, "oil", "80kkk")
 
     eventsToBeDone = [
-        {"desc": "upgrade perks", "event": events.upgrade_perk_event, "daily": False, "mute": False},
-        {"desc": "build military academy", "event": build_military_academy, "daily": True},
-        {"desc": "energy drink refill", "event": events.energy_drink_refill, "daily": False, "mute": True},
+        {
+            "desc": "upgrade perks",
+            "event": events.upgrade_perk_event,
+            "daily": False,
+            "mute": False,
+        },
+        {
+            "desc": "build military academy",
+            "event": build_military_academy,
+            "daily": True,
+        },
+        {
+            "desc": "energy drink refill",
+            "event": events.energy_drink_refill,
+            "daily": False,
+            "mute": True,
+        },
         {"desc": "attack training", "event": attack, "daily": False, "mute": False},
         {
             "desc": "factory work",
@@ -34,7 +48,11 @@ def session(user):
             "daily": False,
             "mute": True,
         },
-        {"desc": "economics work", "event": events.hourly_state_gold_refill, "daily": True},
+        {
+            "desc": "economics work",
+            "event": events.hourly_state_gold_refill,
+            "daily": True,
+        },
         {
             "desc": "work state department",
             "event": work_state_department,
@@ -48,7 +66,12 @@ def session(user):
             ),
             "daily": True,
         },
-        {"desc": "upcoming_events", "event": events.upcoming_events, "daily": False, "mute": True},
+        {
+            "desc": "upcoming_events",
+            "event": events.upcoming_events,
+            "daily": False,
+            "mute": True,
+        },
     ]
 
     if get_player_info(user, force=True):
