@@ -23,16 +23,18 @@ def session(user):
     #     budget_transfer(user, 1728, "oil", "80kkk")
 
     eventsToBeDone = [
-        {"desc": "upgrade perks", "event": events.upgrade_perk_event},
-        {"desc": "build military academy", "event": build_military_academy},
-        {"desc": "energy drink refill", "event": events.energy_drink_refill},
-        {"desc": "attack training", "event": attack},
+        {"desc": "upgrade perks", "event": events.upgrade_perk_event, "daily": False, "mute": False},
+        {"desc": "build military academy", "event": build_military_academy, "daily": True},
+        {"desc": "energy drink refill", "event": events.energy_drink_refill, "daily": False, "mute": True},
+        {"desc": "attack training", "event": attack, "daily": False, "mute": False},
         {
             "desc": "factory work",
             "event": auto_work_factory,
             "args": (user.factory,) if user.factory else (None, True),
+            "daily": False,
+            "mute": True,
         },
-        {"desc": "economics work", "event": events.hourly_state_gold_refill},
+        {"desc": "economics work", "event": events.hourly_state_gold_refill, "daily": True},
         {
             "desc": "work state department",
             "event": work_state_department,
@@ -44,8 +46,9 @@ def session(user):
                 if user.statedept
                 else (None,)
             ),
+            "daily": True,
         },
-        {"desc": "upcoming_events", "event": events.upcoming_events},
+        {"desc": "upcoming_events", "event": events.upcoming_events, "daily": False, "mute": True},
     ]
 
     if get_player_info(user, force=True):
@@ -69,7 +72,7 @@ def session(user):
         )
         log(user, f"Party: {user.player.party}")
     else:
-        user.s.enter(10, 1, get_player_info, (user,))
+        user.s.enter(10, 3, get_player_info, (user,))
         alert(user, "Error setting status, will try again in 10 seconds.")
 
     if set_money(user, energy=True):
@@ -82,7 +85,7 @@ def session(user):
             f"TOTAL GOLD: {numba(user.player.money['energy']//10 + user.player.money['gold'])}",
         )
     else:
-        user.s.enter(10, 1, set_money, (user,))
+        user.s.enter(10, 3, set_money, (user,))
         alert(user, "Error setting money, will try again in 10 seconds.")
 
     if user.player.governor:
@@ -117,7 +120,10 @@ def session(user):
     events.initiate_all_events(user, eventsToBeDone)
     schedule.every(3).to(5).hours.do(events.initiate_all_events, user, eventsToBeDone)
     schedule.every().day.at("18:01", pytz.utc.zone).do(
-        events.initiate_all_events, user, eventsToBeDone
+        events.initiate_all_events, user, eventsToBeDone, daily=True
+    )
+    schedule.every().day.at("17:50", pytz.utc.zone).do(
+        events.initiate_all_events, user, eventsToBeDone, daily=True
     )
     schedule.every(4).to(6).hours.do(reset_browser, user)
     schedule.every(1).to(2).hours.do(user.save_database)

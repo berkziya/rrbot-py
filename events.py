@@ -10,12 +10,12 @@ from models.player import get_player_info
 from models.state import get_state_info
 
 
-def initiate_all_events(user, events):
+def initiate_all_events(user, events, daily=False):
     wait_until_internet_is_back(user)
-    list(map(user.s.cancel, user.s.queue))
+    list(map(user.s.cancel, filter(lambda x: (x[1] == 2 if daily else True) in events, user.s.queue)))
     for event in events:
         user.s.enter(
-            1, 2, event["event"], (user, *event["args"]) if "args" in event else (user,)
+            1, (2 if event["daily"] else 3 if event["mute"] else 1), event["event"], (user, *event["args"]) if "args" in event else (user,)
         )
 
 
@@ -31,7 +31,7 @@ def upcoming_events(user):
     if upcoming:
         log(user, "Upcoming events:", False)
         for event_time, event in upcoming:
-            if event.priority == 2:
+            if event.priority > 1:
                 continue
             log(
                 user,
@@ -70,7 +70,7 @@ def hourly_state_gold_refill(user):
 
     if explore_resource(user, "gold"):
         log(user, "Refilled the state gold reserves")
-        user.s.enter(3600, 1, hourly_state_gold_refill, (user,))
+        user.s.enter(3600, 3, hourly_state_gold_refill, (user,))
         return True
     else:
         fail()
@@ -78,9 +78,9 @@ def hourly_state_gold_refill(user):
 
 def energy_drink_refill(user):
     if not produce_energy(user):
-        user.s.enter(3600, 2, energy_drink_refill, (user,))
+        user.s.enter(3600, 3, energy_drink_refill, (user,))
         return False
-    user.s.enter(21600, 2, energy_drink_refill, (user,))
+    user.s.enter(21600, 3, energy_drink_refill, (user,))
     return True
 
 
@@ -94,31 +94,29 @@ def close_borders_if_not_safe(user):
 
 
 def upgrade_perk_event(user):
-    def fail():
+    try:
+        if not (set_perks(user) and set_money(user, energy=True)):
+            raise
+
+        training_time = check_training_status(user)
+
+        if training_time:
+            user.s.enter(training_time, 1, upgrade_perk_event, (user,))
+            log(
+                user,
+                f"Perk upgrade in progress. Time remaining: {datetime.timedelta(seconds=training_time)}",
+            )
+            return False
+        elif training_time is False:
+            raise
+
+        result = upgrade_perk(user)
+
+        if result:
+            log(user, f"Upgraded {result[0].upper()} with {result[1].upper()}")
+            user.s.enter(600, 1, upgrade_perk_event, (user,))
+            return True
+        raise
+    except:
         user.s.enter(600, 1, upgrade_perk_event, (user,))
         return False
-
-    if not (set_perks(user) and set_money(user, energy=True)):
-        return fail()
-
-    training_time = check_training_status(user)
-
-    if training_time:
-        user.s.enter(training_time, 1, upgrade_perk_event, (user,))
-        log(
-            user,
-            f"Perk upgrade in progress. Time remaining: {datetime.timedelta(seconds=training_time)}",
-        )
-        return False
-    elif training_time is False:
-        return fail()
-
-    result = upgrade_perk(user)
-
-    if result:
-        log(user, f"Upgraded {result[0].upper()} with {result[1].upper()}")
-        user.s.enter(600, 1, upgrade_perk_event, (user,))
-        return True
-
-    else:
-        return fail()

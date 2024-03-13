@@ -40,8 +40,7 @@ def work_state_department(user, id=None, dept="gold"):
             #     return False
             id = region.state.id
         if not id:
-            user.s.enter(3600, 2, work_state_department, (user, id, dept))
-            return False
+            raise Exception("No state id")
         state = get_state(id)
         dept_ids = {
             "building": 1,
@@ -76,6 +75,7 @@ def work_state_department(user, id=None, dept="gold"):
         reload_mainpage(user)
         return True
     except Exception as e:
+        user.s.enter(3600, 2, work_state_department, (user, id, dept))
         return error(user, e, "Error working for state department")
 
 
