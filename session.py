@@ -3,9 +3,6 @@ import schedule
 
 import events
 from actions.regions import build_military_academy, work_state_department
-
-# trunk-ignore(ruff/F401)
-from actions.states import budget_transfer
 from actions.status import set_money
 from actions.wars import attack
 from actions.work import auto_work_factory
@@ -22,6 +19,7 @@ def session(user):
     user.load_database()
 
     # if user.player.economics:
+    #     from actions.states import budget_transfer
     #     budget_transfer(user, 1728, "oil", "80kkk")
 
     eventsToBeDone = [
@@ -32,7 +30,7 @@ def session(user):
         {
             "desc": "factory work",
             "event": auto_work_factory,
-            "args": (user.factory,) if user.factory else (None,),
+            "args": (user.factory,) if user.factory else (None, True),
         },
         {"desc": "economics work", "event": events.hourly_state_gold_refill},
         {

@@ -54,6 +54,8 @@ def explore_resource(user, resource="gold"):
         "Error exploring resource",
         relad_after=True,
     )
+    time.sleep(2)
+    result = accept_law(user, "Resources exploration: state, gold resources")
     try:
         if (
             user.player.economics.form == "Executive monarchy"
@@ -62,9 +64,6 @@ def explore_resource(user, resource="gold"):
             return True
     except:
         pass
-    if law:
-        time.sleep(2)
-        result = accept_law(user, "Resources exploration: state, gold resources")
     return result
 
 

@@ -93,10 +93,12 @@ def cancel_auto_work(user):
     )
 
 
-def auto_work_factory(user, id=None):
+def auto_work_factory(user, id=None, include_fix_wage=False):
     try:
         if not id:
-            factory = get_best_factory(user, resource="gold")
+            factory = get_best_factory(
+                user, resource="gold", include_fix_wage=include_fix_wage
+            )
         else:
             factory = get_factory_info(user, id)
         if not factory:
@@ -128,18 +130,21 @@ def get_best_factory(user, id=None, resource="gold", include_fix_wage=False):
         if not factories:
             return False
 
-        def get_wage(factory):
-            return (
-                factory.wage
-                if factory.fixed_wage
-                else factory.wage * (factory.level**0.8)
-            )
+        best_unfixed = max(
+            filter(lambda x: not x.fixed_wage, factories), key=lambda x: x.get_wage()
+        )
 
-        if include_fix_wage:
-            max(factories, key=get_wage)
-        else:
-            return max(
-                filter(lambda factory: not factory.fixed_wage, factories), key=get_wage
+        try:
+            if not include_fix_wage or get_factory_info(user, best_unfixed.id):
+                raise
+            coef = best_unfixed.potential_wage / best_unfixed.get_wage()
+            the = max(
+                factories, key=lambda x: x.get_wage() * (1 if x.fixed_wage else coef)
             )
+            if not the:
+                raise
+            return the
+        except:
+            return best_unfixed
     except Exception as e:
         return error(user, e, "Error getting best factory")

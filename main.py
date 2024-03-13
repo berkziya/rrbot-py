@@ -104,7 +104,9 @@ def main():
     try:
         subprocess.Popen(["/usr/bin/caffeinate", "-i"])
     except FileNotFoundError:
-        print("caffeinate not found. Continuing without it.")
+        print(
+            "caffeinate not found. Continuing without it. (Your computer might sleep)"
+        )
 
     session(user)
 

@@ -40,6 +40,9 @@ class Factory:
     def set_wage(self, value):
         self.wage = value
 
+    def get_wage(self):
+        return self.wage if self.fixed_wage else self.wage * (self.level**0.8)
+
     def set_fixed_wage(self, value):
         self.fixed_wage = value
 

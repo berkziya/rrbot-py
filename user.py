@@ -90,7 +90,7 @@ class Client:
 
     def boot_browser(self, cookies=True):
         try:
-            print(f"Booting browser for {self.name}...")
+            log(self, "Booting browser...")
             self.driver = uc.Chrome(
                 headless=self.driveroptions["headless"], use_subprocess=False
             )
