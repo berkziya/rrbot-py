@@ -151,7 +151,7 @@ def get_wars(user, id=None):
 
 
 def get_training_war(user):
-    wait_until_internet_is_back(user)
+    reload_mainpage(user)
     try:
         element = user.driver.find_element(
             By.CSS_SELECTOR, "span.pointer.index_training.hov2.dot"
@@ -159,6 +159,8 @@ def get_training_war(user):
         user.driver.execute_script("arguments[0].click();", element)
         time.sleep(3)
         link = user.driver.current_url.split("/")[-1]
+        if not link.isdigit():
+            raise Exception(f"not digit: {user.driver.current_url}")
         reload_mainpage(user)
         return get_war(link)
     except Exception as e:
