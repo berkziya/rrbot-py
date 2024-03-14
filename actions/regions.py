@@ -38,9 +38,10 @@ def work_state_department(user, id=None, dept="gold"):
             # if not region or not residency or region.state.id != residency.state.id:
             #     user.s.enter(3600, 1, work_state_department, (user, id, dept))
             #     return False
+            if not region:
+                raise Exception("No state id")
             id = region.state.id
-        if not id:
-            raise Exception("No state id")
+
         state = get_state(id)
         dept_ids = {
             "building": 1,

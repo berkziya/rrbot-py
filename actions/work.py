@@ -93,7 +93,7 @@ def cancel_auto_work(user):
     )
 
 
-def auto_work_factory(user, id=None, include_fix_wage=False):
+def auto_work_factory(user, id=None, include_fix_wage=True):
     try:
         if not id:
             factory = get_best_factory(
@@ -121,7 +121,7 @@ def auto_work_factory(user, id=None, include_fix_wage=False):
         return error(user, e, "Error auto working factory")
 
 
-def get_best_factory(user, id=None, resource="gold", include_fix_wage=False):
+def get_best_factory(user, id=None, resource="gold", include_fix_wage=True):
     try:
         if not id:
             get_player_info(user, force=True)
@@ -135,7 +135,7 @@ def get_best_factory(user, id=None, resource="gold", include_fix_wage=False):
         )
 
         try:
-            if not include_fix_wage or get_factory_info(user, best_unfixed.id):
+            if not include_fix_wage or not get_factory_info(user, best_unfixed.id):
                 raise
             coef = best_unfixed.potential_wage / best_unfixed.get_wage()
             the = max(

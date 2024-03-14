@@ -15,7 +15,7 @@ def initiate_all_events(user, events, daily=False):
     list(
         map(
             user.s.cancel,
-            filter(lambda x: (x[1] == 2 if daily else True) in events, user.s.queue),
+            filter(lambda x: (x[1] == 2 if daily else True), user.s.queue),
         )
     )
     for event in events:
@@ -78,7 +78,7 @@ def hourly_state_gold_refill(user):
 
     if explore_resource(user, "gold"):
         log(user, "Refilled the state gold reserves")
-        user.s.enter(3600, 3, hourly_state_gold_refill, (user,))
+        user.s.enter(3600, 2, hourly_state_gold_refill, (user,))
         return True
     else:
         fail()

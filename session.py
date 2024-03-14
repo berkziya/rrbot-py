@@ -44,7 +44,7 @@ def session(user):
         {
             "desc": "factory work",
             "event": auto_work_factory,
-            "args": (user.factory,) if user.factory else (None, True),
+            "args": (user.factory,) if user.factory else (None,),
             "daily": False,
             "mute": True,
         },
@@ -153,7 +153,7 @@ def session(user):
 
     def activate_scheduler():
         schedule.run_pending()
-        user.s.enter(3, 2, activate_scheduler, ())
+        user.s.enter(1, 2, activate_scheduler, ())
 
     activate_scheduler()
     user.s.run(blocking=True)
