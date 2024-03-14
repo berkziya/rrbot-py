@@ -19,6 +19,8 @@ def initiate_all_events(user, events, daily=False):
         )
     )
     for event in events:
+        if daily and not event["daily"]:
+            continue
         user.s.enter(
             1,
             (2 if event["daily"] else 3 if event["mute"] else 1),
