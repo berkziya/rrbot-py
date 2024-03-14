@@ -24,23 +24,10 @@ def session(user):
 
     eventsToBeDone = [
         {
-            "desc": "upgrade perks",
-            "event": events.upgrade_perk_event,
-            "daily": False,
-            "mute": False,
-        },
-        {
             "desc": "build military academy",
             "event": build_military_academy,
             "daily": True,
         },
-        {
-            "desc": "energy drink refill",
-            "event": events.energy_drink_refill,
-            "daily": False,
-            "mute": True,
-        },
-        {"desc": "attack training", "event": attack, "daily": False, "mute": False},
         {
             "desc": "factory work",
             "event": auto_work_factory,
@@ -49,10 +36,17 @@ def session(user):
             "mute": True,
         },
         {
+            "desc": "upgrade perks",
+            "event": events.upgrade_perk_event,
+            "daily": False,
+            "mute": False,
+        },
+        {
             "desc": "economics work",
             "event": events.hourly_state_gold_refill,
             "daily": True,
         },
+        {"desc": "attack training", "event": attack, "daily": False, "mute": False},
         {
             "desc": "work state department",
             "event": work_state_department,
@@ -65,6 +59,12 @@ def session(user):
                 else (None,)
             ),
             "daily": True,
+        },
+        {
+            "desc": "energy drink refill",
+            "event": events.energy_drink_refill,
+            "daily": False,
+            "mute": True,
         },
         {
             "desc": "upcoming_events",

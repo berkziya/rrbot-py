@@ -46,7 +46,7 @@ def attack(user, id=None, side=0, max=False, drones=False):
             side = 0
             warname = "training war"
             if war.ending_time:
-                user.s.enterabs(war.ending_time + 60, 1, attack, (user,))
+                user.s.enterabs(war.ending_time + 120, 1, attack, (user,))
         else:
             if not get_war_info(user, id):
                 log(user, "No war info found")
