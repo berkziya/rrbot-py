@@ -153,7 +153,7 @@ def session(user):
 
     def activate_scheduler():
         schedule.run_pending()
-        user.s.enter(1, 2, activate_scheduler, ())
+        user.s.enter(60, 3, activate_scheduler, ())
 
     activate_scheduler()
     user.s.run(blocking=True)
