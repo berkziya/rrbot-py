@@ -147,9 +147,17 @@ def get_indexes(user):
     except Exception as e:
         return error(user, e, "Error getting indexes")
 
+def calculate_building_cost(building, fromme, tomme):
+    if tomme <= fromme:
+        return {}
+    if any(x in building for x in ["military", "school"]):
+        building = "hospital"
+    if any(x in building for x in ["sea port", "airport"]):
+        building = "missile system"
+    return calculate_building_cost_inner(building, fromme, tomme)
 
 @lru_cache(maxsize=None)
-def calculate_building_cost(building, fromme, tomme):
+def calculate_building_cost_inner(building, fromme, tomme):
     building_costs = {
         "hospital": {
             "money": (300, 1.5),
@@ -157,26 +165,7 @@ def calculate_building_cost(building, fromme, tomme):
             "oil": (160, 1.5),
             "ore": (90, 1.5),
         },
-        "military": {
-            "money": (300, 1.5),
-            "gold": (2160, 1.5),
-            "oil": (160, 1.5),
-            "ore": (90, 1.5),
-        },
-        "school": {
-            "money": (300, 1.5),
-            "gold": (2160, 1.5),
-            "oil": (160, 1.5),
-            "ore": (90, 1.5),
-        },
         "missile system": {
-            "money": (1e3, 1.5),
-            "gold": (180, 1.5),
-            "oil": (10, 1.5),
-            "ore": (10, 1.5),
-            "diamonds": (10, 0.7),
-        },
-        "sea port": {
             "money": (1e3, 1.5),
             "gold": (180, 1.5),
             "oil": (10, 1.5),
@@ -199,13 +188,6 @@ def calculate_building_cost(building, fromme, tomme):
             "diamonds": (5, 0.7),
             "uranium": (20, 1.5),
         },
-        "airport": {
-            "money": (1e3, 1.5),
-            "gold": (180, 1.5),
-            "oil": (10, 1.5),
-            "ore": (10, 1.5),
-            "diamonds": (10, 0.7),
-        },
         "homes": {
             "money": (30, 1.5),
             "gold": (260, 1.5),
@@ -213,8 +195,6 @@ def calculate_building_cost(building, fromme, tomme):
             "ore": (9, 1.5),
         },
     }
-    if tomme <= fromme:
-        return {}
     costs = {
         key: round(
             (tomme * building_costs[building][key][0])
