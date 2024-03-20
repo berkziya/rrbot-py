@@ -8,8 +8,6 @@ from session import session
 from user import Client
 
 DEFAULT_CONFIG = """[general]
-browser = firefox
-binary = C:\\Program Files\\Mozilla Firefox\\firefox.exe
 
 [user]
 enabled = true
@@ -18,7 +16,7 @@ password = password1
 goldperks = edu str end
 eduweight = 55
 minlvl4gold = 666
-statedept = building
+statedept = buildings
 factory = 45763
 """
 

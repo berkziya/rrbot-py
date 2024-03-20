@@ -8,7 +8,7 @@ storages = {
     "uranium": 11,
     "diamonds": 15,
     "lox": 21,
-    "helium": 24,
+    "helium3": 24,
     "rivalium": 26,
     "antirad": 13,
     "energy": 17,

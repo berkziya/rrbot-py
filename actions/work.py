@@ -17,7 +17,9 @@ RESOURCES = {
     "diamonds": 15,
     "lox": 21,
     "liquefaction": 21,
+    "liquidoxygen": 21,
     "helium": 24,
+    "helium3": 24,
     "helium-3": 24,
     "rivalium": 26,
 }

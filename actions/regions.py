@@ -44,14 +44,17 @@ def work_state_department(user, id=None, dept="gold"):
 
         state = get_state(id)
         dept_ids = {
-            "building": 1,
+            "buildings": 1,
             "gold": 2,
             "oil": 3,
             "ore": 4,
             "diamonds": 5,
             "uranium": 6,
             "lox": 7,
+            "liquidoxygen": 7,
+            "helium": 8,
             "helium3": 8,
+            "helium-3": 8,
             "tanks": 9,
             "spacestations": 10,
             "battleships": 11,
