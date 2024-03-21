@@ -83,8 +83,8 @@ def get_factory_info(user, id, force=False):
         factory = get_factory(id)
         if (
             factory.last_accessed
-            and factory.last_accessed < time.time() - 900
-            and (not force)
+            and factory.last_accessed < time.time() - 3600
+            and not force
         ):
             return factory
         if not get_page(user, f"factory/index/{id}"):

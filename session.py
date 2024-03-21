@@ -74,9 +74,9 @@ def session(user):
         },
     ]
 
-    if get_player_info(user, force=True):
-        get_region_info(user, user.player.region.id, force=True)
-        get_state_info(user, user.player.region.state.id, force=True)
+    if get_player_info(user):
+        get_region_info(user, user.player.region.id)
+        get_state_info(user, user.player.region.state.id)
         log(
             user,
             f"ID: {user.player} | Level: {user.player.level} | Rating: {user.player.rating}",
@@ -112,8 +112,8 @@ def session(user):
         alert(user, "Error setting money, will try again in 10 seconds.")
 
     if user.player.governor:
-        get_autonomy_info(user, user.player.governor.id, force=True)
-        get_state_info(user, user.player.governor.state.id, force=True)
+        get_autonomy_info(user, user.player.governor.id)
+        get_state_info(user, user.player.governor.state.id)
         log(
             user,
             f"""Autonomy Budget:
@@ -126,7 +126,7 @@ def session(user):
         )
 
     if user.player.economics:
-        get_state_info(user, user.player.economics.id, force=True)
+        get_state_info(user, user.player.economics.id)
         log(
             user,
             f"""State Budget:

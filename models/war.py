@@ -81,11 +81,15 @@ class War:
 def get_war_info(user, id):
     wait_until_internet_is_back(user)
     try:
+        war = get_war(id)
+        if (
+            war.last_accessed
+            and war.last_accessed < time.time() - 60
+            and not war
+        ):
+            return war
         if not get_page(user, f"war/details/{id}"):
             return False
-
-        war = get_war(id)
-
         type = user.driver.find_element(
             By.CSS_SELECTOR, "body > div.margin > h1 > div:nth-child(2)"
         ).text
