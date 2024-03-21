@@ -147,6 +147,7 @@ def get_indexes(user):
     except Exception as e:
         return error(user, e, "Error getting indexes")
 
+
 def calculate_building_cost(building, fromme, tomme):
     if tomme <= fromme:
         return {}
@@ -155,6 +156,7 @@ def calculate_building_cost(building, fromme, tomme):
     if any(x in building for x in ["sea port", "airport"]):
         building = "missile system"
     return calculate_building_cost_inner(building, fromme, tomme)
+
 
 @lru_cache(maxsize=None)
 def calculate_building_cost_inner(building, fromme, tomme):
