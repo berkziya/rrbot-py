@@ -84,7 +84,7 @@ def get_war_info(user, id):
         war = get_war(id)
         if (
             war.last_accessed
-            and war.last_accessed < time.time() - 60
+            and war.last_accessed < time.time() - 600
             and not war
         ):
             return war
@@ -133,6 +133,7 @@ def get_war_info(user, id):
         war.set_attacking_region(attacker)
 
         if type == "training":
+            war.set_last_accessed()
             return_to_mainwindow(user)
             return war
 
@@ -161,6 +162,7 @@ def get_war_info(user, id):
             ).text
         )
 
+        war.set_last_accessed()
         return_to_mainwindow(user)
         return war
     except NoSuchElementException:
