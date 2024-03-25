@@ -2,10 +2,8 @@
 *.log
 *.db
 *.db-journal
-.wdm
 *_cookies.json
 log*
-errors/*
 
 ### macOS ###
 # General

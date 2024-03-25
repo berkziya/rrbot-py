@@ -9,7 +9,7 @@ def dotless(number):
 
 
 def num_to_slang(number):
-    units = ["", "k", "kk", "k" + "kk", "T", "P"]
+    units = ["", "k", "kk", "k" * 3, "T", "P"]
     for unit in units:
         if abs(number) < 1000:
             return f"{number:.1f}{unit}"
@@ -20,12 +20,8 @@ def num_to_slang(number):
 def slang_to_num(slang):
     if isinstance(slang, int):
         return slang
-    slang = slang.lower().strip().replace(",", "").replace(" ", "").replace(".", "")
-    while slang.endswith("k"):
-        slang = slang[:-1] + "000"
-    while slang.endswith("t"):
-        slang = slang[:-1] + "0" * 12
-    return int(slang)
+    slang = slang.lower().replace("k", "000").replace("t", "0" * 12)
+    return int(re.sub(r"\D", "", slang))
 
 
 def time_to_secs(time_str):

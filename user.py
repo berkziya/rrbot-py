@@ -1,7 +1,5 @@
 import json
-import os
 import sched
-import sqlite3
 import time
 
 from selenium.webdriver.common.by import By
@@ -55,6 +53,8 @@ class Client:
         return self.cursor_
 
     def create_connection(self):
+        import sqlite3
+
         try:
             return sqlite3.connect("database.db")
         except Exception as e:
@@ -111,6 +111,8 @@ class Client:
             return False
 
         def add_cookies():
+            import os
+
             if not os.path.exists(f"{self.name}_cookies.json"):
                 return False
             cookies = json.load(open(f"{self.name}_cookies.json", "r"))
@@ -175,7 +177,7 @@ class Client:
 
     def initiate_session(self):
         self.s = sched.scheduler(time.time, time.sleep)
-        if self.initiate_driver(cookies=True):
+        if self.initiate_driver():
             self.id = self.driver.execute_script("return id;")
             self.player = get_player(self.id)
             json.dump(self.driver.get_cookies(), open(f"{self.name}_cookies.json", "w"))

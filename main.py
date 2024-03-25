@@ -13,15 +13,13 @@ browser = firefox
 headless = true
 
 [user]
-enabled = true
 email = user1@example.com
 password = password1
 goldperks = edu str end
 eduweight = 0
 minlvl4gold = 999
-mingold4gold = 50k
-statedept = buildings
-factory = 45763
+mingold4gold = 40k
+statedept = gold
 """
 
 
