@@ -32,10 +32,6 @@ def create_config_file(config_path):
 def read_config(config_path):
     config = configparser.ConfigParser()
     config.read(config_path)
-
-    if config["general"].get("token", fallback=None):
-        os.environ["GH_TOKEN"] = config["general"]["token"]
-
     return config
 
 
