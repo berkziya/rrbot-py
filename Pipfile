@@ -7,8 +7,7 @@ name = "pypi"
 selenium = "*"
 pytz = "*"
 schedule = "*"
-undetected-chromedriver = "*"
-setuptools = "*"
+requests = "*"
 
 [dev-packages]
 

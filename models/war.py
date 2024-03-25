@@ -82,11 +82,7 @@ def get_war_info(user, id):
     wait_until_internet_is_back(user)
     try:
         war = get_war(id)
-        if (
-            war.last_accessed
-            and war.last_accessed < time.time() - 600
-            and not war
-        ):
+        if war.last_accessed and war.last_accessed < time.time() - 600 and not war:
             return war
         if not get_page(user, f"war/details/{id}"):
             return False

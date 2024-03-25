@@ -4,7 +4,6 @@ import sched
 import sqlite3
 import time
 
-import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -25,7 +24,7 @@ class Client:
         self.email = email
         self.password = password
 
-        self.driveroptions = {"headless": True, "binary_location": None}
+        self.driveroptions = {}
         self.s = None
         self.driver = None
         self.wait = None
@@ -88,14 +87,27 @@ class Client:
     def set_factory(self, value):
         self.factory = value
 
-    def boot_browser(self, cookies=True):
+    def initiate_driver(self, cookies=True):
         try:
             log(self, "Booting browser...")
-            self.driver = uc.Chrome(
-                headless=self.driveroptions["headless"], use_subprocess=False
-            )
+            if "fox" in self.driveroptions["browser"]:
+                from selenium.webdriver import Firefox
+                from selenium.webdriver.firefox.options import Options
+
+                options = Options()
+                if self.driveroptions["headless"]:
+                    options.add_argument("--headless")
+                self.driver = Firefox(options=options)
+            else:
+                from selenium.webdriver import Chrome
+                from selenium.webdriver.chrome.options import Options
+
+                options = Options()
+                if self.driveroptions["headless"]:
+                    options.add_argument("--headless")
+                self.driver = Chrome(options=options)
         except Exception as e:
-            error(self, e, "Error setting up webdriver")
+            error(self, e, "Error starting up the webdriver")
             return False
 
         def add_cookies():
@@ -155,7 +167,7 @@ class Client:
             error(self, e, "Error logging in")
             self.driver.quit()
             if cookies:
-                return self.boot_browser(cookies=False)
+                return self.initiate_driver(cookies=False)
             time.sleep(2)
             self.wait = None
             self.driver = None
@@ -163,7 +175,7 @@ class Client:
 
     def initiate_session(self):
         self.s = sched.scheduler(time.time, time.sleep)
-        if self.boot_browser(cookies=False):
+        if self.initiate_driver(cookies=True):
             self.id = self.driver.execute_script("return id;")
             self.player = get_player(self.id)
             json.dump(self.driver.get_cookies(), open(f"{self.name}_cookies.json", "w"))

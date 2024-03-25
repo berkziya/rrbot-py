@@ -8,13 +8,24 @@ def dotless(number):
     return int("".join(numbers)) if numbers else 0
 
 
-def numba(number):
+def num_to_slang(number):
     units = ["", "k", "kk", "k" + "kk", "T", "P"]
     for unit in units:
         if abs(number) < 1000:
             return f"{number:.1f}{unit}"
         number /= 1000
     return f"{number:.3f}{unit}"
+
+
+def slang_to_num(slang):
+    if isinstance(slang, int):
+        return slang
+    slang = slang.lower().strip().replace(",", "").replace(" ", "").replace(".", "")
+    while slang.endswith("k"):
+        slang = slang[:-1] + "000"
+    while slang.endswith("t"):
+        slang = slang[:-1] + "0" * 12
+    return int(slang)
 
 
 def time_to_secs(time_str):

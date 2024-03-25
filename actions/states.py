@@ -5,7 +5,6 @@ from selenium.webdriver.common.by import By
 
 from butler import ajax, error, get_page, return_to_mainwindow
 from misc.logger import log
-from misc.utils import sum_costs
 from models.state import get_state_info
 
 
@@ -68,8 +67,9 @@ def explore_resource(user, resource="gold"):
 
 
 def budget_transfer(user, id, resource, amount):
-    if "k" in amount:
-        amount = int(amount.replace("k", "000"))
+    from misc.utils import slang_to_num
+
+    amount = slang_to_num(amount)
     resources = {
         "money": 1,
         "gold": 0,
@@ -160,6 +160,8 @@ def calculate_building_cost(building, fromme, tomme):
 
 @lru_cache(maxsize=None)
 def calculate_building_cost_inner(building, fromme, tomme):
+    from misc.utils import sum_costs
+
     building_costs = {
         "hospital": {
             "money": (300, 1.5),

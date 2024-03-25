@@ -8,7 +8,7 @@ from actions.wars import attack
 from actions.work import auto_work_factory
 from butler import reset_browser
 from misc.logger import alert, log
-from misc.utils import numba
+from misc.utils import num_to_slang
 from models.autonomy import get_autonomy_info
 from models.player import get_player_info
 from models.region import get_region_info
@@ -101,11 +101,11 @@ def session(user):
     if set_money(user, energy=True):
         log(
             user,
-            f"Money: {numba(user.player.money['money'])} | Gold: {numba(user.player.money['gold'])} | Energy: {numba(user.player.money['energy'])}",
+            f"Money: {num_to_slang(user.player.money['money'])} | Gold: {num_to_slang(user.player.money['gold'])} | Energy: {num_to_slang(user.player.money['energy'])}",
         )
         log(
             user,
-            f"TOTAL GOLD: {numba(user.player.money['energy']//10 + user.player.money['gold'])}",
+            f"TOTAL GOLD: {num_to_slang(user.player.money['energy']//10 + user.player.money['gold'])}",
         )
     else:
         user.s.enter(10, 3, set_money, (user,))
@@ -117,12 +117,12 @@ def session(user):
         log(
             user,
             f"""Autonomy Budget:
-                                Money: {numba(user.player.governor.budget['money'])}
-                                Gold: {numba(user.player.governor.budget['gold'])}
-                                Oil: {numba(user.player.governor.budget['oil'])}
-                                Ore: {numba(user.player.governor.budget['ore'])}
-                                Uranium: {numba(user.player.governor.budget['uranium'])}
-                                Diamonds: {numba(user.player.governor.budget['diamonds'])}""",
+                                Money: {num_to_slang(user.player.governor.budget['money'])}
+                                Gold: {num_to_slang(user.player.governor.budget['gold'])}
+                                Oil: {num_to_slang(user.player.governor.budget['oil'])}
+                                Ore: {num_to_slang(user.player.governor.budget['ore'])}
+                                Uranium: {num_to_slang(user.player.governor.budget['uranium'])}
+                                Diamonds: {num_to_slang(user.player.governor.budget['diamonds'])}""",
         )
 
     if user.player.economics:
@@ -130,12 +130,12 @@ def session(user):
         log(
             user,
             f"""State Budget:
-                                Money: {numba(user.player.economics.budget['money'])}
-                                Gold: {numba(user.player.economics.budget['gold'])}
-                                Oil: {numba(user.player.economics.budget['oil'])}
-                                Ore: {numba(user.player.economics.budget['ore'])}
-                                Uranium: {numba(user.player.economics.budget['uranium'])}
-                                Diamonds: {numba(user.player.economics.budget['diamonds'])}""",
+                                Money: {num_to_slang(user.player.economics.budget['money'])}
+                                Gold: {num_to_slang(user.player.economics.budget['gold'])}
+                                Oil: {num_to_slang(user.player.economics.budget['oil'])}
+                                Ore: {num_to_slang(user.player.economics.budget['ore'])}
+                                Uranium: {num_to_slang(user.player.economics.budget['uranium'])}
+                                Diamonds: {num_to_slang(user.player.economics.budget['diamonds'])}""",
         )
 
     user.save_database()

@@ -4,18 +4,22 @@ import os
 import subprocess
 
 from misc.logger import alert
+from misc.utils import slang_to_num
 from session import session
 from user import Client
 
 DEFAULT_CONFIG = """[general]
+browser = firefox
+headless = true
 
 [user]
 enabled = true
 email = user1@example.com
 password = password1
 goldperks = edu str end
-eduweight = 55
-minlvl4gold = 666
+eduweight = 0
+minlvl4gold = 999
+mingold4gold = 50k
 statedept = buildings
 factory = 45763
 """
@@ -38,27 +42,26 @@ def read_config(config_path):
 
 
 def create_user_from_config(config, general):
+    browser = general.get("browser", fallback="firefox")
     headless = general.getboolean("headless", fallback=True)
-    binary = general.get("binary", fallback=None)
 
     email = config.get("email")
     password = config.get("password")
-    is_headless = config.getboolean("headless", fallback=headless) or not binary
 
     user = Client(config.name, email, password)
-    user.set_driveroptions("binary_location", binary)
-    user.set_driveroptions("headless", is_headless)
+    user.set_driveroptions("browser", browser)
+    user.set_driveroptions("headless", headless)
 
     goldperks = str.lower(config.get("goldperks", fallback="streduend"))
     eduweight = config.getint("eduweight", fallback=0)
-    minlvl4gold = config.getint("minlvl4gold", fallback=float("inf"))
-    mingold4gold = config.getint("mingold4gold", fallback=float("inf"))
+    minlvl4gold = slang_to_num(config.get("minlvl4gold", fallback=float("inf")))
+    mingold4gold = slang_to_num(config.get("mingold4gold", fallback=float("inf")))
     user.set_perkoptions("goldperks", goldperks)
     user.set_perkoptions("eduweight", eduweight)
     user.set_perkoptions("minlvl4gold", minlvl4gold)
     user.set_perkoptions("mingold4gold", mingold4gold)
 
-    statedept = config.get("statedept", fallback=None)
+    statedept = config.get("statedept", fallback="gold")
     user.set_statedept(statedept)
 
     factory = config.get("factory", fallback=None)
