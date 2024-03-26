@@ -153,9 +153,9 @@ def get_indexes(user):
 def calculate_building_cost(building, fromme, tomme):
     if tomme <= fromme:
         return {}
-    if any(x in building for x in ["military", "school"]):
+    if building in ["military", "school"]:
         building = "hospital"
-    if any(x in building for x in ["sea port", "airport"]):
+    if building in ["sea port", "airport"]:
         building = "missile system"
     return calculate_building_cost_inner(building, fromme, tomme)
 
