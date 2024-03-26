@@ -114,7 +114,7 @@ def reset_browser(user):
             time.sleep(2)
         user.wait = None
         user.driver = None
-        if not user.boot_browser():
+        if not user.initiate_driver():
             alert(user, "Browser failed to reset, will try again in 10 minutes.")
             delay_tasks(user.s, 666)
             user.s.enter(600, 1, reset_browser, (user,))
