@@ -1,6 +1,5 @@
 import time
 
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -55,16 +54,14 @@ def set_money(user, energy=False):
         return error(user, e, "Error setting money")
 
 
-def check_traveling_status(user):  # TODO: Fix this
-    try:
-        reload_mainpage(user)
-        user.driver.find_element(By.CSS_SELECTOR, ".gototravel")
-        return True
-    except NoSuchElementException:
-        try:
-            user.driver.find_element(
-                By.XPATH, "//*[contains(text(), 'Travelling back')]"
-            )
-            return True
-        except NoSuchElementException:
-            return False
+# def check_traveling_status(user):
+#     try:
+#         reload_mainpage(user)
+#         user.driver.find_element(By.CSS_SELECTOR, ".gototravel")
+#         return True
+#     except NoSuchElementException:
+#         try:
+#             user.driver.find_element(By.XPATH, "//*[contains(text(), 'Travelling back')]")
+#             return True
+#         except NoSuchElementException:
+#             return False

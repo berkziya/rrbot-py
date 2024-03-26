@@ -121,25 +121,25 @@ class Client:
             return True
 
         def login():
-            email_input = self.wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "input[name='mail']"))
+            wait_for_page_load(self)
+            self.driver.find_element(By.CSS_SELECTOR, "input[name='mail']").send_keys(
+                self.email
             )
-            email_input.send_keys(self.email)
             log(self, "Logging in...")
 
-            password_input = self.driver.find_element(
-                By.CSS_SELECTOR, "input[name='p']"
+            self.driver.find_element(By.CSS_SELECTOR, "input[name='p']").send_keys(
+                self.password
             )
-            password_input.send_keys(self.password)
 
             submit_button = self.driver.find_element(By.CSS_SELECTOR, "input[name='s']")
             self.driver.execute_script("arguments[0].click();", submit_button)
 
         def logged_in():
             try:
-                return self.wait.until(
+                self.wait.until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
                 )
+                return True
             except:
                 return False
 

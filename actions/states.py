@@ -9,9 +9,10 @@ from models.state import get_state_info
 
 
 def remove_self_law(user):
-    return ajax(
+    result = ajax(
         user, "/parliament/removelaw", "", "Error removing self law", relad_after=True
     )
+    return result
 
 
 def accept_law(user, text):
@@ -36,12 +37,13 @@ def accept_law(user, text):
     except Exception as e:
         return error(user, e, "Something went wrong while accepting a law")
     return_to_mainwindow(user)
-    return ajax(
+    result = ajax(
         user,
         f"/parliament/votelaw/{law_action}/pro",
         "",
         "Error accepting law",
     )
+    return result
 
 
 def explore_resource(user, resource="gold"):
@@ -54,16 +56,13 @@ def explore_resource(user, resource="gold"):
         relad_after=True,
     )
     time.sleep(2)
-    result = accept_law(user, "Resources exploration: state, gold resources")
+    pass_law = accept_law(user, "Resources exploration: state, gold resources")
     try:
-        if (
-            user.player.economics.form == "Executive monarchy"
-            or user.player.economics.form == "Dictatorship"
-        ):
+        if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
             return True
     except:
         pass
-    return result
+    return law and pass_law
 
 
 def budget_transfer(user, id, resource, amount):
@@ -78,16 +77,16 @@ def budget_transfer(user, id, resource, amount):
         "uranium": 11,
         "diamonds": 15,
     }
-    law = ajax(
+    result = ajax(
         user,
         f"/parliament/donew/send_{resources[resource]}/{amount}/{id}",
         "tmp_gov: '{id}'",
         "Error exploring resource",
         relad_after=True,
     )
-    if law:
+    if result:
         log(user, f"Transferred {amount} {resource} to {id}")
-    return law
+    return result
 
 
 def border_control(user, border="opened"):
@@ -102,16 +101,19 @@ def border_control(user, border="opened"):
     if user.player.foreign.borders == border:
         log(user, f"Borders are already {border}")
         return False
-    return ajax(
+    law = ajax(
         user, "/parliament/donew/23/0/0", "tmp_gov: '0'", "Error setting border control"
-    ) and accept_law(user, f'{"Open" if border == "opened" else "Close"} borders:')
+    )
+    pass_law = accept_law(user, f'{"Open" if border == "opened" else "Close"} borders:')
+    return law and pass_law
 
 
 def set_minister(user, id, ministry="economic"):
     position = "set_econom"
     if ministry == "foreign":
         position = "set_mid"
-    return ajax(user, f"/leader/{position}", "u: {id}", "Error setting minister")
+    result = ajax(user, f"/leader/{position}", "u: {id}", "Error setting minister")
+    return result
 
 
 def get_indexes(user):

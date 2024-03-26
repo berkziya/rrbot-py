@@ -17,7 +17,13 @@ tables = {
 def create_table(user, table):
     try:
         user.cursor.execute(
-            f"CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY, data BLOB, last_accessed TIMESTAMP)"
+            f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                id INTEGER PRIMARY KEY,
+                data BLOB,
+                last_accessed TIMESTAMP
+            )
+            """
         )
         user.conn.commit()
         return True

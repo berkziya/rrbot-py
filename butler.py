@@ -3,7 +3,6 @@ import time
 import requests
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
 
 from misc.logger import alert
 
@@ -32,7 +31,7 @@ def am_i_alive(user):
 
 def wait_for_page_load(user, timeout=30):
     try:
-        WebDriverWait(user.driver, timeout).until(
+        user.wait.until(
             lambda driver: driver.execute_script("return document.readyState")
             == "complete"
         )

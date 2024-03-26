@@ -21,13 +21,14 @@ from models.war import get_war_info
 
 
 def cancel_autoattack(user):
-    return ajax(
+    result = ajax(
         user,
         "/war/autoset_cancel/",
         "",
         "Error cancelling autoattack",
         relad_after=True,
     )
+    return result
 
 
 def attack(user, id=None, side=0, max=False, drones=False):

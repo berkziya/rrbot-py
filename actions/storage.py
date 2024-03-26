@@ -39,9 +39,10 @@ def produce_energy(user):
     howmany = min((energy) // 10, gold)
     if howmany <= 0:
         return False
-    return ajax(
+    result = ajax(
         user,
         f"/storage/newproduce/17/{(howmany+2000)*10}",
         "",
         "Error producing energy",
     )
+    return result
