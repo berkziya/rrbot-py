@@ -90,15 +90,7 @@ class Client:
     def initiate_driver(self, cookies=True):
         try:
             log(self, "Booting browser...")
-            if "fox" in self.driveroptions["browser"]:
-                from selenium.webdriver import Firefox
-                from selenium.webdriver.firefox.options import Options
-
-                options = Options()
-                if self.driveroptions["headless"]:
-                    options.add_argument("--headless")
-                self.driver = Firefox(options=options)
-            else:
+            if "hrome" in self.driveroptions["browser"]:
                 from selenium.webdriver import Chrome
                 from selenium.webdriver.chrome.options import Options
 
@@ -106,6 +98,14 @@ class Client:
                 if self.driveroptions["headless"]:
                     options.add_argument("--headless")
                 self.driver = Chrome(options=options)
+            else:
+                from selenium.webdriver import Firefox
+                from selenium.webdriver.firefox.options import Options
+
+                options = Options()
+                if self.driveroptions["headless"]:
+                    options.add_argument("--headless")
+                self.driver = Firefox(options=options)
         except Exception as e:
             error(self, e, "Error starting up the webdriver")
             return False

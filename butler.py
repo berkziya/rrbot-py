@@ -29,7 +29,7 @@ def am_i_alive(user):
     return False
 
 
-def wait_for_page_load(user, timeout=30):
+def wait_for_page_load(user):
     try:
         user.wait.until(
             lambda driver: driver.execute_script("return document.readyState")
