@@ -153,23 +153,23 @@ class Region:
         }
 
     def __setstate__(self, state):
-        self.id = state["id"]
-        self.last_accessed = state["time"]
-        self.state = get_state(state["state"])
-        self.autonomy = get_autonomy(state["autonomy"])
-        self.location = state["location"]
-        self.buildings = state["buildings"]
-        self.rating = state["rating"]
-        self.residents = [get_player(player) for player in state["residents"]]
-        self.citizens = [get_player(player) for player in state["citizens"]]
-        self.initial_attack_damage = state["attdmg"]
-        self.initial_defend_damage = state["defdmg"]
-        self.tax = state["tax"]
-        self.market_tax = state["mtax"]
-        self.sea_access = state["sea"]
-        self.indexes = state["indexes"]
-        self.border_regions = [get_region(region) for region in state["border_regs"]]
-        self.factories = [get_factory(factory) for factory in state["factories"]]
+        self.id = state.get("id")
+        self.last_accessed = state.get("time")
+        self.state = get_state(state.get("state"))
+        self.autonomy = get_autonomy(state.get("autonomy"))
+        self.location = state.get("location")
+        self.buildings = state.get("buildings")
+        self.rating = state.get("rating")
+        self.residents = [get_player(player) for player in state.get("residents", [])]
+        self.citizens = [get_player(player) for player in state.get("citizens", [])]
+        self.initial_attack_damage = state.get("attdmg")
+        self.initial_defend_damage = state.get("defdmg")
+        self.tax = state.get("tax")
+        self.market_tax = state.get("mtax")
+        self.sea_access = state.get("sea")
+        self.indexes = state.get("indexes")
+        self.border_regions = [get_region(region) for region in state.get("border_regs", [])]
+        self.factories = [get_factory(factory) for factory in state.get("factories", [])]
 
 
 def get_region_info(user, id, force=False):

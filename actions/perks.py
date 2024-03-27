@@ -38,7 +38,7 @@ def upgrade_perk(user, perk=None, currency="gold"):
                 conditions = [
                     perk not in user.perkoptions["goldperks"],
                     user.player.perks[perk] < user.perkoptions["minlvl4gold"],
-                    (user.player.money["energy"] // 10 + user.player.money["gold"])
+                    (user.player.storage["energy"] // 10 + user.player.money["gold"])
                     < user.perkoptions["mingold4gold"],
                     goldprice > user.player.money["gold"],
                 ]

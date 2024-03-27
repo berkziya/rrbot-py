@@ -1,34 +1,37 @@
-from actions.status import set_money
-from butler import ajax
-from misc.logger import log
+from selenium.webdriver.common.by import By
 
-storages = {
-    "oil": 3,
-    "ore": 4,
-    "uranium": 11,
-    "diamonds": 15,
-    "lox": 21,
-    "helium3": 24,
-    "rivalium": 26,
-    "antirad": 13,
-    "energy": 17,
-    "spacerockets": 20,
-    "lss": 25,
-    "tanks": 2,
-    "aircrafts": 1,
-    "missiles": 14,
-    "bombers": 16,
-    "battleships": 18,
-    "laserdrones": 27,
-    "moon_tanks": 22,
-    "space_stations": 23,
+from actions.status import set_money
+from butler import ajax, error, get_page, return_to_mainwindow
+from misc.logger import log
+from misc.utils import dotless
+
+storage = {
+    3: "oil",
+    4: "ore",
+    11: "uranium",
+    15: "diamonds",
+    21: "lox",
+    24: "helium3",
+    26: "rivalium",
+    13: "antirad",
+    17: "energy",
+    20: "spacerockets",
+    25: "lss",
+    2: "tanks",
+    1: "aircrafts",
+    14: "missiles",
+    16: "bombers",
+    18: "battleships",
+    27: "laserdrones",
+    22: "moon_tanks",
+    23: "space_stations",
 }
 
 
 def produce_energy(user):
     if not set_money(user, energy=True):
         return False
-    energy, gold = user.player.money["energy"], user.player.money["gold"]
+    energy, gold = user.player.storage["energy"], user.player.money["gold"]
     if energy >= 100000:
         return False
     if gold < 2000:
@@ -46,3 +49,19 @@ def produce_energy(user):
         "Error producing energy",
     )
     return result
+
+
+def set_storage(user):
+    if not get_page(user, "storage"):
+        return False
+    try:
+        spans = user.driver.find_elements(By.CSS_SELECTOR, "span[url]")
+        for span in spans:
+            resource = span.get_attribute("url")
+            if int(resource) in storage.values():
+                amount = dotless(span.text)
+                user.player.set_storage(storage[resource], amount)
+        return_to_mainwindow(user)
+        return True
+    except Exception as e:
+        return error(user, e, "Error setting storage")

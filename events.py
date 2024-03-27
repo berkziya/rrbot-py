@@ -1,9 +1,5 @@
 import datetime
 
-from actions.perks import check_training_status, upgrade_perk
-from actions.states import explore_resource
-from actions.status import set_money, set_perks
-from actions.storage import produce_energy
 from butler import wait_until_internet_is_back
 from misc.logger import alert, log
 from models.player import get_player_info
@@ -78,6 +74,8 @@ def hourly_state_gold_refill(user):
     if not user.player.state_leader and not user.player.economics:
         return fail()
 
+    from actions.states import explore_resource
+
     if explore_resource(user, "gold"):
         log(user, "Refilled the state gold reserves")
         user.s.enter(3600, 2, hourly_state_gold_refill, (user,))
@@ -87,6 +85,8 @@ def hourly_state_gold_refill(user):
 
 
 def energy_drink_refill(user):
+    from actions.storage import produce_energy
+
     if not produce_energy(user):
         user.s.enter(3600, 3, energy_drink_refill, (user,))
         return False
@@ -104,6 +104,9 @@ def close_borders_if_not_safe(user):
 
 
 def upgrade_perk_event(user):
+    from actions.perks import check_training_status, upgrade_perk
+    from actions.status import set_money, set_perks
+
     try:
         if not (set_perks(user) and set_money(user, energy=True)):
             raise
@@ -130,3 +133,26 @@ def upgrade_perk_event(user):
     except:
         user.s.enter(600, 1, upgrade_perk_event, (user,))
         return False
+
+
+def check_changes(user):
+    old = user.player.__dict__.copy()
+    if not get_player_info(user):
+        return False
+
+    if old["level"] != user.player.level:
+        if_leveled_up(user)
+
+    if old["region"].id != user.player.region.id:
+        if_changed_region(user)
+
+
+def if_leveled_up(user):
+    # do level specific stuff
+    pass
+
+
+def if_changed_region(user):
+    # do region specific stuff
+    hourly_state_gold_refill(user)
+    pass

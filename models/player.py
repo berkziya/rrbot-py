@@ -8,13 +8,38 @@ from butler import error, get_page, return_to_mainwindow, wait_until_internet_is
 from misc.utils import dotless
 from models import get_autonomy, get_party, get_player, get_region, get_state
 
+STORAGE = {
+    3: "oil",
+    4: "ore",
+    11: "uranium",
+    15: "diamonds",
+    21: "lox",
+    24: "helium3",
+    26: "rivalium",
+    13: "antirad",
+    17: "energy",
+    20: "spacerockets",
+    25: "lss",
+    2: "tanks",
+    1: "aircrafts",
+    14: "missiles",
+    16: "bombers",
+    18: "battleships",
+    27: "laserdrones",
+    22: "moon_tanks",
+    23: "space_stations",
+}
+
+STORAGE_IDS = {v: k for k, v in STORAGE.items()}
+
 
 class Player:
     def __init__(self, id):
         self.id = id
         self.last_accessed = 0
         self.level = 0
-        self.money = {"money": 0, "gold": 0, "energy": 0}
+        self.money = {"money": 0, "gold": 0}
+        self.storage = {}
         self.state_leader = None
         self.rating = 0
         self.perks = {"str": 0, "edu": 0, "end": 0}
@@ -34,6 +59,9 @@ class Player:
 
     def set_money(self, element, value):
         self.money[element] = value
+
+    def set_storage(self, element, value):
+        self.storage[element] = value
 
     def set_state_leader(self, value):
         self.state_leader = value
@@ -93,21 +121,21 @@ class Player:
         }
 
     def __setstate__(self, state):
-        self.id = state["id"]
-        self.last_accessed = state["time"]
-        self.level = state["level"]
-        self.state_leader = get_player(state["lead"])
-        self.perks = state["perks"]
-        self.region = get_region(state["region"])
-        self.residency = get_region(state["residency"])
+        self.id = state.get("id")
+        self.last_accessed = state.get("time")
+        self.level = state.get("level")
+        self.state_leader = get_player(state.get("lead"))
+        self.perks = state.get("perks")
+        self.region = get_region(state.get("region"))
+        self.residency = get_region(state.get("residency"))
         self.workpermits = {
             get_state(key): (get_region(value) if value else 0)
-            for key, value in state["wperm"].items()
+            for key, value in state.get("wperm", {}).items()
         }
-        self.governor = get_autonomy(state["governor"])
-        self.economics = get_state(state["econ"])
-        self.foreign = get_state(state["foreign"])
-        self.party = get_party(state["party"])
+        self.governor = get_autonomy(state.get("governor"))
+        self.economics = get_state(state.get("econ"))
+        self.foreign = get_state(state.get("foreign"))
+        self.party = get_party(state.get("party"))
 
 
 def get_player_info(user, id=None, force=False):

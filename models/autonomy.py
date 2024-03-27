@@ -57,12 +57,12 @@ class Autonomy:
         }
 
     def __setstate__(self, state):
-        self.id = state["id"]
-        self.last_accessed = state["time"]
-        self.state = get_state(state["state"])
-        self.governor = get_player(state["governor"])
-        self.regions = [get_region(region) for region in state["regions"]]
-        self.budget = state["budget"]
+        self.id = state.get("id")
+        self.last_accessed = state.get("time")
+        self.state = get_state(state.get("state"))
+        self.governor = get_player(state.get("governor"))
+        self.regions = [get_region(region) for region in state.get("regions", [])]
+        self.budget = state.get("budget", {})
 
 
 def get_autonomy_info(user, id, force=False):

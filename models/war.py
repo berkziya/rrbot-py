@@ -66,16 +66,16 @@ class War:
         }
 
     def __setstate__(self, state):
-        self.id = state["id"]
-        self.last_accessed = state["time"]
-        self.type = state["type"]
-        self.ending_time = state["end"]
-        self.attacking_region = get_region(state["att"]) if state["att"] else None
-        self.defending_region = get_region(state["def"]) if state["def"] else None
-        self.attackers = {get_player(k): v for k, v in state["atts"].items()}
-        self.defenders = {get_player(k): v for k, v in state["defs"].items()}
-        self.attacker_damage = state["attdmg"]
-        self.defender_damage = state["defdmg"]
+        self.id = state.get("id")
+        self.last_accessed = state.get("time")
+        self.type = state.get("type")
+        self.ending_time = state.get("end")
+        self.attacking_region = get_region(state.get("att")) if state.get("att") else None
+        self.defending_region = get_region(state.get("def")) if state.get("def") else None
+        self.attackers = {get_player(k): v for k, v in state.get("atts", {}).items()}
+        self.defenders = {get_player(k): v for k, v in state.get("defs", {}).items()}
+        self.attacker_damage = state.get("attdmg")
+        self.defender_damage = state.get("defdmg")
 
 
 def get_war_info(user, id):

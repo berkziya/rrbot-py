@@ -41,9 +41,9 @@ class Party:
         }
 
     def __setstate__(self, state):
-        self.id = state["id"]
-        self.last_accessed = state["time"]
-        self.leader = get_player(state["leader"])
-        self.region = get_region(state["region"])
-        self.secretaries = [get_player(player) for player in state["secs"]]
-        self.members = [get_player(player) for player in state["members"]]
+        self.id = state.get("id")
+        self.last_accessed = state.get("time")
+        self.leader = get_player(state.get("leader"))
+        self.region = get_region(state.get("region"))
+        self.secretaries = [get_player(player) for player in state.get("secs", [])]
+        self.members = [get_player(player) for player in state.get("members", [])]

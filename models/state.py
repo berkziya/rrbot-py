@@ -115,18 +115,18 @@ class State:
         }
 
     def __setstate__(self, state):
-        self.id = state["id"]
-        self.last_accessed = state["time"]
-        self.leader = get_player(state["lead"])
-        self.economics = get_player(state["econ"])
-        self.foreign = get_player(state["foreign"])
-        self.form = state["form"]
-        self.autonomies = [get_autonomy(x) for x in state["autonomies"]]
-        self.regions = [get_region(x) for x in state["regions"]]
-        self.citizens = [get_player(x) for x in state["citizens"]]
-        self.residents = [get_player(x) for x in state["residents"]]
-        self.budget = state["budget"]
-        self.borders = state["borders"]
+        self.id = state.get("id")
+        self.last_accessed = state.get("time")
+        self.leader = get_player(state.get("lead"))
+        self.economics = get_player(state.get("econ"))
+        self.foreign = get_player(state.get("foreign"))
+        self.form = state.get("form")
+        self.autonomies = [get_autonomy(x) for x in state.get("autonomies", [])]
+        self.regions = [get_region(x) for x in state.get("regions", [])]
+        self.citizens = [get_player(x) for x in state.get("citizens", [])]
+        self.residents = [get_player(x) for x in state.get("residents", [])]
+        self.budget = state.get("budget", {})
+        self.borders = state.get("borders")
 
 
 def get_state_info(user, id, force=False):

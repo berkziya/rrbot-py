@@ -101,11 +101,11 @@ def session(user):
     if set_money(user, energy=True):
         log(
             user,
-            f"Money: {num_to_slang(user.player.money['money'])} | Gold: {num_to_slang(user.player.money['gold'])} | Energy: {num_to_slang(user.player.money['energy'])}",
+            f"Money: {num_to_slang(user.player.money['money'])} | Gold: {num_to_slang(user.player.money['gold'])} | Energy: {num_to_slang(user.player.storage['energy'])}",
         )
         log(
             user,
-            f"TOTAL GOLD: {num_to_slang(user.player.money['energy']//10 + user.player.money['gold'])}",
+            f"TOTAL GOLD: {num_to_slang(user.player.storage['energy']//10 + user.player.money['gold'])}",
         )
     else:
         user.s.enter(10, 3, set_money, (user,))
