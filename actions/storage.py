@@ -52,13 +52,13 @@ def produce_energy(user):
 
 
 def set_storage(user):
-    if not get_page(user, "storage"):
-        return False
     try:
-        spans = user.driver.find_elements(By.CSS_SELECTOR, "span[url]")
+        if not get_page(user, "storage"):
+            raise
+        spans = user.driver.find_elements(By.CSS_SELECTOR, "div.storage_number > span")
         for span in spans:
-            resource = span.get_attribute("url")
-            if int(resource) in storage.values():
+            resource = int(span.get_attribute("url"))
+            if resource in storage:
                 amount = dotless(span.text)
                 user.player.set_storage(storage[resource], amount)
         return_to_mainwindow(user)

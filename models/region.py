@@ -168,8 +168,12 @@ class Region:
         self.market_tax = state.get("mtax")
         self.sea_access = state.get("sea")
         self.indexes = state.get("indexes")
-        self.border_regions = [get_region(region) for region in state.get("border_regs", [])]
-        self.factories = [get_factory(factory) for factory in state.get("factories", [])]
+        self.border_regions = [
+            get_region(region) for region in state.get("border_regs", [])
+        ]
+        self.factories = [
+            get_factory(factory) for factory in state.get("factories", [])
+        ]
 
 
 def get_region_info(user, id, force=False):
