@@ -79,8 +79,6 @@ def initiate_user(config):
 
 
 def main():
-    os.environ["WDM_LOCAL"] = "1"
-
     parser = argparse.ArgumentParser()
     parser.add_argument("config", default="config.ini", type=str)
 
