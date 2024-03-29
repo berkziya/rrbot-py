@@ -6,7 +6,7 @@ import subprocess
 from misc.logger import alert
 from misc.utils import slang_to_num
 from session import session
-from user import Client
+from user import User
 
 DEFAULT_CONFIG = """[general]
 browser = firefox
@@ -42,7 +42,7 @@ def create_user_from_config(config, general):
     email = config.get("email")
     password = config.get("password")
 
-    user = Client(config.name, email, password)
+    user = User(config.name, email, password)
     user.set_driveroptions("browser", browser)
     user.set_driveroptions("headless", headless)
 

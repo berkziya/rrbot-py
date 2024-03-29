@@ -12,7 +12,7 @@ from misc.logger import log
 from models import get_player
 
 
-class Client:
+class User:
     def __init__(self, name, email, password):
         self.name = name
 

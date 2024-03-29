@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from misc.logger import alert
 
-DELAY = 2.5
+DELAY = 3
 
 
 def delay_before_actions(user):

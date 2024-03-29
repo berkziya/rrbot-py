@@ -70,8 +70,12 @@ class War:
         self.last_accessed = state.get("time")
         self.type = state.get("type")
         self.ending_time = state.get("end")
-        self.attacking_region = get_region(state.get("att")) if state.get("att") else None
-        self.defending_region = get_region(state.get("def")) if state.get("def") else None
+        self.attacking_region = (
+            get_region(state.get("att")) if state.get("att") else None
+        )
+        self.defending_region = (
+            get_region(state.get("def")) if state.get("def") else None
+        )
         self.attackers = {get_player(k): v for k, v in state.get("atts", {}).items()}
         self.defenders = {get_player(k): v for k, v in state.get("defs", {}).items()}
         self.attacker_damage = state.get("attdmg")
