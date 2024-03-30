@@ -25,7 +25,7 @@ class Autonomy:
         }
 
     def set_last_accessed(self):
-        self.last_accessed = time.time()
+        self.last_accessed = int(time.time())
 
     def set_state(self, value):
         self.state = value

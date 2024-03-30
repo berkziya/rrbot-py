@@ -32,12 +32,12 @@ def produce_energy(user):
     if not set_money(user, energy=True):
         return False
     energy, gold = user.player.storage["energy"], user.player.money["gold"]
-    if energy >= 100000:
+    if energy >= 100_000:
         return False
     if gold < 2000:
         log(user, "Not enough gold to produce energy")
         return False
-    energy = 80000 - energy
+    energy = 80_000 - energy
     gold = gold - 2000
     howmany = min((energy) // 10, gold)
     if howmany <= 0:

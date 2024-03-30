@@ -60,7 +60,7 @@ def attack(user, id=None, side=0, max=False, drones=False):
         # "aim": "0", # "aim": f"{region_id},
         # "edit": "538591"
 
-        alpha = 125000 + 2500 * (user.player.level - 30)
+        alpha = 125_000 + 2500 * (user.player.level - 30)
 
         troop_admg = {
             "t27": 6000,  # laserdrones

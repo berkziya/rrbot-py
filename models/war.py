@@ -22,7 +22,7 @@ class War:
         self.defender_damage = 0
 
     def set_last_accessed(self):
-        self.last_accessed = time.time()
+        self.last_accessed = int(time.time())
 
     def set_type(self, value):
         self.type = value
@@ -82,11 +82,11 @@ class War:
         self.defender_damage = state.get("defdmg")
 
 
-def get_war_info(user, id):
+def get_war_info(user, id, force=False):
     wait_until_internet_is_back(user)
     try:
         war = get_war(id)
-        if war.last_accessed and war.last_accessed < time.time() - 600 and not war:
+        if war.last_accessed and war.last_accessed < time.time() - 600 and not force:
             return war
         if not get_page(user, f"war/details/{id}"):
             return False

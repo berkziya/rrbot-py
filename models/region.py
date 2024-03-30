@@ -60,7 +60,7 @@ class Region:
         self.factories = []
 
     def set_last_accessed(self):
-        self.last_accessed = time.time()
+        self.last_accessed = int(time.time())
 
     def set_state(self, value):
         self.state = value
@@ -91,7 +91,7 @@ class Region:
 
     @property
     def set_initial_attack_damage(self):
-        return self.buildings["macademy"] * 450000
+        return self.buildings["macademy"] * 450_000
 
     @property
     def set_initial_defend_damage(self):
@@ -103,7 +103,7 @@ class Region:
             + self.buildings["power"]
             + self.buildings["spaceport"]
             + self.buildings["airport"]
-        ) * 50000
+        ) * 50_000
 
     def set_tax(self, value):
         self.tax = value
@@ -409,7 +409,7 @@ def parse_regions_table(user, id=None):
                 region.set_autonomy(None)
             region.set_num_of_citizens(int(row["POP"]))
             region.set_num_of_residents(int(row["RES"]))
-            region.set_buildings("macademy", int(row["DAM ATA"]) / 450000)
+            region.set_buildings("macademy", int(row["DAM ATA"]) / 45)
             region.set_buildings("hospital", int(row["HO"]))
             region.set_buildings("military", int(row["MB"]))
             region.set_buildings("school", int(row["SC"]))

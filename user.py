@@ -76,7 +76,7 @@ class User:
         self.is_resetting = value
 
     def set_last_request_time(self):
-        self.last_request_time = time.time()
+        self.last_request_time = int(time.time())
 
     def set_perkoptions(self, element, value):
         self.perkoptions[element] = value

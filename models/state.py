@@ -36,7 +36,7 @@ class State:
         self.borders = ""
 
     def set_last_accessed(self):
-        self.last_accessed = time.time()
+        self.last_accessed = int(time.time())
 
     def set_leader(self, value):
         self.leader = value
