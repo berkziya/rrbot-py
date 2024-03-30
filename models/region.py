@@ -187,10 +187,7 @@ def get_region_info(user, id, force=False):
     wait_until_internet_is_back(user)
     try:
         region = get_region(id)
-        if (
-            region.last_accessed > time.time() - 600
-            and not force
-        ):
+        if region.last_accessed > time.time() - 600 and not force:
             return region
         if not get_page(user, f"map/details/{id}"):
             return False

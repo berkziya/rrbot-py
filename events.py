@@ -104,12 +104,11 @@ def upgrade_perk_event(user):
         training_completion = check_training_status(user)
 
         if time.time() < training_completion:
-            remaining = training_completion - time.time()
             log(
                 user,
-                f"Upgrading perk, remaining: {time.strftime('%H:%M:%S', time.gmtime(remaining))}",
+                f"Upgrading perk, remaining: {time.strftime('%H:%M:%S', time.gmtime(training_completion - time.time()))}",
             )
-            user.s.enter(remaining, 1, upgrade_perk_event, (user,))
+            user.s.enterabs(training_completion, 1, upgrade_perk_event, (user,))
             return False
         elif training_completion is False:
             raise

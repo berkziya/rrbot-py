@@ -81,10 +81,7 @@ def get_factory_info(user, id, force=False):
     wait_until_internet_is_back(user)
     try:
         factory = get_factory(id)
-        if (
-            factory.last_accessed > time.time() - 3600
-            and not force
-        ):
+        if factory.last_accessed > time.time() - 3600 and not force:
             return factory
         if not get_page(user, f"factory/index/{id}"):
             return False
