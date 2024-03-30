@@ -188,8 +188,7 @@ def get_region_info(user, id, force=False):
     try:
         region = get_region(id)
         if (
-            region.last_accessed
-            and region.last_accessed > time.time() - 600
+            region.last_accessed > time.time() - 600
             and not force
         ):
             return region

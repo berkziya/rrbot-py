@@ -134,8 +134,7 @@ def get_state_info(user, id, force=False):
     try:
         state = get_state(id)
         if (
-            state.last_accessed
-            and state.last_accessed > time.time() - 600
+            state.last_accessed > time.time() - 600
             and not force
         ):
             return state
