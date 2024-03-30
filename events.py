@@ -1,4 +1,4 @@
-import datetime
+import time
 
 from butler import wait_until_internet_is_back
 from misc.logger import alert, log
@@ -8,8 +8,12 @@ from models.state import get_state_info
 
 def initiate_all_events(user, events_, daily=False):
     wait_until_internet_is_back(user)
-    events = [x for x in events_ if daily and not x["daily"]]
-    [user.s.cancel(x) for x in user.s.queue]
+    events = [x for x in events_ if (not daily) or (daily and not x["daily"])]
+    [
+        user.s.cancel(x)
+        for x in user.s.queue
+        if x[3] in [event["event"] for event in events]
+    ]
     [
         user.s.enter(
             1,
@@ -22,26 +26,16 @@ def initiate_all_events(user, events_, daily=False):
 
 
 def upcoming_events(user):
-    now = datetime.datetime.now()
-    event_list = user.s.queue
-    upcoming = []
-    for event in event_list:
-        event_time = datetime.datetime.fromtimestamp(event.time)
-        if event_time > now:
-            upcoming.append((event_time, event))
-    upcoming.sort()
+    upcoming = [x for x in user.s.queue if (x.priority < 2)]
+    upcoming.sort(key=lambda x: x.time)
     if upcoming:
         log(user, "Upcoming events:", False)
-        for event_time, event in upcoming:
-            if event.priority > 1:
-                continue
-            log(
-                user,
-                f"{event_time.strftime('%Y-%m-%d %H:%M:%S')} - {event.action.__name__}",
-                False,
-            )
-    else:
-        log(user, "No upcoming events.", False)
+    for event in upcoming:
+        log(
+            user,
+            f"{time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(event.time))} - {event.action.__name__}",
+            False,
+        )
 
 
 def hourly_state_gold_refill(user):
@@ -107,14 +101,17 @@ def upgrade_perk_event(user):
         if not (set_perks(user) and set_money(user, energy=True)):
             raise
 
-        training_time = check_training_status(user)
+        training_completion = check_training_status(user)
 
-        if training_time:
-            user.s.enter(training_time, 1, upgrade_perk_event, (user,))
-            remaining = datetime.timedelta(seconds=training_time)
-            log(user, f"Perk upgrade in progress. Time remaining: {remaining}")
+        if time.time() < training_completion:
+            remaining = training_completion - time.time()
+            log(
+                user,
+                f"Upgrading perk, remaining: {time.strftime('%H:%M:%S', time.gmtime(remaining))}",
+            )
+            user.s.enter(remaining, 1, upgrade_perk_event, (user,))
             return False
-        elif training_time is False:
+        elif training_completion is False:
             raise
 
         result = upgrade_perk(user)

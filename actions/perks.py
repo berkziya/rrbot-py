@@ -1,3 +1,5 @@
+import time
+
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
@@ -10,8 +12,8 @@ def check_training_status(user):
         reload_mainpage(user)
         perk_counter = user.driver.find_element(By.ID, "perk_counter_2")
         perk_counter = perk_counter.text
-        total_seconds = time_to_secs(perk_counter)
-        return total_seconds
+        remaining_seconds = time_to_secs(perk_counter)
+        return remaining_seconds + time.time()
     except NoSuchElementException:
         return None
     except Exception as e:
