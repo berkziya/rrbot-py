@@ -23,7 +23,9 @@ def build_military_academy(user):
         get_player_info(user)
         if user.player.residency != user.player.region:
             user.s.enter(3600, 2, build_military_academy, (user,))
-        result = ajax(user, "/slide/academy_do/", "", "Error building military academy")
+        result = ajax(
+            user, "/slide/academy_do/", text="Error building military academy"
+        )
         return result
     except Exception as e:
         return error(user, e, "Error building military academy")

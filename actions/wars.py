@@ -24,8 +24,7 @@ def cancel_autoattack(user):
     result = ajax(
         user,
         "/war/autoset_cancel/",
-        "",
-        "Error cancelling autoattack",
+        text="Error cancelling autoattack",
         relad_after=True,
     )
     return result

@@ -10,7 +10,7 @@ from models.state import get_state_info
 
 def remove_self_law(user):
     result = ajax(
-        user, "/parliament/removelaw", "", "Error removing self law", relad_after=True
+        user, "/parliament/removelaw", text="Error removing self law", relad_after=True
     )
     return result
 
@@ -40,8 +40,7 @@ def accept_law(user, text):
     result = ajax(
         user,
         f"/parliament/votelaw/{law_action}/pro",
-        "",
-        "Error accepting law",
+        text="Error accepting law",
     )
     return result
 
@@ -51,8 +50,7 @@ def explore_resource(user, resource="gold"):
     law = ajax(
         user,
         f"/parliament/donew/42/{resources[resource]}/0",
-        "",
-        "Error exploring resource",
+        text="Error exploring resource",
         relad_after=True,
     )
     time.sleep(2)
@@ -80,8 +78,8 @@ def budget_transfer(user, id, resource, amount):
     result = ajax(
         user,
         f"/parliament/donew/send_{resources[resource]}/{amount}/{id}",
-        "tmp_gov: '{id}'",
-        "Error exploring resource",
+        data="tmp_gov: '{id}'",
+        text="Error exploring resource",
         relad_after=True,
     )
     if result:
@@ -102,7 +100,10 @@ def border_control(user, border="opened"):
         log(user, f"Borders are already {border}")
         return False
     law = ajax(
-        user, "/parliament/donew/23/0/0", "tmp_gov: '0'", "Error setting border control"
+        user,
+        "/parliament/donew/23/0/0",
+        data="tmp_gov: '0'",
+        text="Error setting border control",
     )
     pass_law = accept_law(user, f'{"Open" if border == "opened" else "Close"} borders:')
     return law and pass_law

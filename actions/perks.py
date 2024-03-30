@@ -72,8 +72,7 @@ def upgrade_perk(user, perk=None, currency="gold"):
         result = ajax(
             user,
             f"/perks/up/{perkurl[perk]}/{currencyurl[currency]}",
-            "",
-            "Error upgrading perk",
+            text="Error upgrading perk",
             relad_after=True,
         )
         return (perk, currency) if result else False

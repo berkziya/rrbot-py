@@ -115,10 +115,8 @@ def upgrade_perk_event(user):
 
         if training_time:
             user.s.enter(training_time, 1, upgrade_perk_event, (user,))
-            log(
-                user,
-                f"Perk upgrade in progress. Time remaining: {datetime.timedelta(seconds=training_time)}",
-            )
+            remaining = datetime.timedelta(seconds=training_time)
+            log(user, f"Perk upgrade in progress. Time remaining: {remaining}")
             return False
         elif training_time is False:
             raise

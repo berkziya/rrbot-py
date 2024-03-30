@@ -128,8 +128,6 @@ def reset_browser(user):
 
 
 def error(user, error, text=None):
-    # if user.driver:
-    #     user.driver.get_screenshot_as_file(f"error_screenshot_{time.time()}.png")
     if text:
         alert(user, f"{text}: {error}")
     try:
@@ -140,7 +138,7 @@ def error(user, error, text=None):
     return False
 
 
-def ajax(user, url, data, text=None, relad_after=False):
+def ajax(user, url, data="", text=None, relad_after=False):
     wait_until_internet_is_back(user)
     return_to_mainwindow(user)
     try:
