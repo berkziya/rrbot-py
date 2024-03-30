@@ -83,7 +83,7 @@ def get_factory_info(user, id, force=False):
         factory = get_factory(id)
         if (
             factory.last_accessed
-            and factory.state.last_accessed > time.time() - 3600
+            and factory.last_accessed > time.time() - 3600
             and not force
         ):
             return factory
