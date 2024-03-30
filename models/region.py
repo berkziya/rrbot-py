@@ -386,3 +386,59 @@ def get_region_info(user, id, force=False):
         return None
     except Exception as e:
         return error(user, e, f"Error getting region info {id}")
+
+
+def parse_regions_table(user, id=None):
+    import pandas as pd
+
+    wait_until_internet_is_back(user)
+    try:
+        if not get_page(user, f"info/regions/{'' or id}"):
+            return False
+        state = get_state(id) if id else None
+        table = user.driver.find_element(By.CSS_SELECTOR, "table")
+        df = pd.read_html(table.get_attribute("outerHTML"))[0]
+        regions_ = []
+        for row in df.iterrows():
+            id = int(row["Region"].split("")[-1])
+            region = get_region(id)
+            if state:
+                region.set_state(state)
+            # region.set_name(row["Region"].split(",")[0])
+            if row["AUTO"] != "+":
+                region.set_autonomy(None)
+            region.set_num_of_citizens(int(row["POP"]))
+            region.set_num_of_residents(int(row["RES"]))
+            region.set_initial_attack_damage(int(row["DAM ATA"]))
+            region.set_initial_defend_damage(int(row["DAM DEF"]))
+            region.set_buildings("hospital", int(row["HO"]))
+            region.set_buildings("military", int(row["MB"]))
+            region.set_buildings("school", int(row["SC"]))
+            region.set_buildings("missile system", int(row["MS"]))
+            region.set_buildings("sea port", int(row["PO"]))
+            region.set_buildings("powerplant", int(row["PP"]))
+            region.set_buildings("space port", int(row["SP"]))
+            region.set_buildings("airport", int(row["AE/RS"]))
+            region.set_buildings("homes", int(row["HF"]))
+            region.set_resources("gold", int(row["GOL"]))
+            region.set_resources("oil", int(row["OIL"]))
+            region.set_resources("ore", int(row["ORE"]))
+            region.set_resources("uranium", int(row["URA"]))
+            region.set_resources("diamonds", int(row["DIA"]))
+            region.set_deep_resources("gold", int(row["GOL D"]))
+            region.set_deep_resources("oil", int(row["OIL D"]))
+            region.set_deep_resources("ore", int(row["ORE D"]))
+            region.set_deep_resources("uranium", int(row["URA D"]))
+            region.set_deep_resources("diamonds", int(row["DIA D"]))
+            region.set_indexes("education", int(row["IND EDU"]))
+            region.set_indexes("military", int(row["IND MIL"]))
+            region.set_indexes("health", int(row["IND HEA"]))
+            region.set_indexes("development", int(row["IND DEV"]))
+            region.set_tax(int(row["%"]))
+            region.set_market_tax(int(row["% SELL"]))
+            # TODO: set resource taxes
+        if state:
+            state.set_regions(regions_)
+        return regions_
+    except Exception as e:
+        return error(user, e, f"Error parsing regions table {id}")
