@@ -71,7 +71,7 @@ def get_autonomy_info(user, id, force=False):
         autonomy = get_autonomy(id)
         if (
             autonomy.last_accessed
-            and autonomy.last_accessed < time.time() - 600
+            and autonomy.state.last_accessed > time.time() - 600
             and not force
         ):
             return autonomy

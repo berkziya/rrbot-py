@@ -122,7 +122,7 @@ def get_player_info(user, id=None, force=False):
         player = get_player(id)
         if (
             player.last_accessed
-            and player.last_accessed < time.time() - 120
+            and player.state.last_accessed > time.time() - 120
             and not force
         ):
             return player
