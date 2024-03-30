@@ -17,13 +17,14 @@ class Region:
         self.autonomy = None
         self.location = [0, 0]
         self.buildings = {
+            "macademy": 0,
             "hospital": 0,
             "military": 0,
             "school": 0,
-            "missile system": 0,
-            "sea port": 0,
-            "power plant": 0,
-            "space port": 0,
+            "missile": 0,
+            "sea": 0,
+            "power": 0,
+            "spaceport": 0,
             "airport": 0,
             "homes": 0,
         }
@@ -32,8 +33,6 @@ class Region:
         self.num_of_residents = 0
         self.citizens = []
         self.num_of_citizens = 0
-        self.initial_attack_damage = 0
-        self.initial_defend_damage = 0
         self.tax = 0
         self.market_tax = 0
         self.sea_access = False
@@ -90,11 +89,21 @@ class Region:
     def set_num_of_citizens(self, value):
         self.num_of_citizens = value
 
-    def set_initial_attack_damage(self, value):
-        self.initial_attack_damage = value
+    @property
+    def set_initial_attack_damage(self):
+        return self.buildings["macademy"] * 450000
 
-    def set_initial_defend_damage(self, value):
-        self.initial_defend_damage = value
+    @property
+    def set_initial_defend_damage(self):
+        return (
+            self.buildings["hospital"]
+            + 2 * self.buildings["military"]
+            + self.buildings["school"]
+            + self.buildings["missile"]
+            + self.buildings["power"]
+            + self.buildings["spaceport"]
+            + self.buildings["airport"]
+        ) * 50000
 
     def set_tax(self, value):
         self.tax = value
@@ -142,8 +151,6 @@ class Region:
             "rating": self.rating,
             "residents": [player.id for player in self.residents],
             "citizens": [player.id for player in self.citizens],
-            "attdmg": self.initial_attack_damage,
-            "defdmg": self.initial_defend_damage,
             "tax": self.tax,
             "mtax": self.market_tax,
             "sea": self.sea_access,
@@ -231,7 +238,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/1"]'
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     ),
                 )
                 autonomy.set_budget(
@@ -239,7 +246,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/2"]'
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     ),
                 )
                 autonomy.set_budget(
@@ -247,7 +254,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/3"]'
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     ),
                 )
                 autonomy.set_budget(
@@ -255,7 +262,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/4"]'
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     ),
                 )
                 autonomy.set_budget(
@@ -263,7 +270,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/11"]'
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     ),
                 )
                 autonomy.set_budget(
@@ -271,7 +278,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/15"]'
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     ),
                 )
                 autonomy.set_last_accessed()
@@ -287,20 +294,12 @@ def get_region_info(user, id, force=False):
                 region.set_num_of_residents(
                     int(div.find_element(By.CSS_SELECTOR, "span").text)
                 )
-            elif "Initial attack" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_initial_attack_damage(
-                    dotless(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
-            elif "Initial defend" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_initial_defend_damage(
-                    dotless(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
             elif "Tax rate:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_tax(
                     int(
                         div.find_element(
                             By.CSS_SELECTOR, "div.short_details"
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     )
                 )
             elif "Market taxes:" in div.find_element(By.CSS_SELECTOR, "h2").text:
@@ -308,7 +307,7 @@ def get_region_info(user, id, force=False):
                     int(
                         div.find_element(
                             By.CSS_SELECTOR, "div.short_details"
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     )
                 )
             elif "Sea access:" in div.find_element(By.CSS_SELECTOR, "h2").text:
@@ -398,10 +397,11 @@ def parse_regions_table(user, id=None):
         state = get_state(id) if id else None
         table = user.driver.find_element(By.CSS_SELECTOR, "table")
         df = pd.read_html(table.get_attribute("outerHTML"))[0]
-        regions_ = []
+        regions_ = {}
         for row in df.iterrows():
-            id = int(row["Region"].split("")[-1])
+            id = int(row["Region"].split()[-1])
             region = get_region(id)
+            regions_[id] = region
             if state:
                 region.set_state(state)
             # region.set_name(row["Region"].split(",")[0])
@@ -409,15 +409,14 @@ def parse_regions_table(user, id=None):
                 region.set_autonomy(None)
             region.set_num_of_citizens(int(row["POP"]))
             region.set_num_of_residents(int(row["RES"]))
-            region.set_initial_attack_damage(int(row["DAM ATA"]))
-            region.set_initial_defend_damage(int(row["DAM DEF"]))
+            region.set_buildings("macademy", int(row["DAM ATA"]) / 450000)
             region.set_buildings("hospital", int(row["HO"]))
             region.set_buildings("military", int(row["MB"]))
             region.set_buildings("school", int(row["SC"]))
-            region.set_buildings("missile system", int(row["MS"]))
-            region.set_buildings("sea port", int(row["PO"]))
+            region.set_buildings("missile", int(row["MS"]))
+            region.set_buildings("sea", int(row["PO"]))
             region.set_buildings("powerplant", int(row["PP"]))
-            region.set_buildings("space port", int(row["SP"]))
+            region.set_buildings("spaceport", int(row["SP"]))
             region.set_buildings("airport", int(row["AE/RS"]))
             region.set_buildings("homes", int(row["HF"]))
             region.set_resources("gold", int(row["GOL"]))
@@ -438,7 +437,7 @@ def parse_regions_table(user, id=None):
             region.set_market_tax(int(row["% SELL"]))
             # TODO: set resource taxes
         if state:
-            state.set_regions(regions_)
+            state.set_regions(regions_.values())
         return regions_
     except Exception as e:
         return error(user, e, f"Error parsing regions table {id}")

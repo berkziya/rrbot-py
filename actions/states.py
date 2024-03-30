@@ -155,8 +155,8 @@ def calculate_building_cost(building, fromme, tomme):
         return {}
     if building in ["military", "school"]:
         building = "hospital"
-    if building in ["sea port", "airport"]:
-        building = "missile system"
+    if building in ["sea", "airport"]:
+        building = "missile"
     return calculate_building_cost_inner(building, fromme, tomme)
 
 
@@ -171,14 +171,14 @@ def calculate_building_cost_inner(building, fromme, tomme):
             "oil": (160, 1.5),
             "ore": (90, 1.5),
         },
-        "missile system": {
+        "missile": {
             "money": (1e3, 1.5),
             "gold": (180, 1.5),
             "oil": (10, 1.5),
             "ore": (10, 1.5),
             "diamonds": (10, 0.7),
         },
-        "power plant": {
+        "power": {
             "money": (6e3, 1.5),
             "gold": (180, 1.5),
             "oil": (30, 1.5),
@@ -186,7 +186,7 @@ def calculate_building_cost_inner(building, fromme, tomme):
             "diamonds": (10, 0.7),
             "uranium": (30, 1.5),
         },
-        "space port": {
+        "spaceport": {
             "money": (2e3, 1.5),
             "gold": (90, 1.5),
             "oil": (25, 1.5),

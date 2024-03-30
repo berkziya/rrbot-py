@@ -95,8 +95,8 @@ def get_factory_info(user, id, force=False):
         )
         if "change_paper_about_target" in data[0].get_attribute("class"):
             line = data[0].text.split("\n")[0]
-            factory.set_level(int(line.split(" ")[-1]))
-            factory.set_type(line.split(" ")[0].lower())
+            factory.set_level(int(line.split()[-1]))
+            factory.set_type(line.split()[0].lower())
         for div in data[1:]:
             if "Factory region:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 pass
@@ -118,17 +118,17 @@ def get_factory_info(user, id, force=False):
             elif "Wage:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 wage = div.find_element(By.CSS_SELECTOR, "div.tc > h2").text
                 if "%" in wage:
-                    wage = float(wage.split(" ")[0]) / 100
+                    wage = float(wage.split()[0]) / 100
                 else:
                     factory.set_fixed_wage(True)
-                    wage = dotless(wage.split(" ")[0])
+                    wage = dotless(wage.split()[0])
                 factory.set_wage(wage)
             elif "Potential wage" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 factory.set_potential_wage(
                     dotless(
                         div.find_element(
                             By.CSS_SELECTOR, "div.tc > h2 > span"
-                        ).text.split(" ")[0]
+                        ).text.split()[0]
                     )
                 )
         factory.set_last_accessed()

@@ -110,7 +110,7 @@ def get_autonomy_info(user, id, force=False):
                 dotless(
                     user.driver.find_element(
                         By.CSS_SELECTOR, f'span[action="graph/balance/{regionid}/1"]'
-                    ).text.split(" ")[0]
+                    ).text.split()[0]
                 ),
             )
             autonomy.set_budget(
@@ -118,7 +118,7 @@ def get_autonomy_info(user, id, force=False):
                 dotless(
                     user.driver.find_element(
                         By.CSS_SELECTOR, f'span[action="graph/balance/{regionid}/2"]'
-                    ).text.split(" ")[0]
+                    ).text.split()[0]
                 ),
             )
             autonomy.set_budget(
@@ -126,7 +126,7 @@ def get_autonomy_info(user, id, force=False):
                 dotless(
                     user.driver.find_element(
                         By.CSS_SELECTOR, f'span[action="graph/balance/{regionid}/3"]'
-                    ).text.split(" ")[0]
+                    ).text.split()[0]
                 ),
             )
             autonomy.set_budget(
@@ -134,7 +134,7 @@ def get_autonomy_info(user, id, force=False):
                 dotless(
                     user.driver.find_element(
                         By.CSS_SELECTOR, f'span[action="graph/balance/{regionid}/4"]'
-                    ).text.split(" ")[0]
+                    ).text.split()[0]
                 ),
             )
             autonomy.set_budget(
@@ -142,7 +142,7 @@ def get_autonomy_info(user, id, force=False):
                 dotless(
                     user.driver.find_element(
                         By.CSS_SELECTOR, f'span[action="graph/balance/{regionid}/11"]'
-                    ).text.split(" ")[0]
+                    ).text.split()[0]
                 ),
             )
             autonomy.set_budget(
@@ -150,7 +150,7 @@ def get_autonomy_info(user, id, force=False):
                 dotless(
                     user.driver.find_element(
                         By.CSS_SELECTOR, f'span[action="graph/balance/{regionid}/15"]'
-                    ).text.split(" ")[0]
+                    ).text.split()[0]
                 ),
             )
         return_to_mainwindow(user)

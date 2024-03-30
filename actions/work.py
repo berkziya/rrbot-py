@@ -51,7 +51,7 @@ def get_factories(user, id=None, resource="gold"):
                 wage = float(wage.replace("%", "")) / 100
             else:
                 factory.set_fixed_wage(True)
-                wage = dotless(wage.split(" ")[0])
+                wage = dotless(wage.split()[0])
             factory.set_wage(float(wage))
             factories.append(factory)
         for factory in factories:

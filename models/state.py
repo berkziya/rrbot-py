@@ -149,7 +149,7 @@ def get_state_info(user, id, force=False):
             dotless(
                 user.driver.find_element(
                     By.CSS_SELECTOR, f'span[action="graph/balance/{id}/1/state"]'
-                ).text.split(" ")[0]
+                ).text.split()[0]
             ),
         )
         state.set_budget(
@@ -157,7 +157,7 @@ def get_state_info(user, id, force=False):
             dotless(
                 user.driver.find_element(
                     By.CSS_SELECTOR, f'span[action="graph/balance/{id}/2/state"]'
-                ).text.split(" ")[0]
+                ).text.split()[0]
             ),
         )
         state.set_budget(
@@ -165,7 +165,7 @@ def get_state_info(user, id, force=False):
             dotless(
                 user.driver.find_element(
                     By.CSS_SELECTOR, f'span[action="graph/balance/{id}/3/state"]'
-                ).text.split(" ")[0]
+                ).text.split()[0]
             ),
         )
         state.set_budget(
@@ -173,7 +173,7 @@ def get_state_info(user, id, force=False):
             dotless(
                 user.driver.find_element(
                     By.CSS_SELECTOR, f'span[action="graph/balance/{id}/4/state"]'
-                ).text.split(" ")[0]
+                ).text.split()[0]
             ),
         )
         state.set_budget(
@@ -181,7 +181,7 @@ def get_state_info(user, id, force=False):
             dotless(
                 user.driver.find_element(
                     By.CSS_SELECTOR, f'span[action="graph/balance/{id}/11/state"]'
-                ).text.split(" ")[0]
+                ).text.split()[0]
             ),
         )
         state.set_budget(
@@ -189,7 +189,7 @@ def get_state_info(user, id, force=False):
             dotless(
                 user.driver.find_element(
                     By.CSS_SELECTOR, f'span[action="graph/balance/{id}/15/state"]'
-                ).text.split(" ")[0]
+                ).text.split()[0]
             ),
         )
         data = user.driver.find_elements(By.CSS_SELECTOR, "div.hide_from_inst")
