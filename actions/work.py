@@ -53,6 +53,11 @@ def get_factories(user, id=None, resource="gold"):
                 factory.set_fixed_wage(True)
                 wage = dotless(wage.split()[0])
             factory.set_wage(float(wage))
+            try: # Skip factories with title
+                tr.find_element(By.CSS_SELECTOR, "td[title]")
+                continue
+            except:
+                pass
             factories.append(factory)
         for factory in factories:
             get_region(id).add_factory(factory)

@@ -1,4 +1,5 @@
 import time
+import datetime
 
 from butler import error, wait_until_internet_is_back
 from misc.logger import alert, log
@@ -104,7 +105,7 @@ def upgrade_perk_event(user):
         if remaining_secs:
             log(
                 user,
-                f"Training on going, remaining: {time.strftime('%H:%M:%S', time.gmtime(remaining_secs))}",
+                f"Training on going, remaining: {datetime.timedelta(seconds=remaining_secs)}",
             )
             user.s.enter(remaining_secs, 1, upgrade_perk_event, (user,))
             return True
