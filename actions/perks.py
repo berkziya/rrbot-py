@@ -17,7 +17,7 @@ def check_training_status(user):
         return error(user, e, "Error checking training status")
 
 
-def upgrade_perk(user, perk, currency="gold"):
+def upgrade_perk(user, perk=None, currency="gold"):
     try:
         perkurl = {"str": 1, "edu": 2, "end": 3}
         currencyurl = {"money": 1, "gold": 2}
@@ -31,7 +31,7 @@ def upgrade_perk(user, perk, currency="gold"):
             time = time / (4 if perk < 50 else (2 if perk < 100 else 1))
             return time
 
-        def get_currency(perk, currency="gold"):
+        def get_currency(perk, currency):
             goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
             conditions = [
                 perk not in user.perkoptions["goldperks"],
