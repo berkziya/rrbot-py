@@ -8,7 +8,7 @@ from models.state import get_state_info
 
 def initiate_all_events(user, events_, daily=False):
     wait_until_internet_is_back(user)
-    events = [x for x in events_ if (not daily) or (daily and not x["daily"])]
+    events = [x for x in events_ if (not daily) or (daily and x["daily"])]
     [
         user.s.cancel(x)
         for x in user.s.queue
@@ -24,7 +24,7 @@ def initiate_all_events(user, events_, daily=False):
 
 
 def upcoming_events(user):
-    upcoming = [x for x in user.s.queue if (x.priority < 2)]
+    upcoming = [x for x in user.s.queue if (x.priority < 2) and (x.time > time.time())]
     upcoming.sort(key=lambda x: x.time)
     if upcoming:
         log(user, "Upcoming events:", False)
