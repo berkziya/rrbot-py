@@ -14,15 +14,13 @@ def initiate_all_events(user, events_, daily=False):
         for x in user.s.queue
         if x[3] in [event["event"] for event in events]
     ]
-    [
+    for event in events:
         user.s.enter(
             1,
             (2 if event["daily"] else 3 if event["mute"] else 1),
             event["event"],
             (user, *event["args"]) if "args" in event else (user,),
         )
-        for event in events
-    ]
 
 
 def upcoming_events(user):

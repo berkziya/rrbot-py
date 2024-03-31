@@ -33,8 +33,7 @@ def create_table(user, table):
 
 
 def create_tables(user):
-    for table in tables:
-        create_table(user, table)
+    [create_table(user, table) for table in tables]
     return True
 
 
