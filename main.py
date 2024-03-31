@@ -80,7 +80,7 @@ def initiate_user(config):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("config", default="config.ini", type=str)
+    parser.add_argument("config", default="config.ini")
 
     args = parser.parse_args()
 
