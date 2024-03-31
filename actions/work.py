@@ -53,7 +53,7 @@ def get_factories(user, id=None, resource="gold"):
                 factory.set_fixed_wage(True)
                 wage = dotless(wage.split()[0])
             factory.set_wage(float(wage))
-            try: # Skip fixed wage with not enough budget
+            try:  # Skip fixed wage with not enough budget
                 tr.find_element(By.CSS_SELECTOR, "td[title]")
                 continue
             except:

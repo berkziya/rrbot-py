@@ -1,5 +1,5 @@
-import time
 import datetime
+import time
 
 from butler import error, wait_until_internet_is_back
 from misc.logger import alert, log
