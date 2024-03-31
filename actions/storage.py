@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 
-from actions.status import set_money
+from actions.status import set_mainpage_data
 from butler import ajax, error, get_page, return_to_mainwindow
 from misc.logger import log
 from misc.utils import dotless
@@ -29,7 +29,7 @@ storage = {
 
 
 def produce_energy(user):
-    if not set_money(user, energy=True):
+    if not set_mainpage_data(user, energy=True):
         return False
     energy, gold = user.player.storage["energy"], user.player.money["gold"]
     if energy >= 100_000:

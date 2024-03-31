@@ -3,7 +3,7 @@ import schedule
 
 import events
 from actions.regions import build_military_academy, work_state_department
-from actions.status import set_money
+from actions.status import set_mainpage_data
 from actions.wars import attack
 from actions.work import auto_work_factory
 from butler import reset_browser
@@ -98,7 +98,7 @@ def session(user):
         user.s.enter(10, 3, get_player_info, (user,))
         alert(user, "Error setting status, will try again in 10 seconds.")
 
-    if set_money(user, energy=True):
+    if set_mainpage_data(user, energy=True):
         log(
             user,
             f"Money: {num_to_slang(user.player.money['money'])} | Gold: {num_to_slang(user.player.money['gold'])} | Energy: {num_to_slang(user.player.storage['energy'])}",
@@ -108,7 +108,7 @@ def session(user):
             f"TOTAL GOLD: {num_to_slang(user.player.storage['energy']//10 + user.player.money['gold'])}",
         )
     else:
-        user.s.enter(10, 3, set_money, (user,))
+        user.s.enter(10, 3, set_mainpage_data, (user,))
         alert(user, "Error setting money, will try again in 10 seconds.")
 
     if user.player.governor:

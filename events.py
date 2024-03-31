@@ -1,6 +1,6 @@
 import time
 
-from butler import wait_until_internet_is_back
+from butler import error, wait_until_internet_is_back
 from misc.logger import alert, log
 from models.player import get_player_info
 from models.state import get_state_info
@@ -93,34 +93,33 @@ def close_borders_if_not_safe(user):
 
 def upgrade_perk_event(user):
     from actions.perks import check_training_status, upgrade_perk
-    from actions.status import set_money, set_perks
+    from actions.status import set_mainpage_data
 
     try:
-        if not (set_perks(user) and set_money(user, energy=True)):
-            raise
+        if not set_mainpage_data(user, energy=True):
+            raise Exception("Failed to set mainpage data")
 
-        training_completion = check_training_status(user)
+        remaining_secs = check_training_status(user)
 
-        if time.time() < training_completion:
+        if remaining_secs:
             log(
                 user,
-                f"Upgrading perk, remaining: {time.strftime('%H:%M:%S', time.gmtime(training_completion - time.time()))}",
+                f"Training on going, remaining: {time.strftime('%H:%M:%S', time.gmtime(remaining_secs))}",
             )
-            user.s.enterabs(training_completion, 1, upgrade_perk_event, (user,))
-            return False
-        elif training_completion is False:
-            raise
+            user.s.enter(remaining_secs, 1, upgrade_perk_event, (user,))
+            return True
+        elif remaining_secs is False:
+            raise Exception("Failed to check training status")
 
         result = upgrade_perk(user)
 
         if result:
             log(user, f"Upgraded {result[0].upper()} with {result[1].upper()}")
-            user.s.enter(600, 1, upgrade_perk_event, (user,))
-            return True
-        raise
-    except:
+            return upgrade_perk_event(user)
+        raise Exception("ajax failed")
+    except Exception as e:
         user.s.enter(600, 1, upgrade_perk_event, (user,))
-        return False
+        return error(user, e, "Error upgrading perk")
 
 
 def check_changes(user):
