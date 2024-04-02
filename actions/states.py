@@ -117,38 +117,20 @@ def set_minister(user, id, ministry="economic"):
     return result
 
 
-def get_indexes(user):
-    try:
-        indexes = {
-            "hospital": {},
-            "military": {},
-            "school": {},
-            "homes": {},
-        }
-        for link in indexes:
-            index = 10
-            if not get_page(user, f"listed/country/-2/0/{link}"):
-                return False
-            data = user.driver.find_elements(
-                By.CSS_SELECTOR, "td.list_level.tip.yellow"
-            )
-            level = int(float(data[0].get_attribute("rat")))
-            for tr in data:
-                if int(tr.text) < index:
-                    indexes[link][index] = level
-                    index -= 1
-                level = int(float(tr.get_attribute("rat")))
-                if index < 2:
-                    break
-        return_to_mainwindow(user)
-        return {
-            "health": indexes["hospital"],
-            "military": indexes["military"],
-            "education": indexes["school"],
-            "development": indexes["homes"],
-        }
-    except Exception as e:
-        return error(user, e, "Error getting indexes")
+def get_indexes(user, buffer=1):
+    from actions.regions import parse_regions_table
+
+    df = parse_regions_table(user, only_df=True)
+    percentiles = [x * 0.1 + buffer / 1e3 for x in range(1, 10)]
+    columns = {"HO": "health", "MB": "military", "SC": "education", "HF": "development"}
+    indexes = {}
+    df = df[columns.keys()]
+    df = df.quantile(percentiles, interpolation="higher")
+    df.index = df.index.map(lambda x: int(x * 10) + 1)
+    df = df.map(int)
+    for column in columns:
+        indexes[columns[column]] = df[column].to_dict()
+    return indexes
 
 
 def calculate_building_cost(building, fromme, tomme):
@@ -210,3 +192,37 @@ def calculate_building_cost_inner(building, fromme, tomme):
         for key in building_costs[building]
     }
     return sum_costs(costs, calculate_building_cost(building, fromme, tomme - 1))
+
+
+def get_indexes_old(user):
+    try:
+        indexes = {
+            "hospital": {},
+            "military": {},
+            "school": {},
+            "homes": {},
+        }
+        for link in indexes:
+            index = 10
+            if not get_page(user, f"listed/country/-2/0/{link}"):
+                return False
+            data = user.driver.find_elements(
+                By.CSS_SELECTOR, "td.list_level.tip.yellow"
+            )
+            level = int(float(data[0].get_attribute("rat")))
+            for tr in data:
+                if int(tr.text) < index:
+                    indexes[link][index] = level
+                    index -= 1
+                level = int(float(tr.get_attribute("rat")))
+                if index < 2:
+                    break
+        return_to_mainwindow(user)
+        return {
+            "health": indexes["hospital"],
+            "military": indexes["military"],
+            "education": indexes["school"],
+            "development": indexes["homes"],
+        }
+    except Exception as e:
+        return error(user, e, "Error getting indexes")

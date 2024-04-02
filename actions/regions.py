@@ -13,7 +13,7 @@ from butler import (
     wait_until_internet_is_back,
 )
 from misc.logger import log
-from models import get_player, get_state
+from models import get_player, get_region, get_state
 from models.player import get_player_info
 from models.region import get_region_info
 
@@ -119,3 +119,66 @@ def get_citizens(user, region=None, state=None, get_residents=False):
         return None
     except Exception as e:
         return error(user, e, "Error getting citizens")
+
+
+def parse_regions_table(user, id=None, only_df=False):
+    from io import StringIO
+
+    import pandas as pd
+
+    wait_until_internet_is_back(user)
+    try:
+        if not get_page(user, f"info/regions/{id if id else ''}"):
+            return False
+        state = get_state(id) if id else None
+        table = user.driver.find_element(By.CSS_SELECTOR, "table")
+        html_str = table.get_attribute("outerHTML")
+        df = pd.read_html(StringIO(html_str))[0]
+        if not id:  # Exclude Mars
+            df = df.iloc[:-1]
+        if only_df:
+            return df
+        regions_ = {}
+        for row in df.iterrows():
+            id = int(row["Region"].split()[-1])
+            region = get_region(id)
+            regions_[id] = region
+            if state:
+                region.set_state(state)
+            # region.set_name(row["Region"].split(",")[0])
+            if row["AUTO"] != "+":
+                region.set_autonomy(None)
+            region.set_num_of_citizens(int(row["POP"]))
+            region.set_num_of_residents(int(row["RES"]))
+            region.set_buildings("macademy", int(row["DAM ATA"]) / 45)
+            region.set_buildings("hospital", int(row["HO"]))
+            region.set_buildings("military", int(row["MB"]))
+            region.set_buildings("school", int(row["SC"]))
+            region.set_buildings("missile", int(row["MS"]))
+            region.set_buildings("sea", int(row["PO"]))
+            region.set_buildings("powerplant", int(row["PP"]))
+            region.set_buildings("spaceport", int(row["SP"]))
+            region.set_buildings("airport", int(row["AE/RS"]))
+            region.set_buildings("homes", int(row["HF"]))
+            region.set_resources("gold", int(row["GOL"]))
+            region.set_resources("oil", int(row["OIL"]))
+            region.set_resources("ore", int(row["ORE"]))
+            region.set_resources("uranium", int(row["URA"]))
+            region.set_resources("diamonds", int(row["DIA"]))
+            region.set_deep_resources("gold", int(row["GOL D"]))
+            region.set_deep_resources("oil", int(row["OIL D"]))
+            region.set_deep_resources("ore", int(row["ORE D"]))
+            region.set_deep_resources("uranium", int(row["URA D"]))
+            region.set_deep_resources("diamonds", int(row["DIA D"]))
+            region.set_indexes("education", int(row["IND EDU"]))
+            region.set_indexes("military", int(row["IND MIL"]))
+            region.set_indexes("health", int(row["IND HEA"]))
+            region.set_indexes("development", int(row["IND DEV"]))
+            region.set_tax(int(row["%"]))
+            region.set_market_tax(int(row["% SELL"]))
+            # TODO: set resource taxes
+        if state:
+            state.set_regions(regions_.values())
+        return regions_
+    except Exception as e:
+        return error(user, e, f"Error parsing regions table {id}")
