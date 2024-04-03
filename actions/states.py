@@ -50,11 +50,40 @@ def explore_resource(user, resource="gold"):
     law = ajax(
         user,
         f"/parliament/donew/42/{resources[resource]}/0",
-        text="Error exploring resource",
+        text=f"Error exploring {resource}",
         relad_after=True,
     )
     time.sleep(2)
-    pass_law = accept_law(user, "Resources exploration: state, gold resources")
+    pass_law = accept_law(user, "Resources exploration: state, ")
+    try:
+        if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
+            return True
+    except:
+        pass
+    return law and pass_law
+
+
+def build_building(user, id, building, amount):
+    buildings = {
+        "hospital": 1,
+        "military": 2,
+        "school": 3,
+        "missile": 4,
+        "sea": 5,
+        "power": 6,
+        "spaceport": 7,
+        "airport": 8,
+        "homes": 9,
+    }
+    law = ajax(
+        user,
+        f"/parliament/donew/build_{buildings[building]}/{amount}/{id}",
+        data=f"tmp_gov: '{amount}'",
+        text=f"Error building {building}",
+        relad_after=True,
+    )
+    time.sleep(2)
+    pass_law = accept_law(user, ", level ")
     try:
         if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
             return True
@@ -75,16 +104,21 @@ def budget_transfer(user, id, resource, amount):
         "uranium": 11,
         "diamonds": 15,
     }
-    result = ajax(
+    law = ajax(
         user,
         f"/parliament/donew/send_{resources[resource]}/{amount}/{id}",
-        data="tmp_gov: '{id}'",
-        text="Error exploring resource",
+        data=f"tmp_gov: '{amount}'",
+        text=f"Error transfering {resource}",
         relad_after=True,
     )
-    if result:
-        log(user, f"Transferred {amount} {resource} to {id}")
-    return result
+    time.sleep(2)
+    pass_law = accept_law(user, "Budget transfer: ")
+    try:
+        if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
+            return True
+    except:
+        pass
+    return law and pass_law
 
 
 def border_control(user, border="opened"):
