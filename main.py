@@ -2,15 +2,18 @@ import argparse
 import configparser
 import os
 import subprocess
+import threading
 
 from misc.logger import alert
 from misc.utils import slang_to_num
 from session import session
 from user import User
+from webui import create_app
 
 DEFAULT_CONFIG = """[general]
 browser = firefox
 headless = true
+gui = false
 
 [user]
 email = user1@example.com
@@ -38,6 +41,7 @@ def read_config(config_path):
 def create_user_from_config(config, general):
     browser = general.get("browser", fallback="firefox")
     headless = general.getboolean("headless", fallback=True)
+    gui = general.getboolean("gui", fallback=False)
 
     email = config.get("email")
     password = config.get("password")
@@ -45,6 +49,7 @@ def create_user_from_config(config, general):
     user = User(config.name, email, password)
     user.set_driveroptions("browser", browser)
     user.set_driveroptions("headless", headless)
+    user.set_driveroptions("gui", gui)
 
     goldperks = str.lower(config.get("goldperks", fallback="streduend"))
     eduweight = config.getint("eduweight", fallback=0)
@@ -98,6 +103,10 @@ def main():
         subprocess.Popen(["/usr/bin/caffeinate", "-i"])
     except FileNotFoundError:
         pass
+
+    if user.driveroptions["gui"]:
+        app = create_app(user)
+        threading.Thread(target=app.run, kwargs={"debug": True, "use_reloader": False}).start()
 
     session(user)
 

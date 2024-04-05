@@ -10,6 +10,7 @@ schedule = "*"
 requests = "*"
 pandas = "*"
 lxml = "*"
+flask = "*"
 
 [dev-packages]
 

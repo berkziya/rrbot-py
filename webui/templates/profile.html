@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ user.name }}</h1>
+    <p>Money:{{ user.player.money["money"] }}</p>
+    <p>Gold:{{ user.player.money["gold"] }}</p>
+{% endblock %}
