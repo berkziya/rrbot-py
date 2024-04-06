@@ -158,11 +158,11 @@ class User:
             if cookies and add_cookies():
                 self.driver.get("https://rivalregions.com")
                 if not logged_in():
-                    raise
+                    raise Exception("Cookies are invalid")
             else:
                 login()
                 if not logged_in():
-                    raise
+                    raise Exception("Login failed")
 
             return True
         except Exception as e:
