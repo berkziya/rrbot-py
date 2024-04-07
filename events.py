@@ -195,6 +195,7 @@ def build_indexes(user):
             if not value:
                 continue
             from actions.states import build_building
+
             build_building(user, id, key, value)
             log(user, f"Built {value} {key} in region {id}")
             time.sleep(20)

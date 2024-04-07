@@ -166,23 +166,28 @@ def get_indexes(user, buffer=1, save=False):
                     f"INSERT INTO {index} VALUES ({int(time.time())}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
                 )
 
+    def process_data(df, buffer):
+        buffer = min(buffer, 100) / 1e3
+        percentiles = [x / 10 + buffer for x in range(1, 10)]
+        names = {"HO": "hospital", "MB": "military", "SC": "school", "HF": "homes"}
+        indexes = {}
+        df = df[names.keys()]
+        df = df.quantile(percentiles, interpolation="higher")
+        df.index = df.index.map(lambda x: int(x * 10) + 1)
+        df = df.map(int)
+        for column, building in names.items():
+            indexes[building] = df[column].to_dict()
+        return indexes
+
     df = parse_regions_table(user, only_df=True)
-    if isinstance(df, bool):
+    if isinstance(df, bool):  # df is not a DataFrame
         return False
 
-    buffer = min(buffer, 100) / 1e3
-    percentiles = [x / 10 + buffer for x in range(1, 10)]
-    columns = {"HO": "hospital", "MB": "military", "SC": "school", "HF": "homes"}
-    indexes = {}
-    df = df[columns.keys()]
-    df = df.quantile(percentiles, interpolation="higher")
-    df.index = df.index.map(lambda x: int(x * 10) + 1)
-    df = df.map(int)
-    for column in columns:
-        indexes[columns[column]] = df[column].to_dict()
     if save:
-        save_indexes(indexes)
-    return indexes
+        clean_indexes = process_data(df, 1)
+        save_indexes(clean_indexes)
+
+    return process_data(df, buffer)
 
 
 def calculate_building_cost(building, fromme, tomme):
