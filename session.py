@@ -69,6 +69,12 @@ def session(user):
             "mute": True,
         },
         {
+            "desc": "build indexes",
+            "event": events.build_indexes,
+            "daily": False,
+            "mute": True,
+        },
+        {
             "desc": "upcoming_events",
             "event": events.upcoming_events,
             "daily": False,

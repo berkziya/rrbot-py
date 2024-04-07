@@ -57,7 +57,7 @@ def explore_resource(user, resource="gold"):
     pass_law = accept_law(user, "Resources exploration: state, ")
     try:
         if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
-            return True
+            return law
     except:
         pass
     return law and pass_law
@@ -86,7 +86,7 @@ def build_building(user, id, building, amount):
     pass_law = accept_law(user, ", level ")
     try:
         if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
-            return True
+            return law
     except:
         pass
     return law and pass_law
@@ -115,7 +115,7 @@ def budget_transfer(user, id, resource, amount):
     pass_law = accept_law(user, "Budget transfer: ")
     try:
         if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
-            return True
+            return law
     except:
         pass
     return law and pass_law

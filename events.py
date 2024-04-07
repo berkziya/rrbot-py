@@ -172,7 +172,7 @@ def build_indexes(user):
         )
         config = {int(x.pop("id")): x for x in config}
     regions = parse_regions_table(user, state.id)
-    indexes = get_indexes(user, 30)
+    indexes = get_indexes(user, buffer=30)
 
     if not config or not indexes or not regions:
         return fail()
@@ -190,7 +190,16 @@ def build_indexes(user):
         if any(diff.values()):
             what_to_build[id] = diff
 
-    print(what_to_build)
+    for id, diff in what_to_build.items():
+        for key, value in diff.items():
+            if not value:
+                continue
+            from actions.states import build_building
+            build_building(user, id, key, value)
+            log(user, f"Built {value} {key} in region {id}")
+            time.sleep(20)
+
+    user.s.enter(1800, 2, build_indexes, (user,))
 
 
 def if_leveled_up(user):
