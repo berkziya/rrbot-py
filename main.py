@@ -106,7 +106,9 @@ def main():
 
     if user.driveroptions["gui"]:
         app = create_app(user)
-        threading.Thread(target=app.run, kwargs={"debug": True, "use_reloader": False}).start()
+        threading.Thread(
+            target=app.run, kwargs={"debug": True, "use_reloader": False}
+        ).start()
 
     session(user)
 

@@ -151,6 +151,14 @@ def session(user):
     schedule.every(4).to(6).hours.do(reset_browser, user)
     schedule.every(1).to(2).hours.do(user.save_database)
 
+    from actions.market import get_market_price
+    from actions.states import get_indexes
+
+    schedule.every(9).to(14).minutes.do(get_market_price, user, "oil", save=True)
+    schedule.every(9).to(14).minutes.do(get_market_price, user, "ore", save=True)
+    schedule.every(9).to(14).minutes.do(get_market_price, user, "uranium", save=True)
+    schedule.every(19).to(29).minutes.do(get_indexes, user, save=True)
+
     def activate_scheduler():
         schedule.run_pending()
         user.s.enter(60, 3, activate_scheduler, ())

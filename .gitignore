@@ -4,6 +4,7 @@
 *.db-journal
 *_cookies.json
 log*
+*.csv
 
 ### macOS ###
 # General

@@ -151,11 +151,27 @@ def set_minister(user, id, ministry="economic"):
     return result
 
 
-def get_indexes(user, buffer=1):
+def get_indexes(user, buffer=1, save=False):
     from actions.regions import parse_regions_table
 
+    def save_indexes(indexes):
+        import sqlite3
+
+        with sqlite3.connect("indexhist.db") as conn:
+            for index in indexes:
+                conn.execute(
+                    f"CREATE TABLE IF NOT EXISTS {index} (timestamp INTEGER PRIMARY KEY, {', '.join([f'c{x}' for x in range(2, 11)])})"
+                )
+                conn.execute(
+                    f"INSERT INTO {index} VALUES ({int(time.time())}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
+                )
+
     df = parse_regions_table(user, only_df=True)
-    percentiles = [x * 0.1 + buffer / 1e3 for x in range(1, 10)]
+    if isinstance(df, bool):
+        return False
+
+    buffer = min(buffer, 100) / 1e3
+    percentiles = [x / 10 + buffer for x in range(1, 10)]
     columns = {"HO": "health", "MB": "military", "SC": "education", "HF": "development"}
     indexes = {}
     df = df[columns.keys()]
@@ -164,6 +180,8 @@ def get_indexes(user, buffer=1):
     df = df.map(int)
     for column in columns:
         indexes[columns[column]] = df[column].to_dict()
+    if save:
+        save_indexes(indexes)
     return indexes
 
 

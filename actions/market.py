@@ -66,7 +66,17 @@ market_ids = {
 }
 
 
-def get_market_price(user, resource):
+def get_market_price(user, resource, save=False):
+    def save_price(resource, price):
+        import sqlite3
+        import time
+
+        with sqlite3.connect("markethist.db") as conn:
+            conn.execute(
+                f"CREATE TABLE IF NOT EXISTS {resource} (timestamp INTEGER PRIMARY KEY, price REAL)"
+            )
+            conn.execute(f"INSERT INTO {resource} VALUES ({int(time.time())}, {price})")
+
     try:
         if not get_page(user, f"storage/listed/{market_ids[resource]}"):
             return False
@@ -86,6 +96,8 @@ def get_market_price(user, resource):
                     ).get_attribute("rat")
                 )
                 return_to_mainwindow(user)
+                if save:
+                    save_price(resource, daprice)
                 return daprice
         return False
     except Exception as e:

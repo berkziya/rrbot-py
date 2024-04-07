@@ -26,16 +26,17 @@ def upgrade_perk(user, perk=None, currency="gold"):
         education = user.player.perks["edu"]
         endurance = user.player.perks["end"]
 
-        def get_time(perk):
-            time = (perk + 1) ** 2
-            time = time / (4 if perk < 50 else (2 if perk < 100 else 1))
+        def get_time(rank):
+            time = (rank + 1) ** 2
+            time = time / (4 if rank < 50 else (2 if rank < 100 else 1))
             return time
 
         def get_currency(perk, currency):
             goldprice = (user.player.perks[perk] + 6) // 10 * 10 + 10
             conditions = [
                 perk not in user.perkoptions["goldperks"],
-                user.player.perks[perk] < user.perkoptions["minlvl4gold"],
+                user.player.perks[perk]
+                < user.perkoptionsget("minlvl4gold", float("inf")),
                 (user.player.storage["energy"] // 10 + user.player.money["gold"])
                 < user.perkoptions.get("mingold4gold", float("inf")),
                 goldprice > user.player.money["gold"],
