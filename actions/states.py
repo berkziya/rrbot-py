@@ -172,7 +172,7 @@ def get_indexes(user, buffer=1, save=False):
 
     buffer = min(buffer, 100) / 1e3
     percentiles = [x / 10 + buffer for x in range(1, 10)]
-    columns = {"HO": "health", "MB": "military", "SC": "education", "HF": "development"}
+    columns = {"HO": "hospital", "MB": "military", "SC": "school", "HF": "homes"}
     indexes = {}
     df = df[columns.keys()]
     df = df.quantile(percentiles, interpolation="higher")
@@ -270,11 +270,6 @@ def get_indexes_old(user):
                 if index < 2:
                     break
         return_to_mainwindow(user)
-        return {
-            "health": indexes["hospital"],
-            "military": indexes["military"],
-            "education": indexes["school"],
-            "development": indexes["homes"],
-        }
+        return indexes
     except Exception as e:
         return error(user, e, "Error getting indexes")

@@ -135,6 +135,64 @@ def check_changes(user):
         if_changed_region(user)
 
 
+def build_indexes(user):
+    import csv
+    import os
+
+    from actions.regions import parse_regions_table
+    from actions.states import get_indexes
+
+    def fail():
+        user.s.enter(600, 2, build_indexes, (user,))
+        return False
+
+    state = None
+
+    if not get_player_info(user):
+        return fail()
+
+    if user.player.state_leader:
+        state = get_state_info(user, user.player.state_leader.id)
+        if state and state.form not in ["Dictatorship", "Executive monarchy"]:
+            return fail()
+
+    if user.player.economics:
+        state = get_state_info(user, user.player.economics.id)
+
+    if (
+        not state
+        or not os.path.exists(f"{state.id}.csv")
+        or user.player.region.id not in [x.id for x in state.regions]
+    ):
+        return fail()
+
+    with open(f"{state.id}.csv", "r") as f:
+        config = csv.DictReader(
+            f, fieldnames=["id", "hospital", "military", "school", "homes"]
+        )
+        config = {int(x.pop("id")): x for x in config}
+    regions = parse_regions_table(user, state.id)
+    indexes = get_indexes(user, 30)
+
+    if not config or not indexes or not regions:
+        return fail()
+
+    what_to_build = {}
+
+    for id, region in regions.items():
+        if id not in config:
+            continue
+        diff = {"hospital": 0, "military": 0, "school": 0, "homes": 0}
+        for key in diff:
+            diff[key] = max(
+                (indexes[key].get(int(config[id][key]), 0) - region.buildings[key]), 0
+            )
+        if any(diff.values()):
+            what_to_build[id] = diff
+
+    print(what_to_build)
+
+
 def if_leveled_up(user):
     # do level specific stuff
     pass

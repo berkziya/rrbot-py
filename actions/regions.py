@@ -134,12 +134,15 @@ def parse_regions_table(user, id=None, only_df=False):
         table = user.driver.find_element(By.CSS_SELECTOR, "table")
         html_str = table.get_attribute("outerHTML")
         df = pd.read_html(StringIO(html_str))[0]
+        df = df.replace("\xa0", " ")
+        df.columns = df.columns.str.replace("\xa0", " ")
         if not id:  # Exclude Mars
             df = df.iloc[:-1]
         if only_df:
             return df
         regions_ = {}
         for row in df.iterrows():
+            row = row[1].to_dict()
             id = int(row["Region"].split()[-1])
             region = get_region(id)
             regions_[id] = region
@@ -160,20 +163,20 @@ def parse_regions_table(user, id=None, only_df=False):
             region.set_buildings("spaceport", int(row["SP"]))
             region.set_buildings("airport", int(row["AE/RS"]))
             region.set_buildings("homes", int(row["HF"]))
-            region.set_resources("gold", int(row["GOL"]))
-            region.set_resources("oil", int(row["OIL"]))
-            region.set_resources("ore", int(row["ORE"]))
-            region.set_resources("uranium", int(row["URA"]))
-            region.set_resources("diamonds", int(row["DIA"]))
-            region.set_deep_resources("gold", int(row["GOL D"]))
-            region.set_deep_resources("oil", int(row["OIL D"]))
-            region.set_deep_resources("ore", int(row["ORE D"]))
-            region.set_deep_resources("uranium", int(row["URA D"]))
-            region.set_deep_resources("diamonds", int(row["DIA D"]))
-            region.set_indexes("education", int(row["IND EDU"]))
+            region.set_resources("gold", float(row["GOL"]))
+            region.set_resources("oil", float(row["OIL"]))
+            region.set_resources("ore", float(row["ORE"]))
+            region.set_resources("uranium", float(row["URA"]))
+            region.set_resources("diamonds", float(row["DIA"]))
+            region.set_deep_resources("gold", float(row["GOL D"]))
+            region.set_deep_resources("oil", float(row["OIL D"]))
+            region.set_deep_resources("ore", float(row["ORE D"]))
+            region.set_deep_resources("uranium", float(row["URA D"]))
+            region.set_deep_resources("diamonds", float(row["DIA D"]))
+            region.set_indexes("school", int(row["IND EDU"]))
             region.set_indexes("military", int(row["IND MIL"]))
-            region.set_indexes("health", int(row["IND HEA"]))
-            region.set_indexes("development", int(row["IND DEV"]))
+            region.set_indexes("hospital", int(row["IND HEA"]))
+            region.set_indexes("homes", int(row["IND DEV"]))
             region.set_tax(int(row["%"]))
             region.set_market_tax(int(row["% SELL"]))
             # TODO: set resource taxes

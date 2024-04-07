@@ -22,6 +22,8 @@ def session(user):
     #     from actions.states import budget_transfer
     #     budget_transfer(user, 1728, "oil", "80kkk")
 
+    events.build_indexes(user)
+
     eventsToBeDone = [
         {
             "desc": "build military academy",

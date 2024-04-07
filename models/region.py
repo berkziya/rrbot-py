@@ -51,10 +51,10 @@ class Region:
             "diamonds": 0,
         }
         self.indexes = {
-            "health": 0,
+            "hospital": 0,
             "military": 0,
-            "education": 0,
-            "development": 0,
+            "school": 0,
+            "homes": 0,
         }
         self.border_regions = []
         self.factories = []
@@ -337,7 +337,7 @@ def get_region_info(user, id, force=False):
                 )
             elif "Health index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_indexes(
-                    "health",
+                    "hospital",
                     dotless(
                         div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0]
                     ),
@@ -351,14 +351,14 @@ def get_region_info(user, id, force=False):
                 )
             elif "Education index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_indexes(
-                    "education",
+                    "school",
                     dotless(
                         div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0]
                     ),
                 )
             elif "Development index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_indexes(
-                    "development",
+                    "homes",
                     dotless(
                         div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0]
                     ),
