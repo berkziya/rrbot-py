@@ -164,7 +164,7 @@ def set_minister(user, id, ministry="economic"):
     return result
 
 
-def get_indexes(user, buffer=1, save=False):
+def get_indexes(user, buffer=1, save=True):
     from actions.regions import parse_regions_table
 
     def save_indexes(indexes):
