@@ -3,8 +3,6 @@ import time
 
 from butler import error, wait_until_internet_is_back
 from misc.logger import alert, log
-from models.player import get_player_info
-from models.state import get_state_info
 
 
 def initiate_all_events(user, events_, daily=False):
@@ -38,34 +36,29 @@ def upcoming_events(user):
 
 
 def hourly_state_gold_refill(user):
-    def fail():
+    from actions.states import explore_resource
+    from actions.status import lead_econ_foreign
+
+    def fail(text=""):
+        if text:
+            alert(user, text)
         user.s.enter(600, 2, hourly_state_gold_refill, (user,))
         return False
 
-    if not get_player_info(user):
+    (lead_state, in_lead), (econ_state, in_econ) = lead_econ_foreign(
+        user, lead=True, econ=True
+    )
+
+    if econ_state and not in_econ:
+        alert("Not in the state of their economics, can't refill gold there")
+
+    # if lead[0] and not lead[1]:
+    #     alert("Not in the state of their leadership, can't refill gold")
+
+    if not (in_econ or in_lead):
         return fail()
 
-    if user.player.state_leader:
-        state = get_state_info(user, user.player.state_leader.id)
-        if (
-            state
-            and state.form not in ["Dictatorship", "Executive monarchy"]
-            and user.player.region.id not in [x.id for x in state.regions]
-        ):
-            return fail()
-
-    if user.player.economics:
-        state = get_state_info(user, user.player.economics.id)
-        if state and user.player.region.id not in [x.id for x in state.regions]:
-            alert(user, "Not in the state of their economics, can't refill gold")
-            return fail()
-
-    if not user.player.state_leader and not user.player.economics:
-        return fail()
-
-    from actions.states import explore_resource
-
-    if explore_resource(user, "gold"):
+    if explore_resource(user, "gold", leader=in_lead):
         log(user, "Refilled the state gold reserves")
         user.s.enter(3600, 2, hourly_state_gold_refill, (user,))
         return True
@@ -81,15 +74,6 @@ def energy_drink_refill(user):
         return False
     user.s.enter(21600, 3, energy_drink_refill, (user,))
     return True
-
-
-def close_borders_if_not_safe(user):
-    if not get_player_info(user) and not (
-        user.player.state_leader or user.player.foreign
-    ):
-        return False
-    # if not is_there_a_war_in_my_state(user): return True
-    pass
 
 
 def upgrade_perk_event(user):
@@ -123,48 +107,32 @@ def upgrade_perk_event(user):
         return error(user, e, "Error upgrading perk")
 
 
-def check_changes(user):
-    old = user.player.__dict__.copy()
-    if not get_player_info(user):
-        return False
-
-    if old["level"] != user.player.level:
-        if_leveled_up(user)
-
-    if old["region"].id != user.player.region.id:
-        if_changed_region(user)
-
-
 def build_indexes(user):
     import csv
     import os
 
     from actions.regions import parse_regions_table
-    from actions.states import get_indexes
+    from actions.states import calculate_building_cost, get_indexes
+    from actions.status import lead_econ_foreign
+    from misc.utils import num_to_slang, sum_costs
 
     def fail():
         user.s.enter(600, 2, build_indexes, (user,))
         return False
 
-    state = None
+    (lead_state, in_lead), (econ_state, in_econ) = lead_econ_foreign(
+        user, lead=True, econ=True
+    )
+    state = lead_state if in_lead else econ_state if in_econ else None
 
-    if not get_player_info(user):
+    if econ_state and not in_econ:
+        alert("Not in the state of their economics, can't build indexes there")
+
+    if not state:
         return fail()
 
-    if user.player.state_leader:
-        state = get_state_info(user, user.player.state_leader.id)
-        if state and state.form not in ["Dictatorship", "Executive monarchy"]:
-            return fail()
-
-    if user.player.economics:
-        state = get_state_info(user, user.player.economics.id)
-
-    if (
-        not state
-        or not os.path.exists(f"{state.id}.csv")
-        or user.player.region.id not in [x.id for x in state.regions]
-    ):
-        return fail()
+    if not os.path.exists(f"{state.id}.csv"):
+        return fail("No config file found for the state, can't build indexes")
 
     with open(f"{state.id}.csv", "r") as f:
         config = csv.DictReader(
@@ -172,23 +140,40 @@ def build_indexes(user):
         )
         config = {int(x.pop("id")): x for x in config}
     regions = parse_regions_table(user, state.id)
-    indexes = get_indexes(user, buffer=30)
+    indexes = get_indexes(user, buffer=51)
 
     if not config or not indexes or not regions:
         return fail()
 
     what_to_build = {}
+    costs = {}
 
     for id, region in regions.items():
         if id not in config:
             continue
         diff = {"hospital": 0, "military": 0, "school": 0, "homes": 0}
         for key in diff:
-            diff[key] = max(
-                (indexes[key].get(int(config[id][key]), 0) - region.buildings[key]), 0
-            )
+            current = region.buildings.get(key, 0)
+            target = indexes[key].get(int(config[id][key]), 0)
+            if current and target and current < target:
+                diff[key] = target - current
+                costs = sum_costs(costs, calculate_building_cost(key, current, target))
         if any(diff.values()):
             what_to_build[id] = diff
+
+    if not what_to_build:
+        return fail()
+
+    not_enough = False
+    for key, value in costs.items():
+        if not state.budget.get(key, 0) >= value:
+            alert(
+                user,
+                f"Not enough {key} in the state budget, needed {num_to_slang(value)}",
+            )
+            not_enough = True
+    if not_enough:
+        return fail()
 
     for id, diff in what_to_build.items():
         for key, value in diff.items():
@@ -196,19 +181,15 @@ def build_indexes(user):
                 continue
             from actions.states import build_building
 
-            build_building(user, id, key, value)
-            log(user, f"Built {value} {key} in region {id}")
-            time.sleep(20)
+            if build_building(user, id, key, value):
+                log(user, f"Built {value} {key} in region {id}")
+                try:
+                    spent = calculate_building_cost(
+                        key, region.buildings[key], region.buildings[key] + value
+                    )
+                    state.set_budgets(spent, "-")
+                except:
+                    pass
+                time.sleep(20)
 
     user.s.enter(1800, 2, build_indexes, (user,))
-
-
-def if_leveled_up(user):
-    # do level specific stuff
-    pass
-
-
-def if_changed_region(user):
-    # do region specific stuff
-    hourly_state_gold_refill(user)
-    pass

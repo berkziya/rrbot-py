@@ -50,8 +50,29 @@ class State:
     def set_form(self, value):
         self.form = value
 
-    def set_budget(self, element, value):
-        self.budget[element] = value
+    def set_budget(self, element, value, what="="):
+        if what == "=":
+            self.budget[element] = value
+        elif what == "+":
+            from misc.utils import sum_costs
+
+            self.budget = sum_costs(self.budget, {element: value})
+        elif what == "-":
+            from misc.utils import subtract_costs
+
+            self.budget = subtract_costs(self.budget, {element: value})
+
+    def set_budgets(self, value, what="="):
+        if what == "=":
+            self.budget = value
+        elif what == "+":
+            from misc.utils import sum_costs
+
+            self.budget = sum_costs(self.budget, value)
+        elif what == "-":
+            from misc.utils import subtract_costs
+
+            self.budget = subtract_costs(self.budget, value)
 
     def set_borders(self, value):
         self.borders = value
@@ -218,7 +239,7 @@ def get_state_info(user, id, force=False):
             #     state_status['bloc'] = dotless(div.find_element(By.CSS_SELECTOR, "div.short_details").get_attribute('action').split('/')[-1])
             elif any(
                 x in div.find_element(By.CSS_SELECTOR, "h2").text
-                for x in ["leader:", "commander:", "Monarch:", "Dictator"]
+                for x in ["leader:", "commander:", "onarch:", "ctator"]
             ):
                 state.set_leader(
                     get_player(
@@ -229,7 +250,7 @@ def get_state_info(user, id, force=False):
                 )
             elif any(
                 x in div.find_element(By.CSS_SELECTOR, "h2").text
-                for x in ["economics:", "adviser:"]
+                for x in ["conomics:", "dviser:"]
             ):
                 state.set_economics(
                     get_player(

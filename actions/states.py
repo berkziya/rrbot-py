@@ -4,8 +4,7 @@ from functools import lru_cache
 from selenium.webdriver.common.by import By
 
 from butler import ajax, error, get_page, return_to_mainwindow
-from misc.logger import log
-from models.state import get_state_info
+from misc.logger import alert
 
 
 def remove_self_law(user):
@@ -45,7 +44,7 @@ def accept_law(user, text):
     return result
 
 
-def explore_resource(user, resource="gold"):
+def explore_resource(user, resource="gold", leader=False):
     resources = {"gold": 0, "oil": 3, "ore": 4, "uranium": 11, "diamonds": 15}
     law = ajax(
         user,
@@ -56,14 +55,16 @@ def explore_resource(user, resource="gold"):
     time.sleep(2)
     pass_law = accept_law(user, "Resources exploration: state, ")
     try:
-        if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
+        if not leader and any(
+            x in user.player.economics.form for x in ["tatorsh", "onarch"]
+        ):
             return law
     except:
         pass
     return law and pass_law
 
 
-def build_building(user, id, building, amount):
+def build_building(user, id, building, amount, leader=False):
     buildings = {
         "hospital": 1,
         "military": 2,
@@ -85,14 +86,16 @@ def build_building(user, id, building, amount):
     time.sleep(2)
     pass_law = accept_law(user, ", level ")
     try:
-        if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
+        if not leader and any(
+            x in user.player.economics.form for x in ["tatorsh", "onarch"]
+        ):
             return law
     except:
         pass
     return law and pass_law
 
 
-def budget_transfer(user, id, resource, amount):
+def budget_transfer(user, id, resource, amount, leader=False):
     from misc.utils import slang_to_num
 
     amount = slang_to_num(amount)
@@ -114,7 +117,9 @@ def budget_transfer(user, id, resource, amount):
     time.sleep(2)
     pass_law = accept_law(user, "Budget transfer: ")
     try:
-        if user.player.economics.form in ["Executive monarchy", "Dictatorship"]:
+        if not leader and any(
+            x in user.player.economics.form for x in ["tatorsh", "onarch"]
+        ):
             return law
     except:
         pass
@@ -122,17 +127,25 @@ def budget_transfer(user, id, resource, amount):
 
 
 def border_control(user, border="opened"):
-    if not user.player.foreign:
-        log(user, "Not a foreign minister")
+    from actions.status import lead_econ_foreign
+
+    (lead_state, in_lead), (foreign_state, in_foreign) = lead_econ_foreign(
+        user, lead=True, foreign=True
+    )
+    state = lead_state if in_lead else foreign_state if in_foreign else None
+
+    if not state:
+        if lead_state or foreign_state:
+            alert(
+                user,
+                f"Not in the region of their, can't set borders: {border.upper()}",
+            )
+        else:
+            alert(
+                user, f"Not the leader of foreign minister, can't set: {border.upper()}"
+            )
         return False
-    get_state_info(user, user.player.region.state.id)
-    if user.player.foreign != user.player.region.state:
-        log(user, "Not in home state or not the foreign minister")
-        return False
-    get_state_info(user, user.player.foreign.id)
-    if user.player.foreign.borders == border:
-        log(user, f"Borders are already {border}")
-        return False
+
     law = ajax(
         user,
         "/parliament/donew/23/0/0",
@@ -140,7 +153,7 @@ def border_control(user, border="opened"):
         text="Error setting border control",
     )
     pass_law = accept_law(user, f'{"Open" if border == "opened" else "Close"} borders:')
-    return law and pass_law
+    return law  # and pass_law
 
 
 def set_minister(user, id, ministry="economic"):

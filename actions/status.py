@@ -2,6 +2,8 @@ from selenium.webdriver.common.by import By
 
 from butler import error, reload_mainpage
 from misc.utils import dotless
+from models.player import get_player_info
+from models.state import get_state_info
 
 
 def set_mainpage_data(user, energy=False):
@@ -30,6 +32,52 @@ def set_mainpage_data(user, energy=False):
         return True
     except Exception as e:
         return error(user, e, "Error setting money")
+
+
+def lead_econ_foreign(user, lead=False, econ=False, foreign=False):
+    try:
+        region = get_player_info(user).region
+        if not region:
+            raise
+
+        result = []
+
+        lead_state, in_lead = None, False
+        if lead and user.player.state_leader:
+            lead_state = get_state_info(user, user.player.state_leader.id)
+            if lead_state:
+                in_lead = lead_state and region.id in [x.id for x in lead_state.regions]
+
+        econ_state, in_econ = None, False
+        if econ and user.player.economics:
+            econ_state = get_state_info(user, user.player.economics.id)
+            if econ_state:
+                in_econ = region.id in [x.id for x in econ_state.regions]
+
+        foreign_state, in_foreign = None, False
+        if foreign and user.player.foreign:
+            foreign_state = get_state_info(user, user.player.foreign.id)
+            if foreign_state:
+                in_foreign = region.id in [x.id for x in foreign_state.regions]
+
+        if lead:
+            result.append((lead_state, in_lead))
+        if econ:
+            result.append((econ_state, in_econ))
+        if foreign:
+            result.append((foreign_state, in_foreign))
+
+        return result
+    except Exception as e:
+        error(user, e, "Can't get economics or state leader status")
+        result = []
+        if lead:
+            result.append((None, False))
+        if econ:
+            result.append((None, False))
+        if foreign:
+            result.append((None, False))
+        return result
 
 
 # def check_traveling_status(user):
