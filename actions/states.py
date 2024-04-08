@@ -192,7 +192,6 @@ def get_indexes(user, save=True):
                 conn.execute(
                     f"INSERT INTO {index} VALUES ({int(time.time())}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
                 )
-    print(indexes)
     return indexes
 
 
