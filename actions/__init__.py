@@ -80,7 +80,7 @@ def upgrade_perk(user):
         return error(user, e, "Error upgrading perk")
 
 
-def build_indexes(user):
+def build_indexes(user, buffer=20):
     import csv
     import os
 
@@ -115,7 +115,7 @@ def build_indexes(user):
         )
         config = {int(x.pop("id")): x for x in config}
     regions = parse_regions_table(user, state.id)
-    indexes = get_indexes(user, buffer=51)
+    indexes = get_indexes(user)
 
     if not config or not indexes or not regions:
         return fail(
@@ -131,7 +131,7 @@ def build_indexes(user):
         diff = {"hospital": 0, "military": 0, "school": 0, "homes": 0}
         for key in diff:
             current = region.buildings.get(key, float("inf"))
-            target = indexes[key].get(int(config[id][key]), 0)
+            target = indexes[key].get(int(config[id][key]), 0) + buffer
             if current and target and current < target:
                 diff[key] = target - current
                 costs = sum_costs(costs, calculate_building_cost(key, current, target))
