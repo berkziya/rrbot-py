@@ -176,8 +176,8 @@ def get_indexes(user, save=True):
     percentiles = [x / 10 + 0.01 for x in range(1, 10)]
 
     df = df[names.keys()]
-    percent_values = df.quantile(percentiles, interpolation="higher")
-    percent_values.index = range(2, 11)
+    df = df.quantile(percentiles, interpolation="higher")
+    df.index = range(2, 11)
     for column, building in names.items():
         indexes[building] = df[column].to_dict()
 
@@ -192,6 +192,7 @@ def get_indexes(user, save=True):
                 conn.execute(
                     f"INSERT INTO {index} VALUES ({int(time.time())}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
                 )
+    print(indexes)
     return indexes
 
 

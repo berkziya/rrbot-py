@@ -129,12 +129,14 @@ def build_indexes(user, buffer=20):
         if id not in config:
             continue
         diff = {"hospital": 0, "military": 0, "school": 0, "homes": 0}
-        for key in diff:
-            current = region.buildings.get(key, float("inf"))
-            target = indexes[key].get(int(config[id][key]), 0) + buffer
-            if current and target and current < target:
-                diff[key] = target - current
-                costs = sum_costs(costs, calculate_building_cost(key, current, target))
+        for building in diff:
+            current = region.buildings.get(building, float("inf"))
+            target = indexes[building].get(int(config[id][building]), 0) + buffer
+            if current < target:
+                diff[building] = target - current
+                costs = sum_costs(
+                    costs, calculate_building_cost(building, current, target)
+                )
         if any(diff.values()):
             what_to_build[id] = diff
 
@@ -142,27 +144,29 @@ def build_indexes(user, buffer=20):
         return fail()
 
     not_enough = False
-    for key, value in costs.items():
-        if not state.budget.get(key, 0) >= value:
+    for building, value in costs.items():
+        if not state.budget.get(building, 0) >= value:
             alert(
                 user,
-                f"Not enough {key} in the state budget, needed {num_to_slang(value)}",
+                f"Not enough {building} in the state budget, needed {num_to_slang(value)}",
             )
             not_enough = True
     if not_enough:
         return fail()
 
     for id, diff in what_to_build.items():
-        for key, value in diff.items():
+        for building, value in diff.items():
             if not value:
                 continue
             from actions.states import build_building
 
-            if build_building(user, id, key, value):
-                log(user, f"Built {value} {key} in region {id}")
+            if build_building(user, id, building, value):
+                log(user, f"Built {value} {building} in region {id}")
                 try:
                     spent = calculate_building_cost(
-                        key, region.buildings[key], region.buildings[key] + value
+                        building,
+                        region.buildings[building],
+                        region.buildings[building] + value,
                     )
                     state.set_budgets(spent, "-")
                 except:

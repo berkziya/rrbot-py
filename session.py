@@ -75,6 +75,7 @@ def session(user):
         {
             "desc": "build indexes",
             "event": build_indexes,
+            "args": (20,),
             "daily": False,
             "mute": True,
         },
