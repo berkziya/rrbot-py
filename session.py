@@ -2,10 +2,16 @@ import pytz
 import schedule
 
 import events
+from actions import (
+    auto_work_factory,
+    build_indexes,
+    energy_drink_refill,
+    hourly_state_gold_refill,
+    upgrade_perk,
+)
 from actions.regions import build_military_academy, work_state_department
 from actions.status import set_mainpage_data
 from actions.wars import attack
-from actions.work import auto_work_factory
 from butler import reset_browser
 from misc.logger import alert, log
 from misc.utils import num_to_slang
@@ -22,8 +28,6 @@ def session(user):
     #     from actions.states import budget_transfer
     #     budget_transfer(user, 1728, "oil", "80kkk")
 
-    events.build_indexes(user)
-
     eventsToBeDone = [
         {
             "desc": "build military academy",
@@ -39,13 +43,13 @@ def session(user):
         },
         {
             "desc": "upgrade perks",
-            "event": events.upgrade_perk_event,
+            "event": upgrade_perk,
             "daily": False,
             "mute": False,
         },
         {
             "desc": "economics work",
-            "event": events.hourly_state_gold_refill,
+            "event": hourly_state_gold_refill,
             "daily": True,
         },
         {"desc": "attack training", "event": attack, "daily": False, "mute": False},
@@ -64,13 +68,13 @@ def session(user):
         },
         {
             "desc": "energy drink refill",
-            "event": events.energy_drink_refill,
+            "event": energy_drink_refill,
             "daily": False,
             "mute": True,
         },
         {
             "desc": "build indexes",
-            "event": events.build_indexes,
+            "event": build_indexes,
             "daily": False,
             "mute": True,
         },
@@ -165,6 +169,7 @@ def session(user):
     schedule.every(9).to(14).minutes.do(get_market_price, user, "oil", save=True)
     schedule.every(9).to(14).minutes.do(get_market_price, user, "ore", save=True)
     schedule.every(9).to(14).minutes.do(get_market_price, user, "uranium", save=True)
+    schedule.every(9).to(14).minutes.do(get_market_price, user, "diamonds", save=True)
     schedule.every(19).to(29).minutes.do(get_indexes, user, save=True)
 
     def activate_scheduler():

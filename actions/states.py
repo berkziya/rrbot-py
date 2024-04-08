@@ -127,9 +127,9 @@ def budget_transfer(user, id, resource, amount, leader=False):
 
 
 def border_control(user, border="opened"):
-    from actions.status import lead_econ_foreign
+    from actions.status import get_lead_econ_foreign
 
-    (lead_state, in_lead), (foreign_state, in_foreign) = lead_econ_foreign(
+    (lead_state, in_lead), (foreign_state, in_foreign) = get_lead_econ_foreign(
         user, lead=True, foreign=True
     )
     state = lead_state if in_lead else foreign_state if in_foreign else None
@@ -182,7 +182,7 @@ def get_indexes(user, buffer=1, save=False):
     def process_data(df, buffer):
         buffer = min(buffer, 100) / 1e3
         percentiles = [x / 10 + buffer for x in range(1, 10)]
-        names = {"HO": "hospital", "MB": "military", "SC": "school", "HF": "homes"}
+        names = {"ho": "hospital", "mb": "military", "sc": "school", "hf": "homes"}
         indexes = {}
         df = df[names.keys()]
         df = df.quantile(percentiles, interpolation="higher")
@@ -197,8 +197,7 @@ def get_indexes(user, buffer=1, save=False):
         return False
 
     if save:
-        clean_indexes = process_data(df, 1)
-        save_indexes(clean_indexes)
+        save_indexes(process_data(df, 1))
 
     return process_data(df, buffer)
 

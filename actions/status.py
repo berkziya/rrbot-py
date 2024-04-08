@@ -34,7 +34,7 @@ def set_mainpage_data(user, energy=False):
         return error(user, e, "Error setting money")
 
 
-def lead_econ_foreign(user, lead=False, econ=False, foreign=False):
+def get_lead_econ_foreign(user, lead=False, econ=False, foreign=False):
     try:
         region = get_player_info(user).region
         if not region:

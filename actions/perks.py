@@ -17,7 +17,7 @@ def check_training_status(user):
         return error(user, e, "Error checking training status")
 
 
-def upgrade_perk(user, perk=None, currency="gold"):
+def upgrade_perk_inner(user, perk=None, currency="gold"):
     try:
         perkurl = {"str": 1, "edu": 2, "end": 3}
         currencyurl = {"money": 1, "gold": 2}

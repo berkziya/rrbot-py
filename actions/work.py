@@ -2,8 +2,8 @@ import time
 
 from selenium.webdriver.common.by import By
 
-from butler import ajax, error, get_page, reload_mainpage, return_to_mainwindow
-from misc.logger import alert, log
+from butler import ajax, error, get_page, return_to_mainwindow
+from misc.logger import alert
 from misc.utils import dotless
 from models import get_factory, get_region
 from models.factory import get_factory_info
@@ -28,8 +28,9 @@ RESOURCES = {
 def get_factories(user, id=None, resource="gold"):
     try:
         if not id:
-            get_player_info(user)
-            id = user.player.region.id
+            id = get_player_info(user).region.id
+        region = get_region(id)
+
         if not get_page(user, f"factory/search/{id}/0/{RESOURCES[resource]}"):
             return False
         try:
@@ -42,7 +43,7 @@ def get_factories(user, id=None, resource="gold"):
         for tr in data:
             factory = get_factory(tr.get_attribute("user"))
             factory.set_type(resource)
-            factory.set_region(get_region(id))
+            factory.set_region(region)
             factory.set_level(
                 int(tr.find_element(By.CSS_SELECTOR, "td:nth-child(4)").text)
             )
@@ -60,11 +61,11 @@ def get_factories(user, id=None, resource="gold"):
                 pass
             factories.append(factory)
         for factory in factories:
-            get_region(id).add_factory(factory)
+            region.add_factory(factory)
         return_to_mainwindow(user)
         return factories
     except Exception as e:
-        return error(user, e, "Error getting factories")
+        return error(user, e, f"Error getting factories of region {id}")
 
 
 def resign_factory(user):
@@ -75,24 +76,20 @@ def resign_factory(user):
 
 
 def assign_factory(user, id):
-    try:
-        if not id:
-            return alert(user, "No factory set")
-        resign_factory(user)
-        time.sleep(3)
-        if not ajax(
-            user,
-            "/factory/assign",
-            f"factory: {id}",
-            "Error assigning factory",
-            relad_after=True,
-        ):
-            return False
-        time.sleep(3)
-        reload_mainpage(user)
-        return True
-    except Exception as e:
-        return error(user, e, "Error assigning factory")
+    if not id:
+        return alert(user, "No factory set to assign")
+
+    resigned = resign_factory(user)
+    time.sleep(3)
+
+    result = ajax(
+        user,
+        "/factory/assign",
+        f"factory: {id}",
+        f"Error assigning factory {id}",
+        relad_after=True,
+    )
+    return resigned and result
 
 
 def cancel_auto_work(user):
@@ -102,40 +99,11 @@ def cancel_auto_work(user):
     return result
 
 
-def auto_work_factory(user, id=None, include_fix_wage=True):
-    try:
-        if not id:
-            factory = get_best_factory(
-                user, resource="gold", include_fix_wage=include_fix_wage
-            )
-        else:
-            factory = get_factory_info(user, id)
-        if not factory:
-            alert(user, "No factory found")
-            return False
-        log(
-            user,
-            f"Auto working factory: {factory.id}, type: {factory.type}",
-        )
-        assign_factory(user, factory.id)
-        time.sleep(3)
-        result = ajax(
-            user,
-            "/work/autoset",
-            data=f"mentor: 0, factory: {factory.id}, type: {RESOURCES[factory.type]}, lim: 0",
-            text="Error setting auto work",
-            relad_after=True,
-        )
-        return result
-    except Exception as e:
-        return error(user, e, "Error auto working factory")
-
-
 def get_best_factory(user, id=None, resource="gold", include_fix_wage=True):
     try:
         if not id:
-            get_player_info(user)
-            id = user.player.region.id
+            id = get_player_info(user).region.id
+
         factories = get_factories(user, id=id, resource=resource)
         if not factories:
             return False
@@ -144,17 +112,17 @@ def get_best_factory(user, id=None, resource="gold", include_fix_wage=True):
             filter(lambda x: not x.fixed_wage, factories), key=lambda x: x.get_wage()
         )
 
-        try:
-            if not include_fix_wage or not get_factory_info(user, best_unfixed.id):
-                raise
-            coef = best_unfixed.potential_wage / best_unfixed.get_wage()
-            the = max(
-                factories, key=lambda x: x.get_wage() * (1 if x.fixed_wage else coef)
-            )
-            if not the:
-                raise
-            return the
-        except:
+        if not best_unfixed:
+            raise Exception("No unfixed wage factories found")
+
+        if not include_fix_wage or not get_factory_info(user, best_unfixed.id):
             return best_unfixed
+        coef = best_unfixed.potential_wage / best_unfixed.get_wage()
+        best_fixed = max(
+            factories, key=lambda x: x.get_wage() * (1 if x.fixed_wage else coef)
+        )
+        if not best_fixed:
+            return best_unfixed
+        return best_fixed
     except Exception as e:
-        return error(user, e, "Error getting best factory")
+        return error(user, e, f"Error getting best {resource} factory of region {id}")

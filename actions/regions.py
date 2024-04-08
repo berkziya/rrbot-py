@@ -19,33 +19,22 @@ from models.region import get_region_info
 
 
 def build_military_academy(user):
-    try:
-        get_player_info(user)
-        if user.player.residency != user.player.region:
-            user.s.enter(3600, 2, build_military_academy, (user,))
-        result = ajax(
-            user, "/slide/academy_do/", text="Error building military academy"
-        )
-        return result
-    except Exception as e:
-        return error(user, e, "Error building military academy")
+    player = get_player_info(user)
+    if player.region.id != player.residency.id:
+        user.s.enter(3600, 2, build_military_academy, (user,))
+    result = ajax(user, "/slide/academy_do/", text="Error building military academy")
+    return result
 
 
-def work_state_department(user, id=None, dept="gold"):
+def work_state_department(user, id_=None, dept="gold"):
     try:
         wait_until_internet_is_back(user)
-        if not id:
+        id = id_
+        if not id_:
             get_player_info(user)
             region = get_region_info(user, user.player.region.id)
-            # residency = get_region_info(user, user.player.residency.id)
-            # if not region or not residency or region.state.id != residency.state.id:
-            #     user.s.enter(3600, 1, work_state_department, (user, id, dept))
-            #     return False
-            if not region:
-                raise Exception("No state id")
             id = region.state.id
 
-        state = get_state(id)
         dept_ids = {
             "buildings": 1,
             "gold": 2,
@@ -62,7 +51,7 @@ def work_state_department(user, id=None, dept="gold"):
             "spacestations": 10,
             "battleships": 11,
         }
-        what_dict = {"state": state.id}
+        what_dict = {"state": id}
         for key, value in dept_ids.items():
             if key == dept:
                 what_dict[f"w{value}"] = 10
@@ -78,11 +67,11 @@ def work_state_department(user, id=None, dept="gold"):
         });"""
         delay_before_actions(user)
         user.driver.execute_script(js_ajax, what_json)
-        log(user, f"Worked for state department: {dept}")
+        log(user, f"Worked for state department: {dept} in state {id}")
         reload_mainpage(user)
         return True
     except Exception as e:
-        user.s.enter(3600, 2, work_state_department, (user, id, dept))
+        user.s.enter(1800, 2, work_state_department, (user, id_, dept))
         return error(user, e, "Error working for state department")
 
 
@@ -134,54 +123,59 @@ def parse_regions_table(user, id=None, only_df=False):
         table = user.driver.find_element(By.CSS_SELECTOR, "table")
         html_str = table.get_attribute("outerHTML")
         df = pd.read_html(StringIO(html_str))[0]
-        df = df.replace("\xa0", " ")
-        df.columns = df.columns.str.replace("\xa0", " ")
+
         if not id:  # Exclude Mars
             df = df.iloc[:-1]
-        if only_df:
+
+        df = df.replace("\xa0", " ")
+        df.columns = df.columns.str.replace("\xa0", " ").str.lower()
+        df.index = df["region"].map(lambda x: int(x.split()[-1]))
+        df.index.name = None
+        df["region"] = df["region"].map(lambda x: x.split(",")[0])
+
+        if not state or only_df:
             return df
-        regions_ = {}
-        for row in df.iterrows():
-            row = row[1].to_dict()
-            id = int(row["Region"].split()[-1])
-            region = get_region(id)
-            regions_[id] = region
-            if state:
-                region.set_state(state)
-            # region.set_name(row["Region"].split(",")[0])
-            if row["AUTO"] != "+":
-                region.set_autonomy(None)
-            region.set_num_of_citizens(int(row["POP"]))
-            region.set_num_of_residents(int(row["RES"]))
-            region.set_buildings("macademy", int(row["DAM ATA"]) / 45)
-            region.set_buildings("hospital", int(row["HO"]))
-            region.set_buildings("military", int(row["MB"]))
-            region.set_buildings("school", int(row["SC"]))
-            region.set_buildings("missile", int(row["MS"]))
-            region.set_buildings("sea", int(row["PO"]))
-            region.set_buildings("powerplant", int(row["PP"]))
-            region.set_buildings("spaceport", int(row["SP"]))
-            region.set_buildings("airport", int(row["AE/RS"]))
-            region.set_buildings("homes", int(row["HF"]))
-            region.set_resources("gold", float(row["GOL"]))
-            region.set_resources("oil", float(row["OIL"]))
-            region.set_resources("ore", float(row["ORE"]))
-            region.set_resources("uranium", float(row["URA"]))
-            region.set_resources("diamonds", float(row["DIA"]))
-            region.set_deep_resources("gold", float(row["GOL D"]))
-            region.set_deep_resources("oil", float(row["OIL D"]))
-            region.set_deep_resources("ore", float(row["ORE D"]))
-            region.set_deep_resources("uranium", float(row["URA D"]))
-            region.set_deep_resources("diamonds", float(row["DIA D"]))
-            region.set_indexes("school", int(row["IND EDU"]))
-            region.set_indexes("military", int(row["IND MIL"]))
-            region.set_indexes("hospital", int(row["IND HEA"]))
-            region.set_indexes("homes", int(row["IND DEV"]))
-            region.set_tax(int(row["%"]))
-            region.set_market_tax(int(row["% SELL"]))
+
+        regions = {}
+        for id, row in df.iterrows():
+            row_dict = row.to_dict()
+            reg = get_region(id)
+            regions[id] = reg
+            reg.set_state(state)
+            # region.set_name(row_dict["name"])
+            if row_dict["auto"] != "+":
+                reg.set_autonomy(None)
+            reg.set_num_of_citizens(int(row_dict["pop"]))
+            reg.set_num_of_residents(int(row_dict["res"]))
+            reg.set_buildings("macademy", int(row_dict["dam ata"]) / 45)
+            reg.set_buildings("hospital", int(row_dict["ho"]))
+            reg.set_buildings("military", int(row_dict["mb"]))
+            reg.set_buildings("school", int(row_dict["sc"]))
+            reg.set_buildings("missile", int(row_dict["ms"]))
+            reg.set_buildings("sea", int(row_dict["po"]))
+            reg.set_buildings("powerplant", int(row_dict["pp"]))
+            reg.set_buildings("spaceport", int(row_dict["sp"]))
+            reg.set_buildings("airport", int(row_dict["ae/rs"]))
+            reg.set_buildings("homes", int(row_dict["hf"]))
+            reg.set_resources("gold", float(row_dict["gol"]))
+            reg.set_resources("oil", float(row_dict["oil"]))
+            reg.set_resources("ore", float(row_dict["ore"]))
+            reg.set_resources("uranium", float(row_dict["ura"]))
+            reg.set_resources("diamonds", float(row_dict["dia"]))
+            reg.set_deep_resources("gold", float(row_dict["gol d"]))
+            reg.set_deep_resources("oil", float(row_dict["oil d"]))
+            reg.set_deep_resources("ore", float(row_dict["ore d"]))
+            reg.set_deep_resources("uranium", float(row_dict["ura d"]))
+            reg.set_deep_resources("diamonds", float(row_dict["dia d"]))
+            reg.set_indexes("school", int(row_dict["ind edu"]))
+            reg.set_indexes("military", int(row_dict["ind mil"]))
+            reg.set_indexes("hospital", int(row_dict["ind hea"]))
+            reg.set_indexes("homes", int(row_dict["ind dev"]))
+            reg.set_tax(int(row_dict["%"]))
+            reg.set_market_tax(int(row_dict["% sell"]))
             # TODO: set resource taxes
         if state:
-            state.set_regions(regions_.values())
-        return regions_
+            state.set_regions(regions.values())
+        return regions
     except Exception as e:
-        return error(user, e, f"Error parsing regions table {id}")
+        return error(user, e, f"Error parsing regions table id:{id}")
