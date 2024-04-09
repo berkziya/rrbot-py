@@ -19,8 +19,8 @@ from models.region import get_region_info
 
 
 def build_military_academy(user):
-    player = get_player_info(user)
-    if player.region.id != player.residency.id:
+    get_player_info(user)
+    if user.player.region.id != user.player.residency.id:
         user.s.enter(3600, 2, build_military_academy, (user,))
     result = ajax(user, "/slide/academy_do/", text="Error building military academy")
     return result
