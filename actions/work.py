@@ -28,7 +28,8 @@ RESOURCES = {
 def get_factories(user, id=None, resource="gold"):
     try:
         if not id:
-            id = get_player_info(user).region.id
+            get_player_info(user)
+            id = user.player.region.id
         region = get_region(id)
 
         if not get_page(user, f"factory/search/{id}/0/{RESOURCES[resource]}"):
@@ -102,7 +103,8 @@ def cancel_auto_work(user):
 def get_best_factory(user, id=None, resource="gold", include_fix_wage=True):
     try:
         if not id:
-            id = get_player_info(user).region.id
+            get_player_info(user)
+            id = user.player.region.id
 
         factories = get_factories(user, id=id, resource=resource)
         if not factories:

@@ -36,9 +36,8 @@ def set_mainpage_data(user, energy=False):
 
 def get_lead_econ_foreign(user, lead=False, econ=False, foreign=False):
     try:
-        region = get_player_info(user).region
-        if not region:
-            raise
+        get_player_info(user)
+        region = user.player.region
 
         result = []
 
@@ -46,7 +45,7 @@ def get_lead_econ_foreign(user, lead=False, econ=False, foreign=False):
         if lead and user.player.state_leader:
             lead_state = get_state_info(user, user.player.state_leader.id)
             if lead_state:
-                in_lead = lead_state and region.id in [x.id for x in lead_state.regions]
+                in_lead = region.id in [x.id for x in lead_state.regions]
 
         econ_state, in_econ = None, False
         if econ and user.player.economics:
