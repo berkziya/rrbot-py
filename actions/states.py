@@ -187,10 +187,10 @@ def get_indexes(user, save=True):
         with sqlite3.connect("indexhist.db") as conn:
             for index in indexes:
                 conn.execute(
-                    f"CREATE TABLE IF NOT EXISTS {index} (timestamp INTEGER PRIMARY KEY, {', '.join([f'c{x}' for x in range(2, 11)])})"
+                    f"CREATE TABLE IF NOT EXISTS {index} (timestamp REAL PRIMARY KEY, {', '.join([f'c{x}' for x in range(2, 11)])})"
                 )
                 conn.execute(
-                    f"INSERT INTO {index} VALUES ({int(time.time())}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
+                    f"INSERT INTO {index} VALUES ({time.time()}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
                 )
     return indexes
 

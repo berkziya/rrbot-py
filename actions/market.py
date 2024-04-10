@@ -73,9 +73,9 @@ def get_market_price(user, resource, save=False):
 
         with sqlite3.connect("markethist.db") as conn:
             conn.execute(
-                f"CREATE TABLE IF NOT EXISTS {resource} (timestamp INTEGER PRIMARY KEY, price REAL)"
+                f"CREATE TABLE IF NOT EXISTS {resource} (timestamp REAL PRIMARY KEY, price REAL)"
             )
-            conn.execute(f"INSERT INTO {resource} VALUES ({int(time.time())}, {price})")
+            conn.execute(f"INSERT INTO {resource} VALUES ({time.time()}, {price})")
 
     try:
         if not get_page(user, f"storage/listed/{market_ids[resource]}"):
