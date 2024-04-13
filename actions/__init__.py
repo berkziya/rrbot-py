@@ -102,7 +102,7 @@ def build_indexes(user, buffer=20):
     state = lead_state if in_lead else econ_state if in_econ else None
 
     if econ_state and not in_econ:  # Can't do econ duty
-        alert("Not in the state of their economics, can't build indexes there")
+        alert(user, "Not in the state of their economics, can't build indexes there")
 
     if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
         return fail("You are the leader but not the dictator/monarch")
