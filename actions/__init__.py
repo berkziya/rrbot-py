@@ -1,5 +1,6 @@
 import time
 
+from actions.state.economics import get_indexes
 from actions.work import RESOURCES, assign_factory, get_best_factory
 from butler import ajax, error
 from misc.logger import alert, log
@@ -7,13 +8,13 @@ from models.factory import get_factory_info
 
 
 def hourly_state_gold_refill(user):
-    from actions.states import explore_resource
+    from actions.state.economics import explore_resource
     from actions.status import get_lead_econ_foreign
 
     def fail(text=""):
         if text:
             alert(user, text)
-        user.s.enter(600, 2, hourly_state_gold_refill, (user,))
+        user.s.enter(1800, 2, hourly_state_gold_refill, (user,))
         return False
 
     (lead_state, in_lead), (econ_state, in_econ) = get_lead_econ_foreign(
@@ -23,8 +24,8 @@ def hourly_state_gold_refill(user):
     if econ_state and not in_econ:
         alert("Not in the state of their economics, can't refill gold there")
 
-    # if lead[0] and not lead[1]:
-    #     alert("Not in the state of their leadership, can't refill gold")
+    if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
+        return fail("You are the leader but not the dictator/monarch")
 
     if not (in_econ or in_lead):
         return fail()
@@ -85,7 +86,7 @@ def build_indexes(user, buffer=20):
     import os
 
     from actions.regions import parse_regions_table
-    from actions.states import calculate_building_cost, get_indexes
+    from actions.state import calculate_building_cost
     from actions.status import get_lead_econ_foreign
     from misc.utils import num_to_slang, sum_costs
 
@@ -102,6 +103,9 @@ def build_indexes(user, buffer=20):
 
     if econ_state and not in_econ:  # Can't do econ duty
         alert("Not in the state of their economics, can't build indexes there")
+
+    if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
+        return fail("You are the leader but not the dictator/monarch")
 
     if not state:
         return fail()
@@ -158,7 +162,7 @@ def build_indexes(user, buffer=20):
         for building, value in diff.items():
             if not value:
                 continue
-            from actions.states import build_building
+            from actions.state import build_building
 
             if build_building(user, id, building, value):
                 log(user, f"Built {value} {building} in region {id}")
