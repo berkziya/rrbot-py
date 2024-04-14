@@ -22,7 +22,7 @@ def hourly_state_gold_refill(user):
     )
 
     if econ_state and not in_econ:
-        alert("Not in the state of their economics, can't refill gold there")
+        alert(user, "Not in the state of their economics, can't refill gold there")
 
     if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
         return fail("You are the leader but not the dictator/monarch")
@@ -136,7 +136,7 @@ def build_indexes(user, buffer=20):
         for building in diff:
             current = region.buildings.get(building, float("inf"))
             target = indexes[building].get(int(config[id][building]), 0) + buffer
-            if current < target:
+            if current < target - buffer / 2:
                 diff[building] = target - current
                 costs = sum_costs(
                     costs, calculate_building_cost(building, current, target)
