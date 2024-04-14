@@ -292,7 +292,7 @@ def get_region_info(user, id, force=False):
                 )
             elif "Tax rate:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_tax(
-                    int(
+                    float(
                         div.find_element(
                             By.CSS_SELECTOR, "div.short_details"
                         ).text.split()[0]
@@ -300,7 +300,7 @@ def get_region_info(user, id, force=False):
                 )
             elif "Market taxes:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 region.set_market_tax(
-                    int(
+                    float(
                         div.find_element(
                             By.CSS_SELECTOR, "div.short_details"
                         ).text.split()[0]
