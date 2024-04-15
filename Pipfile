@@ -5,12 +5,9 @@ name = "pypi"
 
 [packages]
 selenium = "*"
-pytz = "*"
-schedule = "*"
 requests = "*"
 pandas = "*"
 lxml = "*"
-flask = "*"
 
 [dev-packages]
 

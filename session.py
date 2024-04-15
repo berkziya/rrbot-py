@@ -1,18 +1,5 @@
-import pytz
-import schedule
-
 import events
-from actions import (
-    auto_work_factory,
-    build_indexes,
-    energy_drink_refill,
-    hourly_state_gold_refill,
-    upgrade_perk,
-)
-from actions.regions import build_military_academy, work_state_department
 from actions.status import set_mainpage_data
-from actions.wars import attack
-from butler import reset_browser
 from misc.logger import alert, log
 from misc.utils import num_to_slang
 from models.autonomy import get_autonomy_info
@@ -27,65 +14,6 @@ def session(user):
     # if user.player.economics:
     #     from actions.states import budget_transfer
     #     budget_transfer(user, 1728, "oil", "80kkk")
-
-    eventsToBeDone = [
-        {
-            "desc": "build military academy",
-            "event": build_military_academy,
-            "daily": True,
-        },
-        {
-            "desc": "factory work",
-            "event": auto_work_factory,
-            "args": (user.factory,) if user.factory else (None,),
-            "daily": False,
-            "mute": True,
-        },
-        {
-            "desc": "upgrade perks",
-            "event": upgrade_perk,
-            "daily": False,
-            "mute": False,
-        },
-        {
-            "desc": "economics work",
-            "event": hourly_state_gold_refill,
-            "daily": True,
-        },
-        {"desc": "attack training", "event": attack, "daily": False, "mute": False},
-        {
-            "desc": "work state department",
-            "event": work_state_department,
-            "args": (
-                (
-                    None,
-                    user.statedept,
-                )
-                if user.statedept
-                else (None,)
-            ),
-            "daily": True,
-        },
-        {
-            "desc": "energy drink refill",
-            "event": energy_drink_refill,
-            "daily": False,
-            "mute": True,
-        },
-        {
-            "desc": "build indexes",
-            "event": build_indexes,
-            "args": (15,),
-            "daily": False,
-            "mute": True,
-        },
-        {
-            "desc": "upcoming_events",
-            "event": events.upcoming_events,
-            "daily": False,
-            "mute": True,
-        },
-    ]
 
     if get_player_info(user):
         get_region_info(user, user.player.region.id)
@@ -152,30 +80,6 @@ def session(user):
         )
 
     user.save_database()
+    events.initiate_all_events(user)
 
-    events.initiate_all_events(user, eventsToBeDone)
-    schedule.every(3).to(5).hours.do(events.initiate_all_events, user, eventsToBeDone)
-    schedule.every().day.at("18:01", pytz.utc.zone).do(
-        events.initiate_all_events, user, eventsToBeDone, daily=True
-    )
-    schedule.every().day.at("17:50", pytz.utc.zone).do(
-        events.initiate_all_events, user, eventsToBeDone, daily=True
-    )
-    schedule.every(4).to(6).hours.do(reset_browser, user)
-    schedule.every(1).to(2).hours.do(user.save_database)
-
-    from actions.market import get_market_price
-    from actions.state.economics import get_indexes
-
-    schedule.every(9).to(14).minutes.do(get_market_price, user, "oil", save=True)
-    schedule.every(9).to(14).minutes.do(get_market_price, user, "ore", save=True)
-    schedule.every(9).to(14).minutes.do(get_market_price, user, "uranium", save=True)
-    schedule.every(9).to(14).minutes.do(get_market_price, user, "diamonds", save=True)
-    schedule.every(19).to(29).minutes.do(get_indexes, user, save=True)
-
-    def activate_scheduler():
-        schedule.run_pending()
-        user.s.enter(60, 3, activate_scheduler, ())
-
-    activate_scheduler()
     user.s.run(blocking=True)
