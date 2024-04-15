@@ -81,7 +81,7 @@ def upgrade_perk(user):
         return error(user, e, "Error upgrading perk")
 
 
-def build_indexes(user, buffer=20):
+def build_indexes(user, buffer=15):
     import csv
     import os
 
