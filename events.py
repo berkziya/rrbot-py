@@ -21,8 +21,8 @@ def upcoming_events(user):
 
 
 def utc1800():
-    AM12 = 86400
-    PM18 = 64800
+    AM12 = 86_400
+    PM18 = 64_800
     now = time.time()
     seconds_since_midnight = int(now % AM12)
     if seconds_since_midnight >= PM18:
@@ -94,6 +94,8 @@ def initiate_all_events(user, events_=None, daily=False):
         events_ = EVENTSLIST
 
     wait_until_internet_is_back(user)
+
+    user.load_database()  # load database first
     events = [x for x in events_ if (not daily) or (daily and x["daily"])]
     [
         user.s.cancel(x)
@@ -107,6 +109,8 @@ def initiate_all_events(user, events_=None, daily=False):
             event["event"],
             (user, *event["args"]) if "args" in event else (user,),
         )
+    user.s.enter(1, 3, user.save_database)  # save database last
+
     # do whichever comes first
     user.s.enterabs(utc1800() - 600, 3, initiate_all_events, (user, events_, True))
     user.s.enterabs(utc1800() + 60, 3, initiate_all_events, (user, events_, True))
