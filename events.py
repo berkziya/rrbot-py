@@ -29,6 +29,6 @@ def upcoming_events(user):
     for event in upcoming:
         log(
             user,
-            f"{time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(event.time))} - {event.action.__name__}",
+            f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(event.time))} - {event.action.__name__}",
             False,
         )
