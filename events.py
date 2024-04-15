@@ -88,12 +88,6 @@ def initiate_all_events(user, events_=None, daily=False):
             "daily": False,
             "mute": True,
         },
-        {
-            "desc": "upcoming_events",
-            "event": upcoming_events,
-            "daily": False,
-            "mute": True,
-        },
     ]
 
     if not events_:
