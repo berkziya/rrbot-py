@@ -21,14 +21,15 @@ def upcoming_events(user):
 
 
 def utc1800():
-    AM12 = 86_400
+    DAY = 86_400
     PM18 = 64_800
     now = time.time()
-    seconds_since_midnight = int(now % AM12)
+    seconds_since_midnight = int(now % DAY)
+    today = now - seconds_since_midnight
     if seconds_since_midnight >= PM18:
-        return int(now - seconds_since_midnight + AM12 + PM18)
+        return int(today + DAY + PM18)
     else:
-        return int(now - seconds_since_midnight + PM18)
+        return int(today + PM18)
 
 
 def initiate_all_events(user, events_=None, daily=False):
