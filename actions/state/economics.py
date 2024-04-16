@@ -33,7 +33,7 @@ def get_indexes(user, save=True):
 
     names = {"ho": "hospital", "mb": "military", "sc": "school", "hf": "homes"}
     indexes = {}
-    percentiles = [x / 10 + 0.01 for x in range(1, 10)]
+    percentiles = [x / 10 + 0.001 for x in range(1, 10)]
 
     df = df[names.keys()]
     df = df.quantile(percentiles, interpolation="higher")

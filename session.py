@@ -10,6 +10,8 @@ def greet(user):
     from models.region import get_region_info
     from models.state import get_state_info
 
+    user.load_database()  # Load the database
+
     if get_player_info(user):
         get_region_info(user, user.player.region.id)
         get_state_info(user, user.player.region.state.id)
