@@ -26,6 +26,10 @@ class Factory:
     def set_type(self, value):
         if value == "diamond":
             value = "diamonds"
+        if value == "liquefaction":
+            value = "lox"
+        if "helium" in value:
+            value = "helium3"
         self.type = value
 
     def set_region(self, value):
