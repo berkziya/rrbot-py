@@ -71,10 +71,16 @@ def get_market_price(user, resource, save=False):
         import sqlite3
         import time
 
+        timestamp = time.time()
         with sqlite3.connect("markethist.db") as conn:
+            cursor = conn.cursor()
             conn.execute(
                 f"CREATE TABLE IF NOT EXISTS {resource} (timestamp REAL PRIMARY KEY, price REAL)"
             )
+            cursor.execute(f"SELECT * FROM {resource} WHERE timestamp={timestamp}")
+            data = cursor.fetchone()
+            if data:
+                return
             conn.execute(f"INSERT INTO {resource} VALUES ({time.time()}, {price})")
 
     try:

@@ -44,12 +44,18 @@ def get_indexes(user, save=True):
     if save:
         import sqlite3
 
+        timestamp = time.time()
         with sqlite3.connect("indexhist.db") as conn:
+            cursor = conn.cursor()
             for index in indexes:
                 conn.execute(
                     f"CREATE TABLE IF NOT EXISTS {index} (timestamp REAL PRIMARY KEY, {', '.join([f'c{x}' for x in range(2, 11)])})"
                 )
+                cursor.execute(f"SELECT * FROM {index} WHERE timestamp={timestamp}")
+                data = cursor.fetchone()
+                if data:
+                    continue
                 conn.execute(
-                    f"INSERT INTO {index} VALUES ({time.time()}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
+                    f"INSERT INTO {index} VALUES ({timestamp}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
                 )
     return indexes
