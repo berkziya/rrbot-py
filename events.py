@@ -32,7 +32,7 @@ def utc1800():
         return int(today + PM18)
 
 
-def initiate_all_events(user, events_=None, daily=False):
+def refresh_schedules(user, events_=None, daily_only=False):
     EVENTSLIST = [
         {
             "desc": "build military academy",
@@ -97,11 +97,11 @@ def initiate_all_events(user, events_=None, daily=False):
     wait_until_internet_is_back(user)
 
     user.load_database()  # load database first
-    events = [x for x in events_ if (not daily) or (daily and x["daily"])]
+    events = [x for x in events_ if (not daily_only) or (daily_only and x["daily"])]
     [
         user.s.cancel(x)
         for x in user.s.queue
-        if x[3] in [event["event"] for event in events] or x[3] == initiate_all_events
+        if x[3] in [event["event"] for event in events] or x[3] == refresh_schedules
     ]
     for event in events:
         user.s.enter(
@@ -113,9 +113,9 @@ def initiate_all_events(user, events_=None, daily=False):
     user.s.enter(1, 3, user.save_database)  # save database last
 
     # do whichever comes first
-    user.s.enterabs(utc1800() - 600, 3, initiate_all_events, (user, events_, True))
-    user.s.enterabs(utc1800() + 60, 3, initiate_all_events, (user, events_, True))
-    user.s.enter(10800, 3, initiate_all_events, (user, events_, False))
+    user.s.enterabs(utc1800() - 600, 3, refresh_schedules, (user, events_, True))
+    user.s.enterabs(utc1800() + 60, 3, refresh_schedules, (user, events_, True))
+    user.s.enter(10800, 3, refresh_schedules, (user, events_, False))
 
-    if not daily:
+    if not daily_only:
         user.s.enter(1, 3, upcoming_events, (user,))

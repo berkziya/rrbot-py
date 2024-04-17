@@ -1,4 +1,4 @@
-from events import initiate_all_events
+from events import refresh_schedules
 
 
 def greet(user):
@@ -9,8 +9,6 @@ def greet(user):
     from models.player import get_player_info
     from models.region import get_region_info
     from models.state import get_state_info
-
-    user.load_database()  # Load the database
 
     if get_player_info(user):
         get_region_info(user, user.player.region.id)
@@ -72,6 +70,9 @@ def greet(user):
 
 
 def session(user):
+    user.load_database()
+
     greet(user)
-    initiate_all_events(user)
+
+    refresh_schedules(user)
     user.s.run(blocking=True)
