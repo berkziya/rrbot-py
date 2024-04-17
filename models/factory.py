@@ -38,6 +38,12 @@ class Factory:
         self.level = value
 
     def set_wage(self, value):
+        if "%" in value:
+            self.fixed_wage = False
+            value = dotless(value) / 100
+        else:
+            self.fixed_wage = True
+            value = dotless(value)
         self.wage = value
 
     def get_wage(self):
@@ -81,7 +87,7 @@ def get_factory_info(user, id, force=False):
     wait_until_internet_is_back(user)
     try:
         factory = get_factory(id)
-        if factory.last_accessed > time.time() - 3600 and not force:
+        if factory.last_accessed > time.time() - 1800 and not force:
             return factory
         if not get_page(user, f"factory/index/{id}"):
             return False
@@ -113,11 +119,6 @@ def get_factory_info(user, id, force=False):
                 )
             elif "Wage:" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 wage = div.find_element(By.CSS_SELECTOR, "div.tc > h2").text
-                if "%" in wage:
-                    wage = float(wage.split()[0]) / 100
-                else:
-                    factory.set_fixed_wage(True)
-                    wage = dotless(wage.split()[0])
                 factory.set_wage(wage)
             elif "Potential wage" in div.find_element(By.CSS_SELECTOR, "h2").text:
                 factory.set_potential_wage(

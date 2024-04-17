@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 
 from butler import ajax, error, get_page, return_to_mainwindow
 from misc.logger import alert
-from misc.utils import dotless
 from models import get_factory, get_region
 from models.factory import get_factory_info
 from models.player import get_player_info
@@ -49,12 +48,7 @@ def get_factories(user, id=None, resource="gold"):
                 int(tr.find_element(By.CSS_SELECTOR, "td:nth-child(4)").text)
             )
             wage = tr.find_element(By.CSS_SELECTOR, "td:nth-child(6)").text
-            if "%" in wage:
-                wage = float(wage.replace("%", "")) / 100
-            else:
-                factory.set_fixed_wage(True)
-                wage = dotless(wage.split()[0])
-            factory.set_wage(float(wage))
+            factory.set_wage(wage)
             try:  # Skip fixed wage with not enough budget
                 tr.find_element(By.CSS_SELECTOR, "td[title]")
                 continue
