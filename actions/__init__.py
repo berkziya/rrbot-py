@@ -81,7 +81,7 @@ def upgrade_perk(user):
         return error(user, e, "Error upgrading perk")
 
 
-def build_indexes(user, buffer=15):
+def build_indexes(user, buffer=15, show_next=False):
     import csv
     import os
 
@@ -101,72 +101,118 @@ def build_indexes(user, buffer=15):
     )
     state = lead_state if in_lead else econ_state if in_econ else None
 
-    if econ_state and not in_econ:  # Can't do econ duty
-        alert(user, "Not in the state of their economics, can't build indexes there")
+    if not show_next:
+        if econ_state and not in_econ:  # Can't do econ duty
+            alert(
+                user, "Not in the state of their economics, can't build indexes there"
+            )
 
-    if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
-        return fail("You are the leader but not the dictator/monarch")
+        if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
+            return fail("You are the leader but not the dictator/monarch")
 
-    if not state:
-        return fail()
+        if not state:
+            return fail()
 
-    if not os.path.exists(f"{state.id}.csv"):
-        return fail("No config file found for the state, can't build indexes")
+        if not os.path.exists(f"{state.id}.csv"):
+            return fail("No config file found for the state, can't build indexes")
 
-    with open(f"{state.id}.csv", "r") as f:
-        config = csv.DictReader(
-            f, fieldnames=["id", "hospital", "military", "school", "homes"]
-        )
-        config = {int(x.pop("id")): x for x in config}
+        with open(f"{state.id}.csv", "r") as f:
+            config = csv.DictReader(
+                f, fieldnames=["id", "hospital", "military", "school", "homes"]
+            )
+            config = {int(x.pop("id")): x for x in config}
+
     regions = parse_regions_table(user, state.id)
     indexes = get_indexes(user)
 
-    if not config or not indexes or not regions:
+    if (not show_next and not config) or not indexes or not regions:
         return fail(
             f"Failed to get config: {bool(config)}, indexes: {bool(indexes)}, regions: {bool(regions)}"
         )
 
-    what_to_build = {}
-    costs = {}
+    def get_what_to_build(regions, indexes, buffer, config=None):
+        what_to_build = {}
+        if not config:  # then calculate for the next indexes
+            config = {}
+            for id, region in regions.items():
+                config[id] = {
+                    "hospital": max(region.indexes.get("hospital", 0) + 1, 6),
+                    "military": region.indexes.get("military", 0) + 1,
+                    "school": region.indexes.get("school", 0) + 1,
+                    "homes": 0,
+                }
+        for id, region in regions.items():
+            if id not in config:
+                continue
+            diff = {"hospital": 0, "military": 0, "school": 0, "homes": 0}
+            for building in diff:
+                current = region.buildings.get(building, float("inf"))
+                target_index = int(config[id][building])
+                if building == "hospital" and target_index < 6:
+                    target_index = 0
+                target = indexes[building].get(target_index, 0) + buffer
+                if current < target - buffer / 2:
+                    diff[building] = target - current
+            if any(diff.values()):
+                what_to_build[id] = diff
+        return what_to_build
 
-    for id, region in regions.items():
-        if id not in config:
-            continue
-        diff = {"hospital": 0, "military": 0, "school": 0, "homes": 0}
-        for building in diff:
-            current = region.buildings.get(building, float("inf"))
-            target = indexes[building].get(int(config[id][building]), 0) + buffer
-            if current < target - buffer / 2:
-                diff[building] = target - current
+    def get_costs(regions, what_to_build):
+        costs = {}
+        for id, region in regions.items():
+            for building, value in what_to_build.get(id, {}).items():
+                if not value:  # but how?
+                    continue
+                current = region.buildings[building]
                 costs = sum_costs(
-                    costs, calculate_building_cost(building, current, target)
+                    costs, calculate_building_cost(building, current, current + value)
                 )
-        if any(diff.values()):
-            what_to_build[id] = diff
+        return costs
+
+    if show_next:
+        what_to_build_next = get_what_to_build(regions, indexes, buffer)
+        for id, diff in what_to_build_next.items():
+            print(f"Region {id}")
+            for building, value in diff.items():
+                if not value:
+                    continue
+                current = regions[id].buildings[building]
+                oil_cost = calculate_building_cost(
+                    building, current, current + value
+                ).get("oil", 0)
+                print(
+                    f"    {building:<10} (+{value:<4}), oil_for_reference: {num_to_slang(oil_cost, True):>10}"
+                )
+        return True
+
+    what_to_build = get_what_to_build(regions, indexes, buffer, config)
+    costs = get_costs(regions, what_to_build)
 
     if not what_to_build:
         return fail()
 
     not_enough = False
-    for building, value in costs.items():
-        if not state.budget.get(building, 0) >= value:
+    for resource, value in costs.items():
+        if not state.budget.get(resource, 0) >= value:
             alert(
                 user,
-                f"Not enough {building} in the state budget, needed {num_to_slang(value)}",
+                f"Not enough {resource} in the state budget, needed {num_to_slang(value)}",
             )
             not_enough = True
     if not_enough:
         return fail()
 
+    from actions.state import build_building
+    from models import get_region
+
     for id, diff in what_to_build.items():
         for building, value in diff.items():
             if not value:
                 continue
-            from actions.state import build_building
-
             if build_building(user, id, building, value):
                 log(user, f"Built {value} {building} in region {id}")
                 try:
+                    region = get_region(id)
                     spent = calculate_building_cost(
                         building,
                         region.buildings[building],

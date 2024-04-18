@@ -8,8 +8,10 @@ def dotless(number):
     return int("".join(numbers)) if numbers else 0
 
 
-def num_to_slang(number):
+def num_to_slang(number, alternative=False):
     units = ["", "k", "kk", "k" * 3, "T", "P"]
+    if alternative:
+        units = ["", "K", "M", "G", "T", "P"]
     for unit in units:
         if abs(number) < 1000:
             return f"{number:.1f}{unit}"

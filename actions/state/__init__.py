@@ -1,5 +1,4 @@
 import time
-from functools import lru_cache
 
 from selenium.webdriver.common.by import By
 
@@ -109,18 +108,12 @@ def set_minister(user, id, ministry="economic"):
 
 
 def calculate_building_cost(building, fromme, tomme):
-    if tomme <= fromme:
-        return {}
+    from misc.utils import sum_costs
+
     if building in ["military", "school"]:
         building = "hospital"
     if building in ["sea", "airport"]:
         building = "missile"
-    return calculate_building_cost_inner(building, fromme, tomme)
-
-
-@lru_cache(maxsize=None)
-def calculate_building_cost_inner(building, fromme, tomme):
-    from misc.utils import sum_costs
 
     building_costs = {
         "hospital": {
@@ -159,14 +152,17 @@ def calculate_building_cost_inner(building, fromme, tomme):
             "ore": (9, 1.5),
         },
     }
-    costs = {
-        key: round(
-            (tomme * building_costs[building][key][0])
-            ** building_costs[building][key][1]
-        )
-        for key in building_costs[building]
-    }
-    return sum_costs(costs, calculate_building_cost(building, fromme, tomme - 1))
+    total_costs = {}
+    for i in range(fromme, tomme):
+        costs = {
+            key: round(
+                (i * building_costs[building][key][0])
+                ** building_costs[building][key][1]
+            )
+            for key in building_costs[building]
+        }
+        total_costs = sum_costs(total_costs, costs)
+    return total_costs
 
 
 def get_indexes_old(user):
