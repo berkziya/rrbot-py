@@ -181,7 +181,7 @@ def build_indexes(user, buffer=15, show_next=False):
                     building, current, current + value
                 ).get("oil", 0)
                 print(
-                    f"    {building:<10} (+{value:<4}), oil_for_reference: {num_to_slang(oil_cost, True):>10}"
+                    f"    {building:<8} +{value:<4}, cost: {num_to_slang(oil_cost*2546.2962963):>10}"
                 )
         return True
 
@@ -210,7 +210,7 @@ def build_indexes(user, buffer=15, show_next=False):
             if not value:
                 continue
             if build_building(user, id, building, value):
-                log(user, f"Built {value} {building} in region {id}")
+                log(user, f"Built {value} {building:<8} in region {id}")
                 try:
                     region = get_region(id)
                     spent = calculate_building_cost(
