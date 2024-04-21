@@ -139,7 +139,7 @@ def parse_regions_table(user, id=None, only_df=False):
             reg = get_region(id)
             regions[id] = reg
             reg.set_state(state)
-            # region.set_name(row_dict["name"])
+            reg.set_name(row_dict["region"])
             if row_dict["auto"] != "+":
                 reg.set_autonomy(None)
             reg.set_num_of_citizens(int(row_dict["pop"]))

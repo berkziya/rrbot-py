@@ -12,6 +12,7 @@ from models import get_autonomy, get_party, get_player, get_region, get_state
 class Player:
     def __init__(self, id):
         self.id = id
+        self.name = self.id
         self.last_accessed = 0
         self.level = 0
         self.money = {"money": 0, "gold": 0}
@@ -26,6 +27,9 @@ class Player:
         self.economics = None
         self.foreign = None
         self.party = None
+
+    def set_name(self, value):
+        self.name = value
 
     def set_level(self, value):
         self.level = value

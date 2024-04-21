@@ -11,6 +11,7 @@ from models import get_factory, get_player, get_region
 class Factory:
     def __init__(self, id):
         self.id = id
+        self.name = self.id
         self.last_accessed = 0
         self.type = ""
         self.region = None
@@ -19,6 +20,9 @@ class Factory:
         self.wage = 0
         self.fixed_wage = False
         self.potential_wage = 0
+
+    def set_name(self, value):
+        self.name = value
 
     def set_last_accessed(self):
         self.last_accessed = int(time.time())

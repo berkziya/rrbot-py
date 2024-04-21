@@ -11,6 +11,7 @@ from models import get_autonomy, get_player, get_region, get_state
 class Autonomy:
     def __init__(self, id):
         self.id = id
+        self.name = self.id
         self.last_accessed = 0
         self.state = None
         self.governor = None
@@ -23,6 +24,9 @@ class Autonomy:
             "uranium": 0,
             "diamonds": 0,
         }
+
+    def set_name(self, value):
+        self.name = value
 
     def set_last_accessed(self):
         self.last_accessed = int(time.time())
