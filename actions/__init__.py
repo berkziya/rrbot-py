@@ -122,6 +122,9 @@ def build_indexes(user, buffer=15, show_next=False):
             )
             config = {int(x.pop("id")): x for x in config}
 
+    if not state:
+        return fail()
+
     regions = parse_regions_table(user, state.id)
     indexes = get_indexes(user)
 

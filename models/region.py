@@ -238,7 +238,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/1"]'
-                        ).text.split()[0]
+                        ).text
                     ),
                 )
                 autonomy.set_budget(
@@ -246,7 +246,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/2"]'
-                        ).text.split()[0]
+                        ).text
                     ),
                 )
                 autonomy.set_budget(
@@ -254,7 +254,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/3"]'
-                        ).text.split()[0]
+                        ).text
                     ),
                 )
                 autonomy.set_budget(
@@ -262,7 +262,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/4"]'
-                        ).text.split()[0]
+                        ).text
                     ),
                 )
                 autonomy.set_budget(
@@ -270,7 +270,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/11"]'
-                        ).text.split()[0]
+                        ).text
                     ),
                 )
                 autonomy.set_budget(
@@ -278,7 +278,7 @@ def get_region_info(user, id, force=False):
                     dotless(
                         user.driver.find_element(
                             By.CSS_SELECTOR, f'span[action="graph/balance/{id}/15"]'
-                        ).text.split()[0]
+                        ).text
                     ),
                 )
                 autonomy.set_last_accessed()
