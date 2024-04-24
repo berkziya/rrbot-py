@@ -113,8 +113,9 @@ def refresh_schedules(user, events_=None, daily_only=False):
     user.s.enter(1, 3, user.save_database)  # save database last
 
     # do whichever comes first
-    user.s.enterabs(utc1800() - 600, 3, refresh_schedules, (user, events_, True))
-    user.s.enterabs(utc1800() + 60, 3, refresh_schedules, (user, events_, True))
+    if time.time() < utc1800() - 1000:
+        user.s.enterabs(utc1800() - 1000, 3, refresh_schedules, (user, events_, True))
+    user.s.enterabs(utc1800() + 100, 3, refresh_schedules, (user, events_, True))
     user.s.enter(10800, 3, refresh_schedules, (user, events_, False))
 
     if not daily_only:
