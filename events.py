@@ -96,7 +96,7 @@ def refresh_schedules(user, events_=None, daily_only=False):
 
     wait_until_internet_is_back(user)
 
-    user.load_database()  # load database first
+    user.load_database()  # load database for fresh data
     events = [x for x in events_ if (not daily_only) or (daily_only and x["daily"])]
     [
         user.s.cancel(x)
@@ -110,11 +110,11 @@ def refresh_schedules(user, events_=None, daily_only=False):
             event["event"],
             (user, *event["args"]) if "args" in event else (user,),
         )
-    user.s.enter(1, 3, user.save_database)  # save database last
+    user.s.enter(1, 3, user.save_database)  # save database after everything
 
     # do whichever comes first
     if time.time() < utc1800() - 1000:
-        user.s.enterabs(utc1800() - 1000, 3, refresh_schedules, (user, events_, True))
+        user.s.enterabs(utc1800() - 200, 3, refresh_schedules, (user, events_, True))
     user.s.enterabs(utc1800() + 100, 3, refresh_schedules, (user, events_, True))
     user.s.enter(10800, 3, refresh_schedules, (user, events_, False))
 
