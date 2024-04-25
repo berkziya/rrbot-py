@@ -158,7 +158,7 @@ def get_state_info(user, id, force=False):
     wait_until_internet_is_back(user)
     try:
         state = get_state(id)
-        if state.last_accessed > time.time() - 600 and not force:
+        if state.last_accessed > time.time() - 100 and not force:
             return state
         if not get_page(user, f"map/state_details/{id}"):
             return False

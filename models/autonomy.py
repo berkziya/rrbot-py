@@ -73,7 +73,7 @@ def get_autonomy_info(user, id, force=False):
     wait_until_internet_is_back(user)
     try:
         autonomy = get_autonomy(id)
-        if autonomy.last_accessed > time.time() - 600 and not force:
+        if autonomy.last_accessed > time.time() - 100 and not force:
             return autonomy
         if not get_page(user, f"map/autonomy_details/{id}"):
             return False
