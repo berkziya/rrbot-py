@@ -11,6 +11,7 @@ from models import get_player, get_region, get_war
 class War:
     def __init__(self, id):
         self.id = id
+        self.name = self.id
         self.last_accessed = 0
         self.type = None
         self.ending_time = None
@@ -20,6 +21,9 @@ class War:
         self.defenders = {}
         self.attacker_damage = 0
         self.defender_damage = 0
+
+    def set_name(self, value):
+        self.name = value
 
     def set_last_accessed(self):
         self.last_accessed = int(time.time())
@@ -134,6 +138,7 @@ def get_war_info(user, id, force=False):
 
         if type == "training":
             war.set_last_accessed()
+            war.set_name("training war")
             return_to_mainwindow(user)
             return war
 
@@ -150,9 +155,9 @@ def get_war_info(user, id, force=False):
             user.driver.find_element(
                 By.CSS_SELECTOR,
                 (
-                    "#war_w_ata_s > div.imp > span:nth-child(5) > span"
-                    if type not in ["revolution", "coup"]
-                    else "#war_w_ata > div.imp > span.hov2 > span"
+                    "#war_w_ata > div.imp > span.hov2 > span"
+                    if type in ["revolution", "coup"]
+                    else "#war_w_ata_s > div.imp > span:nth-child(5) > span"
                 ),
             ).text
         )

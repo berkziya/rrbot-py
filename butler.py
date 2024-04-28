@@ -20,12 +20,10 @@ def delay_before_actions(user):
 
 def am_i_alive(user):
     wait_until_internet_is_back(user)
-    try:
+    if user.driver:
         id = user.driver.execute_script("return id;")
         if id == user.id:
             return True
-    except:
-        pass
     return False
 
 
@@ -84,12 +82,10 @@ def delay_tasks(scheduler, delay):
 
 
 def is_internet_on(user):
-    try:
-        requests.get("https://google.com", timeout=15)
+    if requests.get("https://google.com", timeout=15):
         return True
-    except:
-        alert(user, "No internet connection")
-        return False
+    alert(user, "No internet connection")
+    return False
 
 
 def wait_until_internet_is_back(user):

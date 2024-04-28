@@ -19,6 +19,9 @@ from models.player import get_player_info
 from models.region import get_region_info
 from models.war import get_war_info
 
+
+FULL_ENERGY = 300
+
 TROOP_ADMG = {
     "laserdrones": 6000,
     "tanks": 10,
@@ -63,11 +66,7 @@ def cancel_autoattack(user):
     return result
 
 
-FULL_ENERGY = 300
-
-
 def calculate_troops(user, id=None, energy=FULL_ENERGY, type="ground", drones=False):
-
     player = None
     if not id:
         player = get_player_info(user)
@@ -105,7 +104,6 @@ def attack(user, id=None, side=0, max=False, drones=False):
                 log(user, f"No war info found for {war.id}")
                 return False
             side = 0
-            war.name = "training war"
             if war.ending_time:
                 user.s.enterabs(war.ending_time + 120, 1, attack, (user,))
         else:
@@ -189,8 +187,11 @@ def get_training_war(user):
         link = user.driver.current_url.split("/")[-1]
         if not link.isdigit():
             raise Exception(f"not digit: {user.driver.current_url}")
+        war = get_war(link)
+        war.set_name("training war")
+        war.type = "training"
         reload_mainpage(user)
-        return get_war(link)
+        return war
     except Exception as e:
         return error(user, e, "Error getting training link")
 
@@ -275,7 +276,7 @@ def calculate_damage(
     space_ratio = troops["space_stations"] * TROOP_ADMG["space_stations"] / alpha
     drone_ratio = troops["laserdrones"] * TROOP_ADMG["laserdrones"] / alpha
 
-    bonus = (
+    troop_bonus = (
         1
         + tanks_bonus * tanks_ratio
         + ships_bonus * ships_ratio
@@ -283,5 +284,7 @@ def calculate_damage(
         + drone_bonus * drone_ratio
     )
 
-    damage = (4 + diffs + buffs) * alpha * bonus
+    user_bonus = 1 #+ player.house["gym"]/100
+
+    damage = (4 + diffs + buffs) * alpha * troop_bonus * user_bonus
     return int(damage)
