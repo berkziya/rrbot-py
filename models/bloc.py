@@ -24,7 +24,7 @@ class Bloc:
             self.states.append(value)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
     def __getstate__(self):
         return {
@@ -35,5 +35,6 @@ class Bloc:
 
     def __setstate__(self, state):
         self.id = state.get("id")
+        self.name = state.get("name", self.id)
         self.last_accessed = state.get("time")
         self.states = [get_state(state) for state in state.get("states", [])]

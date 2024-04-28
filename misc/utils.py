@@ -3,6 +3,10 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 
+def clamp(minimum, value, maximum):
+    return max(minimum, min(value, maximum))
+
+
 def dotless(number):
     numbers = re.findall(r"\d+", number)
     return int("".join(numbers)) if numbers else 0

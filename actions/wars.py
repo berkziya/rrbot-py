@@ -19,6 +19,39 @@ from models.player import get_player_info
 from models.region import get_region_info
 from models.war import get_war_info
 
+TROOP_ADMG = {
+    "laserdrones": 6000,
+    "tanks": 10,
+    "aircrafts": 75,
+    "bombers": 800,
+    "battleships": 2000,
+    "moon_tanks": 2000,
+    "space_stations": 5000,
+    # "missiles": 900,
+}
+
+TROOP_IDS = {
+    "aircrafts": "t1",
+    "tanks": "t2",
+    "missiles": "t14",
+    "bombers": "t16",
+    "battleships": "t18",
+    "moon_tanks": "t22",
+    "space_stations": "t23",
+    "laserdrones": "t27",
+}
+
+TROOPS_FOR_TYPES = {
+    "training": ["laserdrones", "tanks", "aircrafts", "bombers"],
+    "ground": ["laserdrones", "tanks", "aircrafts", "bombers"],
+    "troopers": ["laserdrones", "tanks", "aircrafts", "bombers"],
+    "revolution": ["laserdrones", "tanks", "aircrafts", "bombers"],
+    "coup": ["laserdrones", "aircrafts", "bombers"],
+    "sea": ["battleships"],
+    "moon": ["moon_tanks", "space_stations"],
+    "space": ["space_stations"],
+}
+
 
 def cancel_autoattack(user):
     result = ajax(
@@ -30,11 +63,39 @@ def cancel_autoattack(user):
     return result
 
 
+FULL_ENERGY = 300
+
+
+def calculate_troops(user, id=None, energy=FULL_ENERGY, type="ground", drones=False):
+
+    player = None
+    if not id:
+        player = get_player_info(user)
+        if not player:
+            player = user.player
+    else:
+        player = get_player_info(user, id)
+
+    alpha = player.get_alpha(energy)
+
+    n = {}
+    for troop in TROOPS_FOR_TYPES[type]:
+        count = alpha // TROOP_ADMG[troop]
+        if troop == "laserdrones" and not drones:
+            count = 0
+        alpha -= count * TROOP_ADMG[troop]
+        if troop == "aircrafts":
+            count = count * 2
+        n[troop] = count
+
+    return n
+
+
 def attack(user, id=None, side=0, max=False, drones=False):
     try:
         wait_until_internet_is_back(user)
-        stringified_troops = ""
 
+        war = None
         if not get_player_info(user):
             alert(user, "Error getting player info")
             return False
@@ -44,7 +105,7 @@ def attack(user, id=None, side=0, max=False, drones=False):
                 log(user, f"No war info found for {war.id}")
                 return False
             side = 0
-            warname = "training war"
+            war.name = "training war"
             if war.ending_time:
                 user.s.enterabs(war.ending_time + 120, 1, attack, (user,))
         else:
@@ -52,51 +113,18 @@ def attack(user, id=None, side=0, max=False, drones=False):
                 log(user, "No war info found")
                 return False
             war = get_war(id)
-            warname = war.id
-
-        # "free_ene": "1", hourly
-        # "c": "3f116409cf4c01f2c853d9a17591b061",
-        # "n": "{\"t1\":+\"3698\",\"t2\":+\"15\",\"t16\":+\"0\",\"t27\":+\"0\"}",
-        # "aim": "0", # "aim": f"{region_id},
-        # "edit": "538591"
-
-        alpha = 125_000 + 2500 * (user.player.level - 30)
-
-        troop_admg = {
-            "t27": 6000,  # laserdrones
-            "t2": 10,  # tanks
-            "t1": 150,  # aircraft
-            "t16": 800,  # bombers
-        }
-
-        troop_names = {
-            "t27": "laserdrones",
-            "t1": "aircrafts",
-            "t2": "tanks",
-            "t16": "bombers",
-        }
 
         hourly = 0 if max else 1
 
-        n = {}
+        n = calculate_troops(user, id, FULL_ENERGY, "ground", drones)
 
-        for troop in troop_admg:
-            count = alpha // troop_admg[troop]
-            if troop == "t27" and not drones:
-                count = 0
-            alpha -= count * troop_admg[troop]
-            if troop == "t1":
-                count = count * 2
-            n[troop] = str(count)
-            if count > 0:
-                stringified_troops += f"{count} {troop}, "
-
-        for troop in troop_names:
-            stringified_troops = stringified_troops.replace(
-                troop + ",", troop_names[troop] + ","
-            )
+        stringified_troops = ""
+        for troop in filter(lambda x: n[x] > 0, n):
+            stringified_troops += f"{n[troop]} {troop}, "
 
         n_json = json.dumps(n).replace("'", '"').replace(" ", "")
+        for troop in TROOP_IDS:
+            n_json = n_json.replace(troop, TROOP_IDS[troop])
 
         cancel_autoattack(user)
         time.sleep(2)
@@ -114,7 +142,7 @@ def attack(user, id=None, side=0, max=False, drones=False):
         user.driver.execute_script(js_ajax, hourly, n_json, side, war.id)
         log(
             user,
-            f"{'Defending' if side else 'Attacking'} {warname} {'hourly' if hourly else 'at max'} with {stringified_troops.removesuffix(', ')}",
+            f"{'Defending' if side else 'Attacking'} {war.name} {'hourly' if hourly else 'at max'} with {stringified_troops.removesuffix(', ')}",
         )
         reload_mainpage(user)
         return True
@@ -165,3 +193,95 @@ def get_training_war(user):
         return get_war(link)
     except Exception as e:
         return error(user, e, "Error getting training link")
+
+
+def calculate_damage(
+    user, player_id, side, war_type, region0_id, region1_id=None, max=False
+):
+    from misc.utils import clamp
+
+    def point25(num):
+        return int(num * 4) / 4
+
+    def macademy_buff(region):
+        return clamp(0, point25(region.buildings["macademy"] * 9 / 1600), 2.5)
+
+    player = get_player_info(user, player_id)
+    region0 = get_region_info(user, region0_id)
+    region1 = get_region_info(user, region1_id) if region1_id else None
+    if not player or not region0 or (bool(region1_id) != bool(region1)):
+        return False
+
+    missile_diff = 0
+    airport_diff = 0
+    sea_diff = 0
+    if war_type not in ["training", "revolution", "coup"]:
+        missile_diff = (
+            region0.buildings["missile"] - region1.buildings["missile"]
+        ) / 400
+        airport_diff = (
+            region0.buildings["airport"] - region1.buildings["airport"]
+        ) / 400
+        sea_diff = (region0.buildings["sea"] - region1.buildings["sea"]) / 400
+
+    diffs = 0
+    buffs = 0
+    if side == 0:
+        if war_type == "training":
+            diffs = 0.75
+        elif war_type in ["ground", "troopers"]:
+            diffs += point25(clamp(-0.75, missile_diff, 0))
+            diffs += point25(clamp(0, airport_diff, +0.75))
+        elif war_type == "sea":
+            diffs += point25(clamp(-0.75, sea_diff, 0))
+        if war_type not in ["training", "revolution", "coup"]:
+            buffs += macademy_buff(region0)
+        if war_type in ["revolution", "coup"]:
+            buffs += 0.05
+        else:
+            buffs += region0.indexes["military"] / 20
+    elif side == 1:
+        if war_type == "training":
+            diffs = 0.75
+        elif war_type in ["ground", "troopers"]:
+            diffs += point25(clamp(-0.75, -missile_diff, 0))
+            diffs += point25(clamp(0, -airport_diff, +0.75))
+        elif war_type == "sea":
+            diffs += point25(clamp(-0.75, -sea_diff, 0))
+        if war_type not in ["training"]:
+            buffs += macademy_buff(region1)
+        if war_type in ["training"]:
+            buffs += region0.indexes["military"] / 20
+        else:
+            buffs += region1.indexes["military"] / 20
+
+    buffs += (
+        2 * player.perks["str"]
+        + player.perks["edu"]
+        + player.perks["end"]
+        + player.level
+    ) / 200
+
+    tanks_bonus = 0  # TODO
+    space_bonus = 0  # TODO
+    ships_bonus = 0  # TODO
+    drone_bonus = 0.35
+
+    troops = calculate_troops(user, player_id, FULL_ENERGY, war_type)
+    alpha = sum([troops[troop] * TROOP_ADMG[troop] for troop in troops])
+
+    tanks_ratio = troops["tanks"] * TROOP_ADMG["tanks"] / alpha
+    ships_ratio = troops["battleships"] * TROOP_ADMG["battleships"] / alpha
+    space_ratio = troops["space_stations"] * TROOP_ADMG["space_stations"] / alpha
+    drone_ratio = troops["laserdrones"] * TROOP_ADMG["laserdrones"] / alpha
+
+    bonus = (
+        1
+        + tanks_bonus * tanks_ratio
+        + ships_bonus * ships_ratio
+        + space_bonus * space_ratio
+        + drone_bonus * drone_ratio
+    )
+
+    damage = (4 + diffs + buffs) * alpha * bonus
+    return int(damage)

@@ -14,8 +14,10 @@ class Player:
         self.id = id
         self.name = self.id
         self.last_accessed = 0
+        self.premium = True
         self.level = 0
         self.money = {"money": 0, "gold": 0}
+        self.current_energy = 0
         self.storage = {}
         self.state_leader = None
         self.rating = 0
@@ -31,14 +33,20 @@ class Player:
     def set_name(self, value):
         self.name = value
 
-    def set_level(self, value):
-        self.level = value
-
     def set_last_accessed(self):
         self.last_accessed = int(time.time())
 
+    def set_premium(self, value):
+        self.premium = value
+
+    def set_level(self, value):
+        self.level = value
+
     def set_money(self, element, value):
         self.money[element] = value
+
+    def set_current_energy(self, value):
+        self.current_energy = value
 
     def set_storage(self, element, value):
         self.storage[element] = value
@@ -78,8 +86,14 @@ class Player:
     def set_party(self, value):
         self.party = value
 
+    FULL_ENERGY = 300
+
+    def get_alpha(self, energy=FULL_ENERGY):
+        slot = energy // 6
+        return 50 * (self.level + 20) * slot
+
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
     def __getstate__(self):
         return {
@@ -102,6 +116,7 @@ class Player:
 
     def __setstate__(self, state):
         self.id = state.get("id")
+        self.name = state.get("name", self.id)
         self.last_accessed = state.get("time")
         self.level = state.get("level")
         self.state_leader = get_player(state.get("lead"))

@@ -49,7 +49,7 @@ class War:
         self.defender_damage = value
 
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
     def __getstate__(self):
         return {
@@ -109,10 +109,10 @@ def get_war_info(user, id, force=False):
                 elif "Coup" in type:
                     type = "coup"
                 else:
-                    return False
+                    return error(user, None, f"Error getting war type: {type}")
             except Exception as e:
                 error(user, e, "Error getting war type")
-                type = "war"
+                type = "ground"
         war.set_type(type)
 
         time_str = user.driver.find_element(

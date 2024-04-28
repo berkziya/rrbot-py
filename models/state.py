@@ -121,7 +121,7 @@ class State:
             self.autonomies.append(value)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
     def __getstate__(self):
         return {
@@ -141,6 +141,7 @@ class State:
 
     def __setstate__(self, state):
         self.id = state.get("id")
+        self.name = state.get("name", self.id)
         self.last_accessed = state.get("time")
         self.leader = get_player(state.get("lead"))
         self.economics = get_player(state.get("econ"))
