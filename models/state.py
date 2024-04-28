@@ -101,6 +101,20 @@ class State:
     def set_num_of_regions(self, value):
         self.num_of_regions = value
 
+    @property
+    def power_production(self):
+        production = 0
+        for region in self.regions:
+            production += region.power_production
+        return production
+
+    @property
+    def power_consumption(self):
+        consumption = 0
+        for region in self.regions:
+            consumption += region.power_consumption
+        return consumption
+
     def set_citizens(self, value):
         self.citizens = value
 

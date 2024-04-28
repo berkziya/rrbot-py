@@ -2,6 +2,8 @@ import time
 
 import actions
 import actions.regions
+import actions.state
+import actions.state.economics
 import actions.wars
 from butler import wait_until_internet_is_back
 from misc.logger import log
@@ -89,6 +91,12 @@ def refresh_schedules(user, events_=None, daily_only=False):
             "daily": False,
             "mute": True,
         },
+        {
+            "desc": "build power plants",
+            "event": actions.state.economics.fix_state_power_grid,
+            "daily": False,
+            "mute": True,
+        }
     ]
 
     if not events_:

@@ -78,6 +78,22 @@ class Region:
     def set_buildings(self, element, value):
         self.buildings[element] = value
 
+    @property
+    def power_consumption(self):
+        return (
+            self.buildings["hospital"]
+            + self.buildings["military"]
+            + self.buildings["school"]
+            + self.buildings["missile"]
+            + self.buildings["sea"]
+            + self.buildings["spaceport"]
+            + self.buildings["airport"]
+        ) * 2
+
+    @property
+    def power_production(self):
+        return self.buildings["power"] * 10
+
     def set_rating(self, value):
         self.rating = value
 
@@ -94,11 +110,11 @@ class Region:
         self.num_of_citizens = value
 
     @property
-    def set_initial_attack_damage(self):
+    def initial_attack_damage(self):
         return self.buildings["macademy"] * 450_000
 
     @property
-    def set_initial_defend_damage(self):
+    def initial_defend_damage(self):
         return (
             self.buildings["hospital"]
             + 2 * self.buildings["military"]
@@ -174,8 +190,6 @@ class Region:
         self.rating = state.get("rating")
         self.residents = [get_player(player) for player in state.get("residents", [])]
         self.citizens = [get_player(player) for player in state.get("citizens", [])]
-        self.initial_attack_damage = state.get("attdmg")
-        self.initial_defend_damage = state.get("defdmg")
         self.tax = state.get("tax")
         self.market_tax = state.get("mtax")
         self.sea_access = state.get("sea")

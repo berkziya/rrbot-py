@@ -2,6 +2,7 @@ import time
 
 from actions.state.parliament import accept_law
 from butler import ajax
+from misc.logger import alert, log
 
 
 def explore_resource(user, resource="gold", leader=False):
@@ -59,3 +60,93 @@ def get_indexes(user, save=True):
                     f"INSERT INTO {index} VALUES ({timestamp}, {', '.join([str(indexes[index][x]) for x in range(2, 11)])})"
                 )
     return indexes
+
+
+def fix_state_power_grid(user):
+    from actions.status import get_lead_econ_foreign
+    from actions.regions import parse_regions_table
+    from actions.state import calculate_building_cost
+    from misc.utils import sum_costs, num_to_slang
+
+    def fail(text=""):
+        if text:
+            alert(user, text)
+        user.s.enter(600, 2, fix_state_power_grid, (user,))
+        return False
+
+    (lead_state, in_lead), (econ_state, in_econ) = get_lead_econ_foreign(
+        user, lead=True, econ=True
+    )
+    state = lead_state if in_lead else econ_state if in_econ else None
+
+    if econ_state and not in_econ:  # Can't do econ duty
+        alert(
+            user, "Not in the state of their economics, can't build indexes there"
+        )
+
+    if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
+        return fail("You are the leader but not the dictator/monarch")
+
+    if not state:
+        return fail()
+
+    parse_regions_table(user, state.id)
+
+    diff = state.power_production - state.power_consumption
+    if diff > 0:
+        return fail()
+
+    need = diff//10 + 1
+
+    diffs = {}
+    for id, region in state.regions:
+        diff = region.power_production - region.power_consumption
+        if diff < 0:
+            diffs[id] = diff
+
+    what_to_build = {}
+    while need:
+        region = min(diffs, key=diffs.get)
+        what_to_build[region]["power"] += 1
+        diffs[region] += 10
+        need -= 1
+
+    costs = {}
+    for id in what_to_build:
+        value = what_to_build[id]["power"]
+        region = state.regions[id]
+        current = region.buildings["power"]
+        costs = sum_costs(costs, calculate_building_cost("power", current, current+value))
+
+    not_enough = False
+    for resource, value in costs.items():
+        if not state.budget.get(resource, 0) >= value:
+            alert(
+                user,
+                f"Not enough {resource} in the state budget, needed {num_to_slang(value)}",
+            )
+            not_enough = True
+    if not_enough:
+        return fail()
+
+    from actions.state import build_building
+
+    for id, diff in what_to_build.items():
+        for building, value in diff.items():
+            if not value:
+                continue
+            if build_building(user, id, building, value):
+                log(user, f"Built {value} {building:<8} in region {id}")
+                try:
+                    region = state.regions[id]
+                    spent = calculate_building_cost(
+                        building,
+                        region.buildings[building],
+                        region.buildings[building] + value,
+                    )
+                    state.set_budgets(spent, "-")
+                except:
+                    pass
+                time.sleep(20)
+
+    user.s.enter(1800, 2, fix_state_power_grid, (user,))

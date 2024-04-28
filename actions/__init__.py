@@ -133,7 +133,7 @@ def build_indexes(user, buffer=15, show_next=False):
             f"Failed to get config: {bool(config)}, indexes: {bool(indexes)}, regions: {bool(regions)}"
         )
 
-    def get_what_to_build(regions, indexes, buffer, config=None):
+    def get_what_to_build(regions, indexes, buffer, config=None, power=True):
         what_to_build = {}
         if not config:  # then calculate for the next indexes
             config = {}
@@ -157,6 +157,11 @@ def build_indexes(user, buffer=15, show_next=False):
                 if current < target - buffer / 2:
                     diff[building] = target - current
             if any(diff.values()):
+                if power:
+                    power_diff = region.power_production - region.power_consumption
+                    power_req = sum(diff.values()) * 2
+                    if power_diff < power_req:
+                        diff["power"] = power_req//5 + 1
                 what_to_build[id] = diff
         return what_to_build
 
@@ -175,7 +180,7 @@ def build_indexes(user, buffer=15, show_next=False):
     if show_next:
         from models import get_region
 
-        what_to_build_next = get_what_to_build(regions, indexes, buffer)
+        what_to_build_next = get_what_to_build(regions, indexes, buffer, power=False)
         for id, diff in what_to_build_next.items():
             print(f"Region {id} ({get_region(id).name})")
             for building, value in diff.items():
@@ -208,7 +213,6 @@ def build_indexes(user, buffer=15, show_next=False):
         return fail()
 
     from actions.state import build_building
-    from models import get_region
 
     for id, diff in what_to_build.items():
         for building, value in diff.items():
@@ -217,7 +221,7 @@ def build_indexes(user, buffer=15, show_next=False):
             if build_building(user, id, building, value):
                 log(user, f"Built {value} {building:<8} in region {id}")
                 try:
-                    region = get_region(id)
+                    region = state.regions[id]
                     spent = calculate_building_cost(
                         building,
                         region.buildings[building],
