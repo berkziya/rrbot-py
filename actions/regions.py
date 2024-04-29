@@ -150,7 +150,7 @@ def parse_regions_table(user, id=None, only_df=False):
             reg.set_buildings("school", int(row_dict["sc"]))
             reg.set_buildings("missile", int(row_dict["ms"]))
             reg.set_buildings("sea", int(row_dict["po"]))
-            reg.set_buildings("powerplant", int(row_dict["pp"]))
+            reg.set_buildings("power", int(row_dict["pp"]))
             reg.set_buildings("spaceport", int(row_dict["sp"]))
             reg.set_buildings("airport", int(row_dict["ae/rs"]))
             reg.set_buildings("homes", int(row_dict["hf"]))

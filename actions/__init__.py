@@ -196,10 +196,11 @@ def build_indexes(user, buffer=15, show_next=False):
         return True
 
     what_to_build = get_what_to_build(regions, indexes, buffer, config)
-    costs = get_costs(regions, what_to_build)
 
     if not what_to_build:
         return fail()
+
+    costs = get_costs(regions, what_to_build)
 
     not_enough = False
     for resource, value in costs.items():
@@ -213,6 +214,7 @@ def build_indexes(user, buffer=15, show_next=False):
         return fail()
 
     from actions.state import build_building
+    from models import get_region
 
     for id, diff in what_to_build.items():
         for building, value in diff.items():
@@ -221,7 +223,7 @@ def build_indexes(user, buffer=15, show_next=False):
             if build_building(user, id, building, value):
                 log(user, f"Built {value} {building:<8} in region {id}")
                 try:
-                    region = state.regions[id]
+                    region = get_region(id)
                     spent = calculate_building_cost(
                         building,
                         region.buildings[building],

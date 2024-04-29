@@ -67,11 +67,12 @@ def fix_state_power_grid(user):
     from actions.regions import parse_regions_table
     from actions.state import calculate_building_cost
     from misc.utils import sum_costs, num_to_slang
+    from models import get_region
 
     def fail(text=""):
         if text:
             alert(user, text)
-        user.s.enter(600, 2, fix_state_power_grid, (user,))
+        user.s.enter(1000, 2, fix_state_power_grid, (user,))
         return False
 
     (lead_state, in_lead), (econ_state, in_econ) = get_lead_econ_foreign(
@@ -79,10 +80,10 @@ def fix_state_power_grid(user):
     )
     state = lead_state if in_lead else econ_state if in_econ else None
 
-    if econ_state and not in_econ:  # Can't do econ duty
-        alert(
-            user, "Not in the state of their economics, can't build indexes there"
-        )
+    # if econ_state and not in_econ:  # Can't do econ duty
+    #     alert(
+    #         user, "Not in the state of their economics, can't build power plants"
+    #     )
 
     if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
         return fail("You are the leader but not the dictator/monarch")
@@ -90,22 +91,22 @@ def fix_state_power_grid(user):
     if not state:
         return fail()
 
-    parse_regions_table(user, state.id)
+    if not parse_regions_table(user, state.id):
+        return fail("Failed to get regions table")
 
     diff = state.power_production - state.power_consumption
     if diff > 0:
         return fail()
 
-    need = diff//10 + 1
+    need = (-diff)//10 + 1
 
     diffs = {}
-    for id, region in state.regions:
+    for region in state.regions:
         diff = region.power_production - region.power_consumption
-        if diff < 0:
-            diffs[id] = diff
+        diffs[region.id] = diff
 
-    what_to_build = {}
-    while need:
+    what_to_build = {id: {"power": 0} for id in diffs}
+    while need > 0:
         region = min(diffs, key=diffs.get)
         what_to_build[region]["power"] += 1
         diffs[region] += 10
@@ -114,7 +115,7 @@ def fix_state_power_grid(user):
     costs = {}
     for id in what_to_build:
         value = what_to_build[id]["power"]
-        region = state.regions[id]
+        region = get_region(id)
         current = region.buildings["power"]
         costs = sum_costs(costs, calculate_building_cost("power", current, current+value))
 
@@ -138,7 +139,7 @@ def fix_state_power_grid(user):
             if build_building(user, id, building, value):
                 log(user, f"Built {value} {building:<8} in region {id}")
                 try:
-                    region = state.regions[id]
+                    region = get_region(id)
                     spent = calculate_building_cost(
                         building,
                         region.buildings[building],
@@ -149,4 +150,4 @@ def fix_state_power_grid(user):
                     pass
                 time.sleep(20)
 
-    user.s.enter(1800, 2, fix_state_power_grid, (user,))
+    user.s.enter(2000, 2, fix_state_power_grid, (user,))
