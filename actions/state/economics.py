@@ -124,7 +124,7 @@ def fix_state_power_grid(user):
         if not state.budget.get(resource, 0) >= value:
             alert(
                 user,
-                f"Not enough {resource} in the state budget, needed {num_to_slang(value)}",
+                f"Not enough {resource} in the state budget, needed {num_to_slang(value)} / {num_to_slang(state.budget.get(resource, 0))}",
             )
             not_enough = True
     if not_enough:

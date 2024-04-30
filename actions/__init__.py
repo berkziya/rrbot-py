@@ -133,7 +133,7 @@ def build_indexes(user, buffer=15, show_next=False):
             f"Failed to get config: {bool(config)}, indexes: {bool(indexes)}, regions: {bool(regions)}"
         )
 
-    def get_what_to_build(regions, indexes, buffer, config=None, power=True):
+    def get_what_to_build(regions, indexes, buffer, config=None, power=False):
         what_to_build = {}
         if not config:  # then calculate for the next indexes
             config = {}
@@ -161,7 +161,7 @@ def build_indexes(user, buffer=15, show_next=False):
                     power_diff = region.power_production - region.power_consumption
                     power_req = sum(diff.values()) * 2
                     if power_diff < power_req:
-                        diff["power"] = power_req//5 + 1
+                        diff["power"] = power_req//10 + 1
                 what_to_build[id] = diff
         return what_to_build
 
@@ -191,7 +191,7 @@ def build_indexes(user, buffer=15, show_next=False):
                     building, current, current + value
                 ).get("oil", 0)
                 print(
-                    f"    {building:<8} +{value:<4}, cost: {num_to_slang(oil_cost*275):>10}"
+                    f"    {building:<8} +{value:<4}, cost: {num_to_slang(oil_cost*275):>10} {num_to_slang(oil_cost*120):>10}"
                 )
         return True
 
