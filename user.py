@@ -10,6 +10,7 @@ import database
 from butler import error, wait_for_page_load
 from misc.logger import log
 from models import get_player
+from models.market import Market
 
 
 class User:
@@ -39,6 +40,8 @@ class User:
 
         self.statedept = None
         self.factory = None
+
+        self.prices = Market()
 
     @property
     def conn(self):

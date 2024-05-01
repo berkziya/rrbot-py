@@ -1,6 +1,7 @@
 import time
 
-import requests
+import socket
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -81,16 +82,19 @@ def delay_tasks(scheduler, delay):
             scheduler.enter(delay, event.priority, event.action, event.argument)
 
 
-def is_internet_on(user):
-    if requests.get("https://google.com", timeout=15):
+def is_internet_on(host="8.8.8.8", port=53, timeout=3):
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
         return True
-    alert(user, "No internet connection")
-    return False
+    except socket.error as ex:
+        print(ex)
+        return False
 
 
 def wait_until_internet_is_back(user):
     count = 0
-    while not is_internet_on(user):
+    while not is_internet_on():
         alert(user, "Waiting for internet connection to be restored", False)
         time.sleep(60)
         count += 1

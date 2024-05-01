@@ -179,6 +179,7 @@ def build_indexes(user, buffer=15, show_next=False):
 
     if show_next:
         from models import get_region
+        from .market import resources_to_money
 
         what_to_build_next = get_what_to_build(regions, indexes, buffer, power=False)
         for id, diff in what_to_build_next.items():
@@ -187,11 +188,10 @@ def build_indexes(user, buffer=15, show_next=False):
                 if not value:
                     continue
                 current = regions[id].buildings[building]
-                oil_cost = calculate_building_cost(
-                    building, current, current + value
-                ).get("oil", 0)
+                cost = calculate_building_cost(building, current, current + value)
+                mone = resources_to_money(user, cost, update=False)["mone"]
                 print(
-                    f"    {building:<8} +{value:<4}, cost: {num_to_slang(oil_cost*275):>10} {num_to_slang(oil_cost*120):>10}"
+                    f"    {building:<8} +{value:<4}, cost: {num_to_slang(mone):>10}"
                 )
         return True
 

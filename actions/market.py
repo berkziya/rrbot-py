@@ -28,20 +28,20 @@ market_tresholds = {
     "ore": 0.75,
     "uranium": 0.75,
     "diamonds": 0.75,
-    "lox": 0.75,
-    "helium3": 0.75,
-    "rivalium": 0.75,
-    "antirad": 0.75,
-    "spacerockets": 0.75,
+    "lox": 0.2,
+    "helium3": 0.3,
+    "rivalium": 0.3,
+    "antirad": 0.3,
+    "spacerockets": 0,
     "lss": 0.75,
     "tanks": 0.75,
     "aircrafts": 0.75,
-    "missiles": 0.75,
-    "bombers": 0.75,
-    "battleships": 0.75,
-    "laserdrones": 0.75,
-    "moon_tanks": 0.75,
-    "space_stations": 0.75,
+    "missiles": 0.4,
+    "bombers": 0.5,
+    "battleships": 0.2,
+    "laserdrones": 0,
+    "moon_tanks": 0.2,
+    "space_stations": 0.2,
 }
 
 market_ids = {
@@ -104,18 +104,19 @@ def get_market_price(user, resource, save=False):
                 return_to_mainwindow(user)
                 if save:
                     save_price(resource, daprice)
+                user.prices[resource] = daprice
                 return daprice
         return False
     except Exception as e:
         return error(user, e, "Error getting market price")
 
 
-def resources_to_money(user, costs):
+def resources_to_money(user, costs, update=True):
     mone = 0
     for resource in costs:
-        if resource == "money" or resource == "gold":
-            continue
-        mone += costs[resource] * get_market_price(user, resource)
+        if update and resource not in ["money", "gold"]:
+            get_market_price(user, resource)
+        mone += costs[resource] * user.prices[resource]
     return {"money": costs["money"], "gold": costs["gold"], "mone": mone}
 
 
