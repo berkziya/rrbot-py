@@ -56,7 +56,7 @@ def refresh_schedules(user, events_=None, daily_only=False):
         },
         {
             "desc": "economics work",
-            "event": actions.hourly_state_gold_refill,
+            "event": actions.state.economics.hourly_state_gold_refill,
             "daily": True,
         },
         {
@@ -86,7 +86,7 @@ def refresh_schedules(user, events_=None, daily_only=False):
         },
         {
             "desc": "build indexes",
-            "event": actions.build_indexes,
+            "event": actions.state.economics.build_indexes,
             "args": (15,),
             "daily": False,
             "mute": True,
@@ -96,7 +96,7 @@ def refresh_schedules(user, events_=None, daily_only=False):
             "event": actions.state.economics.fix_state_power_grid,
             "daily": False,
             "mute": True,
-        }
+        },
     ]
 
     if not events_:

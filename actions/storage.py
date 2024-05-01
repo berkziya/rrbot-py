@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 
-from actions.status import set_mainpage_data
+from .status import set_mainpage_data
 from butler import ajax, error, get_page, return_to_mainwindow
 from misc.logger import log
 from misc.utils import dotless

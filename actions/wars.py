@@ -284,7 +284,7 @@ def calculate_damage(
         + drone_bonus * drone_ratio
     )
 
-    user_bonus = 1 #+ player.house["gym"]/100
+    user_bonus = 1  # + player.house["gym"]/100
 
     damage = (4 + diffs + buffs) * alpha * troop_bonus * user_bonus
     return int(damage)

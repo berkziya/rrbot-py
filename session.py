@@ -72,7 +72,7 @@ def greet(user):
 def session(user):
     user.load_database()
 
-    from actions import build_indexes  # temporary
+    from actions.state.economics import build_indexes  # temporary
     build_indexes(user, 10, show_next=True)
 
     greet(user)
