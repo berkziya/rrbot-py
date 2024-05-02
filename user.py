@@ -143,7 +143,7 @@ class User:
                     EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
                 )
                 return True
-            except:
+            except:  # noqa: E722
                 return False
 
         def ready_data_tab():

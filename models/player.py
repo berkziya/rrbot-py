@@ -164,7 +164,7 @@ def get_player_info(user, id=None, force=False):
                             .split("/")[-1]
                         )
                     )
-            except:
+            except:  # noqa: E722
                 pass
             if "Rating place:" in tr.text:
                 player.set_rating(
@@ -228,7 +228,7 @@ def get_player_info(user, id=None, force=False):
                                     user, div.get_attribute("action").split("/")[-1]
                                 )
                                 permits[region.state] = region
-                            except:
+                            except:  # noqa: E722
                                 pass  # TODO: fix this
                 player.set_workpermits(permits)
             elif "Governor:" in tr.text:
@@ -272,7 +272,7 @@ def get_player_info(user, id=None, force=False):
                             .split("/")[-1]
                         )
                     )
-                except:
+                except:  # noqa: E722
                     player.set_party(None)
         player.set_last_accessed()
         return_to_mainwindow(user)

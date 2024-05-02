@@ -68,7 +68,7 @@ def build_building(user, id, building, amount, leader=False):
             x in user.player.economics.form for x in ["tatorsh", "onarch"]
         ):
             return law
-    except:
+    except:  # noqa: E722
         pass
     return law and pass_law
 
@@ -99,7 +99,7 @@ def budget_transfer(user, id, resource, amount, leader=False):
             x in user.player.economics.form for x in ["tatorsh", "onarch"]
         ):
             return law
-    except:
+    except:  # noqa: E722
         pass
     return law and pass_law
 
@@ -119,6 +119,6 @@ def explore_resource(user, resource="gold", leader=False):
             x in user.player.economics.form for x in ["tatorsh", "onarch"]
         ):
             return law
-    except:
+    except:  # noqa: E722
         pass
     return law and pass_law

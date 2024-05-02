@@ -126,7 +126,7 @@ def fix_state_power_grid(user):
                         region.buildings[building] + value,
                     )
                     state.set_budgets(spent, "-")
-                except:
+                except:  # noqa: E722
                     pass
                 time.sleep(20)
 
@@ -311,7 +311,7 @@ def build_indexes(user, buffer=15, show_next=False):
                         region.buildings[building] + value,
                     )
                     state.set_budgets(spent, "-")
-                except:
+                except:  # noqa: E722
                     pass
                 time.sleep(20)
 

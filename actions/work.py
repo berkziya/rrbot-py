@@ -32,7 +32,7 @@ def get_factories(user, id=None, resource="gold"):
         try:
             if user.driver.find_element(By.XPATH, "//*[contains(text(), 'Not found')]"):
                 return []
-        except:
+        except:  # noqa: E722
             pass
         factories = []
         data = user.driver.find_elements(By.CSS_SELECTOR, "#list_tbody > tr")
@@ -48,7 +48,7 @@ def get_factories(user, id=None, resource="gold"):
             try:  # Skip fixed wage with not enough budget
                 tr.find_element(By.CSS_SELECTOR, "td[title]")
                 continue
-            except:
+            except:  # noqa: E722
                 pass
             factories.append(factory)
         for factory in factories:
