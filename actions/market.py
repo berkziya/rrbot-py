@@ -2,7 +2,7 @@ from selenium.webdriver.common.by import By
 
 from butler import error, get_page, return_to_mainwindow
 
-market_limits = {
+LIMIT = {
     "oil": 614.4e6,
     "ore": 614.4e6,
     "uranium": 15.36e6,
@@ -23,7 +23,7 @@ market_limits = {
     "space_stations": 1280,
 }
 
-market_tresholds = {
+THRESHOLD = {
     "oil": 0.75,
     "ore": 0.75,
     "uranium": 0.75,
@@ -44,7 +44,7 @@ market_tresholds = {
     "space_stations": 0.2,
 }
 
-market_ids = {
+MARKETID = {
     "oil": 3,
     "ore": 4,
     "uranium": 11,
@@ -84,28 +84,26 @@ def get_market_price(user, resource, save=False):
             conn.execute(f"INSERT INTO {resource} VALUES ({time.time()}, {price})")
 
     try:
-        if not get_page(user, f"storage/listed/{market_ids[resource]}"):
+        if not get_page(user, f"storage/listed/{MARKETID[resource]}"):
             return False
-        prices = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
-        for price in prices:
-            if (
-                int(
-                    price.find_element(
-                        By.CSS_SELECTOR, "td.list_level.imp.small"
-                    ).get_attribute("rat")
+        offers = user.driver.find_elements(By.CSS_SELECTOR, "tbody > tr")
+        for offer in offers:
+            amount = int(
+                offer.find_element(
+                    By.CSS_SELECTOR, "td.list_level.imp.small"
+                ).get_attribute("rat")
+            )
+            price = float(
+                offer.find_element(By.CSS_SELECTOR, "td:nth-child(5)").get_attribute(
+                    "rat"
                 )
-                > market_limits[resource] * market_tresholds[resource]
-            ):
-                daprice = float(
-                    price.find_element(
-                        By.CSS_SELECTOR, "td:nth-child(5)"
-                    ).get_attribute("rat")
-                )
+            )
+            if amount > LIMIT[resource] * THRESHOLD[resource]:
                 return_to_mainwindow(user)
                 if save:
-                    save_price(resource, daprice)
-                user.prices[resource] = daprice
-                return daprice
+                    save_price(resource, price)
+                user.prices[resource] = price
+                return price
         return False
     except Exception as e:
         return error(user, e, "Error getting market price")
