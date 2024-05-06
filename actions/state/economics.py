@@ -225,7 +225,11 @@ def build_indexes(user, buffer=15, show_next=False):
                     "hospital": max(region.indexes.get("hospital", 0) + 1, 6),
                     "military": region.indexes.get("military", 0) + 1,
                     "school": region.indexes.get("school", 0) + 1,
-                    "homes": 0,
+                    "homes": 2
+                    if region.indexes.get("homes", 0) < 2
+                    else 6
+                    if region.indexes.get("homes", 0) < 6
+                    else 0,
                 }
         for id, region in regions.items():
             if id not in config:

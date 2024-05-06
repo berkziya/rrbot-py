@@ -72,6 +72,10 @@ def greet(user):
 def session(user):
     user.load_database()
 
+    # from actions.state.parliament import budget_transfer  # temporary
+    # budget_transfer(user, 307, "oil", "2400kk")
+    # budget_transfer(user, 307, "ore", "1kkk")
+
     from actions.state.economics import build_indexes  # temporary
     build_indexes(user, 10, show_next=True)
 
