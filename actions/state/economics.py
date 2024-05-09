@@ -64,7 +64,7 @@ def fix_state_power_grid(user):
     #     )
 
     if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
-        return fail("You are the leader but not the dictator/monarch")
+        return fail()
 
     if not state:
         return fail()
@@ -151,7 +151,7 @@ def hourly_state_gold_refill(user):
         alert(user, "Not in the state of their economics, can't refill gold there")
 
     if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
-        return fail("You are the leader but not the dictator/monarch")
+        return fail()
 
     if not (in_econ or in_lead):
         return fail()
@@ -191,7 +191,7 @@ def build_indexes(user, buffer=15, show_next=False):
             )
 
         if in_lead and not any([x in lead_state.form for x in ["tator", "onarch"]]):
-            return fail("You are the leader but not the dictator/monarch")
+            return fail()
 
         if not state:
             return fail()
