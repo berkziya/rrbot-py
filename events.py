@@ -44,7 +44,7 @@ def refresh_schedules(user, events_=None, daily_only=False):
         {
             "desc": "factory work",
             "event": actions.auto_work_factory,
-            "args": (user.factory,) if user.factory else (None,),
+            "args": (user.factory,) if user.factory else (None, False),
             "daily": False,
             "mute": True,
         },
