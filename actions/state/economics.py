@@ -40,7 +40,7 @@ def get_indexes(user, save=True):
     return indexes
 
 
-def fix_state_power_grid(user):
+def fix_state_power_grid(user, type="equal"):
     from actions.status import get_lead_econ_foreign
     from actions.regions import parse_regions_table
     from actions.state import calculate_building_cost
@@ -79,9 +79,17 @@ def fix_state_power_grid(user):
     need = (-diff) // 10 + 1
 
     diffs = {}
-    for region in state.regions:
-        diff = region.power_production - region.power_consumption
-        diffs[region.id] = diff
+    if type == "capital":
+        diffs[state.capital.id] = need
+    elif type == "cheap":
+        while need > 0:
+            region = min(state.regions, key=lambda x: x.power_production)
+            diffs[region.id] = diffs.get(region.id, 0) + 1
+            need -= 1
+    else:  # type == "equal
+        for region in state.regions:
+            diff = region.power_production - region.power_consumption
+            diffs[region.id] = diff
 
     what_to_build = {id: {"power": 0} for id in diffs}
     while need > 0:
@@ -171,7 +179,7 @@ def build_indexes(user, buffer=15, show_next=False):
     from actions.regions import parse_regions_table
     from actions.state import calculate_building_cost
     from actions.status import get_lead_econ_foreign
-    from misc.utils import num_to_slang, sum_costs
+    from misc.utils import num_to_slang, sum_costs, subtract_costs
 
     def fail(text=""):
         if text:
@@ -226,7 +234,9 @@ def build_indexes(user, buffer=15, show_next=False):
                     "military": region.indexes.get("military", 0) + 1,
                     "school": region.indexes.get("school", 0) + 1,
                     "homes": 2
-                    if region.indexes.get("homes", 0) < 2
+                    if region.indexes.get("homes", 0) == 1
+                    else 3
+                    if region.indexes.get("homes", 0) == 2
                     else 6
                     if region.indexes.get("homes", 0) < 6
                     else 0,
@@ -237,10 +247,15 @@ def build_indexes(user, buffer=15, show_next=False):
             diff = {"hospital": 0, "military": 0, "school": 0, "homes": 0}
             for building in diff:
                 current = region.buildings.get(building, float("inf"))
+                current_index = region.indexes.get(building, 0)
+                dyn_buffer = buffer
                 target_index = int(config[id][building])
                 if building == "hospital" and target_index < 6:
                     target_index = 0
-                target = indexes[building].get(target_index, 0) + buffer
+                if building == "homes" and current_index < 3:
+                    dyn_buffer = buffer * 2
+                    target_index = 2
+                target = indexes[building].get(target_index, 0) + dyn_buffer
                 if current < target - buffer / 2:
                     diff[building] = target - current
             if any(diff.values()):
@@ -271,13 +286,15 @@ def build_indexes(user, buffer=15, show_next=False):
         what_to_build_next = get_what_to_build(regions, indexes, buffer, power=False)
         for id, diff in what_to_build_next.items():
             print(f"Region {id} ({get_region(id).name})")
-            for building, value in diff.items():
-                if not value:
+            for building, how_many in diff.items():
+                if not how_many:
                     continue
                 current = regions[id].buildings[building]
-                cost = calculate_building_cost(building, current, current + value)
+                cost = calculate_building_cost(building, current, current + how_many)
                 mone = resources_to_money(user, cost, update=False)["mone"]
-                print(f"    {building:<8} +{value:<4}, cost: {num_to_slang(mone):>10}")
+                print(
+                    f"    {building:<8} +{how_many:<4}, cost: {num_to_slang(mone):>10}"
+                )
         return True
 
     what_to_build = get_what_to_build(regions, indexes, buffer, config)
@@ -285,38 +302,72 @@ def build_indexes(user, buffer=15, show_next=False):
     if not what_to_build:
         return fail()
 
-    costs = get_costs(regions, what_to_build)
-
-    not_enough = False
-    for resource, value in costs.items():
-        if not state.budget.get(resource, 0) >= value:
-            alert(
-                user,
-                f"Not enough {resource} in the state budget, needed {num_to_slang(value)}",
-            )
-            not_enough = True
-    if not_enough:
-        return fail()
+    total_cost = get_costs(regions, what_to_build)
 
     from .parliament import build_building
     from models import get_region
+    from models.state import get_state_info
 
-    for id, diff in what_to_build.items():
-        for building, value in diff.items():
-            if not value:
+    get_state_info(user, state.id, force=True)
+
+    importance_list = [
+        lambda x: (x.indexes["homes"] < 2, "homes", True),
+        lambda x: (x.indexes["homes"] == 2, "homes", True),
+        lambda x: (True, "military", False),
+        lambda x: (True, "school", False),
+        lambda x: (True, "hospital", False),
+        lambda x: (x.indexes["homes"] < 6, "homes", False),
+        lambda x: (True, "homes", False),
+    ]
+
+    for importance in importance_list:
+        vital = False
+        current_what_to_build = {}
+        current_cost = {}
+        for id, diff in what_to_build.items():
+            shall, building, is_vital = importance(get_region(id))
+            if not shall:
                 continue
-            if build_building(user, id, building, value):
-                log(user, f"Built {value} {building:<8} in region {id}")
-                try:
-                    region = get_region(id)
-                    spent = calculate_building_cost(
-                        building,
-                        region.buildings[building],
-                        region.buildings[building] + value,
+            how_many = diff.get(building, 0)
+            if how_many:
+                current_what_to_build[id] = how_many
+                vital = vital or is_vital
+        for id, how_many in current_what_to_build.items():
+            fromme = get_region(id).buildings[building]
+            tomme = fromme + how_many
+            current_cost = sum_costs(
+                current_cost,
+                calculate_building_cost(building, fromme, tomme),
+            )
+        canbuild = True
+        for resource, amount in current_cost.items():
+            if amount >= state.budget.get(resource, 0):
+                if vital:
+                    return fail(
+                        f"Not enough {resource} in the state budget, needed {num_to_slang(amount)}"
                     )
-                    state.set_budgets(spent, "-")
+                else:
+                    canbuild = False
+        if not canbuild:
+            continue
+        for id, how_many in current_what_to_build.items():
+            if build_building(user, id, building, how_many):
+                region = get_region(id)
+                log(user, f"Built {how_many} {building:<8} in {region}")
+                try:
+                    region.buildings[building] += how_many
+                    what_to_build[id][building] = 0
                 except:  # noqa: E722
                     pass
-                time.sleep(20)
+                time.sleep(15)
+                total_cost = subtract_costs(total_cost, current_cost)
+                state.set_budgets(current_cost, "-")
+
+    if total_cost:
+        for resource, amount in total_cost.items():
+            if amount >= state.budget.get(resource, 0):
+                return fail(
+                    f"Not enough {resource} in the state budget, needed {num_to_slang(amount)}"
+                )
 
     user.s.enter(1800, 2, build_indexes, (user,))
