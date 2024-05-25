@@ -5,8 +5,8 @@ from selenium.webdriver.common.by import By
 from butler import ajax, error, get_page, return_to_mainwindow
 from misc.logger import alert
 from models import get_factory, get_region
-from models.factory import get_factory_info
-from models.player import get_player_info
+from models.get_info.get_factory_info import get_factory_info
+from models.get_info.get_player_info import get_player_info
 
 RESOURCES = {
     "gold": 6,

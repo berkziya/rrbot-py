@@ -1,23 +1,26 @@
+from __future__ import annotations
 import time
 
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
 
-from butler import error, get_page, return_to_mainwindow, wait_until_internet_is_back
-from misc.utils import dotless
 from models import get_autonomy, get_factory, get_player, get_region, get_state
-from models.autonomy import get_autonomy_info
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.autonomy import Autonomy
+    from models.factory import Factory
+    from models.player import Player
+    from models.state import State
 
 
 class Region:
     def __init__(self, id):
-        self.id = id
-        self.name = self.id
-        self.last_accessed = 0
-        self.state = None
-        self.autonomy = None
-        self.location = [0, 0]
-        self.buildings = {
+        self.id: int = id
+        self.name: str | int = self.id
+        self.last_accessed: int = 0
+        self.state: State = None
+        self.autonomy: Autonomy = None
+        self.buildings: dict[str, int] = {
             "macademy": 0,
             "hospital": 0,
             "military": 0,
@@ -29,38 +32,38 @@ class Region:
             "airport": 0,
             "homes": 0,
         }
-        self.rating = 0
-        self.residents = []
-        self.num_of_residents = 0
-        self.citizens = []
-        self.num_of_citizens = 0
-        self.tax = 0
-        self.market_tax = 0
-        self.sea_access = False
-        self.resources = {
+        self.rating: int = 0
+        self.residents: list[Player] = []
+        self.num_of_residents: int = 0
+        self.citizens: list[Player] = []
+        self.num_of_citizens: int = 0
+        self.tax: float = 0
+        self.market_tax: float = 0
+        self.sea_access: bool = False
+        self.resources: dict[str, int] = {
             "gold": 0,
             "oil": 0,
             "ore": 0,
             "uranium": 0,
             "diamonds": 0,
         }
-        self.deep_resources = {
+        self.deep_resources: dict[str, int] = {
             "gold": 0,
             "oil": 0,
             "ore": 0,
             "uranium": 0,
             "diamonds": 0,
         }
-        self.indexes = {
+        self.indexes: dict[str, int] = {
             "hospital": 0,
             "military": 0,
             "school": 0,
             "homes": 0,
         }
-        self.border_regions = []
-        self.factories = []
+        self.border_regions: list[Region] = []
+        self.factories: list[Factory] = []
 
-    def set_name(self, value):
+    def set_name(self, value: str):
         self.name = value
 
     def set_last_accessed(self):
@@ -72,14 +75,11 @@ class Region:
     def set_autonomy(self, value):
         self.autonomy = value
 
-    def set_location(self, value):
-        self.location = value
-
-    def set_buildings(self, element, value):
+    def set_buildings(self, element: str, value: int):
         self.buildings[element] = value
 
     @property
-    def power_consumption(self):
+    def power_consumption(self) -> int:
         return (
             self.buildings["hospital"]
             + self.buildings["military"]
@@ -91,30 +91,30 @@ class Region:
         ) * 2
 
     @property
-    def power_production(self):
+    def power_production(self) -> int:
         return self.buildings["power"] * 10
 
-    def set_rating(self, value):
+    def set_rating(self, value: int):
         self.rating = value
 
     def set_residents(self, value):
         self.residents = value
 
-    def set_num_of_residents(self, value):
+    def set_num_of_residents(self, value: int):
         self.num_of_residents = value
 
     def set_citizens(self, value):
         self.citizens = value
 
-    def set_num_of_citizens(self, value):
+    def set_num_of_citizens(self, value: int):
         self.num_of_citizens = value
 
     @property
-    def initial_attack_damage(self):
-        return self.buildings["macademy"] * 450_000
+    def initial_attack_damage(self) -> int:
+        return self.buildings["macademy"] * 900_000
 
     @property
-    def initial_defend_damage(self):
+    def initial_defend_damage(self) -> int:
         return (
             self.buildings["hospital"]
             + 2 * self.buildings["military"]
@@ -123,24 +123,24 @@ class Region:
             + self.buildings["power"]
             + self.buildings["spaceport"]
             + self.buildings["airport"]
-        ) * 50_000
+        ) * 100_000
 
-    def set_tax(self, value):
+    def set_tax(self, value: float):
         self.tax = value
 
-    def set_market_tax(self, value):
+    def set_market_tax(self, value: float):
         self.market_tax = value
 
-    def set_sea_access(self, value):
+    def set_sea_access(self, value: bool):
         self.sea_access = value
 
-    def set_resources(self, element, value):
+    def set_resources(self, element: str, value: int):
         self.resources[element] = value
 
-    def set_deep_resources(self, element, value):
+    def set_deep_resources(self, element: str, value: int):
         self.deep_resources[element] = value
 
-    def set_indexes(self, element, value):
+    def set_indexes(self, element: str, value: int):
         self.indexes[element] = value
 
     def set_border_regions(self, value):
@@ -166,7 +166,6 @@ class Region:
             "time": self.last_accessed,
             "state": self.state.id if self.state else None,
             "autonomy": self.autonomy.id if self.autonomy else None,
-            "location": self.location,
             "buildings": self.buildings,
             "rating": self.rating,
             "residents": [player.id for player in self.residents],
@@ -185,7 +184,6 @@ class Region:
         self.last_accessed = state.get("time")
         self.state = get_state(state.get("state"))
         self.autonomy = get_autonomy(state.get("autonomy"))
-        self.location = state.get("location")
         self.buildings = state.get("buildings")
         self.rating = state.get("rating")
         self.residents = [get_player(player) for player in state.get("residents", [])]
@@ -200,203 +198,3 @@ class Region:
         self.factories = [
             get_factory(factory) for factory in state.get("factories", [])
         ]
-
-
-def get_region_info(user, id, force=False):
-    wait_until_internet_is_back(user)
-    try:
-        region = get_region(id)
-        if region.last_accessed > time.time() - 100 and not force:
-            return region
-        if not get_page(user, f"map/details/{id}"):
-            return False
-        upper = user.driver.find_element(
-            By.CSS_SELECTOR, "div.margin > h1 > span"
-        ).get_attribute("action")
-        if "state" in upper:
-            state = get_state(upper.split("/")[-1])
-            region.set_state(state)
-            state.add_region(region)
-            region.set_autonomy(None)
-        elif "autonomy" in upper:
-            autonomy = get_autonomy(upper.split("/")[-1])
-            region.set_autonomy(autonomy)
-            autonomy.add_region(region)
-            state = get_state(
-                user.driver.find_element(
-                    By.CSS_SELECTOR, "div.margin > h1 > div > span"
-                )
-                .get_attribute("action")
-                .split("/")[-1]
-            )
-            region.set_state(state)
-            state.add_region(region)
-
-        data = user.driver.find_elements(By.CSS_SELECTOR, "#region_scroll > div")
-        for div in data[1:]:
-            if "Governor:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                autonomy = get_autonomy(id)
-                autonomy.set_state(region.state)
-                autonomy.set_governor(
-                    get_player(
-                        div.find_element(
-                            By.CSS_SELECTOR, "div.slide_profile_data > div"
-                        )
-                        .get_attribute("action")
-                        .split("/")[-1]
-                    )
-                )
-                autonomy.add_region(region)
-                region.set_autonomy(autonomy)
-                autonomy.set_budget(
-                    "money",
-                    dotless(
-                        user.driver.find_element(
-                            By.CSS_SELECTOR, f'span[action="graph/balance/{id}/1"]'
-                        ).text
-                    ),
-                )
-                autonomy.set_budget(
-                    "gold",
-                    dotless(
-                        user.driver.find_element(
-                            By.CSS_SELECTOR, f'span[action="graph/balance/{id}/2"]'
-                        ).text
-                    ),
-                )
-                autonomy.set_budget(
-                    "oil",
-                    dotless(
-                        user.driver.find_element(
-                            By.CSS_SELECTOR, f'span[action="graph/balance/{id}/3"]'
-                        ).text
-                    ),
-                )
-                autonomy.set_budget(
-                    "ore",
-                    dotless(
-                        user.driver.find_element(
-                            By.CSS_SELECTOR, f'span[action="graph/balance/{id}/4"]'
-                        ).text
-                    ),
-                )
-                autonomy.set_budget(
-                    "uranium",
-                    dotless(
-                        user.driver.find_element(
-                            By.CSS_SELECTOR, f'span[action="graph/balance/{id}/11"]'
-                        ).text
-                    ),
-                )
-                autonomy.set_budget(
-                    "diamonds",
-                    dotless(
-                        user.driver.find_element(
-                            By.CSS_SELECTOR, f'span[action="graph/balance/{id}/15"]'
-                        ).text
-                    ),
-                )
-                autonomy.set_last_accessed()
-            elif "Rating place:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_rating(
-                    int(div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0])
-                )
-            elif "Number of citizens:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_num_of_citizens(
-                    int(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
-            elif "Residents:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_num_of_residents(
-                    int(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
-            elif "Tax rate:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_tax(
-                    float(
-                        div.find_element(
-                            By.CSS_SELECTOR, "div.short_details"
-                        ).text.split()[0]
-                    )
-                )
-            elif "Market taxes:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_market_tax(
-                    float(
-                        div.find_element(
-                            By.CSS_SELECTOR, "div.short_details"
-                        ).text.split()[0]
-                    )
-                )
-            elif "Sea access:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_sea_access(
-                    True
-                    if (
-                        "Yes"
-                        in div.find_element(By.CSS_SELECTOR, "div.short_details").text
-                    )
-                    else False
-                )
-            elif "Gold resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_resources(
-                    "gold", float(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
-            elif "Oil resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_resources(
-                    "oil", float(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
-            elif "Ore resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_resources(
-                    "ore", float(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
-            elif "Uranium resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_resources(
-                    "uranium", float(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
-            elif "Diamonds resources:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_resources(
-                    "diamonds", float(div.find_element(By.CSS_SELECTOR, "span").text)
-                )
-            elif "Health index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_indexes(
-                    "hospital",
-                    dotless(
-                        div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0]
-                    ),
-                )
-            elif "Military index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_indexes(
-                    "military",
-                    dotless(
-                        div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0]
-                    ),
-                )
-            elif "Education index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_indexes(
-                    "school",
-                    dotless(
-                        div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0]
-                    ),
-                )
-            elif "Development index:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                region.set_indexes(
-                    "homes",
-                    dotless(
-                        div.find_element(By.CSS_SELECTOR, "span").text.split("/")[0]
-                    ),
-                )
-            elif "regions:" in div.find_element(By.CSS_SELECTOR, "h2").text:
-                regions_ = []
-                for region_ in div.find_elements(By.CSS_SELECTOR, "div.short_details"):
-                    regions_.append(
-                        get_region(region_.get_attribute("action").split("/")[-1])
-                    )
-                region.set_border_regions(regions_)
-        if region.autonomy and not region.state:
-            get_autonomy_info(user, region.autonomy.id)
-            region.set_state(region.autonomy.state)
-        region.set_last_accessed()
-        return_to_mainwindow(user)
-        return region
-    except NoSuchElementException:
-        return_to_mainwindow(user)
-        return None
-    except Exception as e:
-        return error(user, e, f"Error getting region info {id}")

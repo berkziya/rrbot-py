@@ -15,9 +15,9 @@ from butler import (
 )
 from misc.logger import alert, log
 from models import get_war
-from models.player import get_player_info
-from models.region import get_region_info
-from models.war import get_war_info
+from models.get_info.get_player_info import get_player_info
+from models.get_info.get_region_info import get_region_info
+from models.get_info.get_war_info import get_war_info
 
 
 FULL_ENERGY = 300
@@ -75,7 +75,7 @@ def calculate_troops(user, id=None, energy=FULL_ENERGY, type="ground", drones=Fa
     else:
         player = get_player_info(user, id)
 
-    alpha = player.get_alpha(energy)
+    alpha = player.alpha(energy)
 
     n = {}
     for troop in TROOPS_FOR_TYPES[type]:

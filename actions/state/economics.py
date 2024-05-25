@@ -252,7 +252,7 @@ def build_indexes(user, buffer=15, show_next=False):
                 target_index = int(config[id][building])
                 if building == "hospital" and target_index < 6:
                     target_index = 0
-                if building == "homes" and current_index < 3:
+                if building == "homes" and current_index <= 2 and target_index <= 2:
                     dyn_buffer = buffer * 2
                     target_index = 2
                 target = indexes[building].get(target_index, 0) + dyn_buffer
@@ -306,7 +306,7 @@ def build_indexes(user, buffer=15, show_next=False):
 
     from .parliament import build_building
     from models import get_region
-    from models.state import get_state_info
+    from models.get_info.get_state_info import get_state_info
 
     get_state_info(user, state.id, force=True)
 
