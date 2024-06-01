@@ -2,15 +2,20 @@ import time
 
 from models import get_state
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.state import State
+
 
 class Bloc:
     def __init__(self, id):
-        self.id = id
-        self.name = self.id
-        self.last_accessed = 0
-        self.states = []
+        self.id: int = id
+        self.name: str | int = self.id
+        self.last_accessed: int = 0
+        self.states: list[State] = []
 
-    def set_name(self, value):
+    def set_name(self, value: str):
         self.name = value
 
     def set_last_accessed(self):

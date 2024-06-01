@@ -2,8 +2,8 @@ from selenium.webdriver.common.by import By
 
 from butler import error, reload_mainpage
 from misc.utils import dotless
-from models.player import get_player_info
-from models.state import get_state_info
+from models.get_info.get_player_info import get_player_info
+from models.get_info.get_state_info import get_state_info
 
 
 def set_mainpage_data(user, energy=False):

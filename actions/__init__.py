@@ -3,7 +3,7 @@ import time
 from actions.work import RESOURCES, assign_factory, get_best_factory
 from butler import ajax, error
 from misc.logger import alert, log
-from models.factory import get_factory_info
+from models.get_info.get_factory_info import get_factory_info
 
 
 def energy_drink_refill(user):

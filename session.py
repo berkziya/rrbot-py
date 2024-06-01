@@ -5,10 +5,10 @@ def greet(user):
     from actions.status import set_mainpage_data
     from misc.logger import log
     from misc.utils import num_to_slang
-    from models.autonomy import get_autonomy_info
-    from models.player import get_player_info
-    from models.region import get_region_info
-    from models.state import get_state_info
+    from models.get_info.get_autonomy_info import get_autonomy_info
+    from models.get_info.get_player_info import get_player_info
+    from models.get_info.get_region_info import get_region_info
+    from models.get_info.get_state_info import get_state_info
 
     if get_player_info(user):
         get_region_info(user, user.player.region.id)
@@ -71,6 +71,10 @@ def greet(user):
 
 def session(user):
     user.load_database()
+
+    # from actions.state.parliament import budget_transfer  # temporary
+    # budget_transfer(user, 307, "oil", "2400kk")
+    # budget_transfer(user, 307, "ore", "1kkk")
 
     from actions.state.economics import build_indexes  # temporary
     build_indexes(user, 10, show_next=True)

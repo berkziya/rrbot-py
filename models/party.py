@@ -2,18 +2,24 @@ import time
 
 from models import get_player, get_region
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.player import Player
+    from models.region import Region
+
 
 class Party:
     def __init__(self, id):
-        self.id = id
-        self.name = self.id
-        self.last_accessed = 0
-        self.leader = None
-        self.region = None
-        self.secretaries = []
-        self.members = []
+        self.id: int = id
+        self.name: str | int = self.id
+        self.last_accessed: int = 0
+        self.leader: Player = None
+        self.region: Region = None
+        self.secretaries: list[Player] = []
+        self.members: list[Player] = []
 
-    def set_name(self, value):
+    def set_name(self, value: str):
         self.name = value
 
     def set_last_accessed(self):

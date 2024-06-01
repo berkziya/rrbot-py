@@ -14,8 +14,8 @@ from butler import (
 )
 from misc.logger import log
 from models import get_player, get_region, get_state
-from models.player import get_player_info
-from models.region import get_region_info
+from models.get_info.get_player_info import get_player_info
+from models.get_info.get_region_info import get_region_info
 
 
 def build_military_academy(user):

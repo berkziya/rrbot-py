@@ -37,6 +37,25 @@ def utc1800():
 def refresh_schedules(user, events_=None, daily_only=False):
     EVENTSLIST = [
         {
+            "desc": "build indexes",
+            "event": actions.state.economics.build_indexes,
+            "args": (15,),
+            "daily": False,
+            "mute": True,
+        },
+        {
+            "desc": "build power plants",
+            "event": actions.state.economics.fix_state_power_grid,
+            "args": ("equal",),
+            "daily": False,
+            "mute": True,
+        },
+        {
+            "desc": "economics work",
+            "event": actions.state.economics.hourly_state_gold_refill,
+            "daily": True,
+        },
+        {
             "desc": "build military academy",
             "event": actions.regions.build_military_academy,
             "daily": True,
@@ -44,7 +63,7 @@ def refresh_schedules(user, events_=None, daily_only=False):
         {
             "desc": "factory work",
             "event": actions.auto_work_factory,
-            "args": (user.factory,) if user.factory else (None,),
+            "args": (user.factory,) if user.factory else (None, False),
             "daily": False,
             "mute": True,
         },
@@ -53,11 +72,6 @@ def refresh_schedules(user, events_=None, daily_only=False):
             "event": actions.upgrade_perk,
             "daily": False,
             "mute": False,
-        },
-        {
-            "desc": "economics work",
-            "event": actions.state.economics.hourly_state_gold_refill,
-            "daily": True,
         },
         {
             "desc": "attack training",
@@ -81,19 +95,6 @@ def refresh_schedules(user, events_=None, daily_only=False):
         {
             "desc": "energy drink refill",
             "event": actions.energy_drink_refill,
-            "daily": False,
-            "mute": True,
-        },
-        {
-            "desc": "build indexes",
-            "event": actions.state.economics.build_indexes,
-            "args": (15,),
-            "daily": False,
-            "mute": True,
-        },
-        {
-            "desc": "build power plants",
-            "event": actions.state.economics.fix_state_power_grid,
             "daily": False,
             "mute": True,
         },

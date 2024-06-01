@@ -1,68 +1,71 @@
 import json
-import sched
+from sched import scheduler
+from sqlite3 import Connection, Cursor
 import time
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver import Firefox, Chrome
 
 import database
 from butler import error, wait_for_page_load
 from misc.logger import log
 from models import get_player
+from models.factory import Factory
 from models.market import Market
+from models.player import Player
 
 
 class User:
     def __init__(self, name, email, password):
-        self.name = name
+        self.name: str = name
 
-        self.id = 0
-        self.player = None
+        self.id: int = 0
+        self.player: Player = None
 
-        self.email = email
-        self.password = password
+        self.email: str = email
+        self.password: str = password
 
         self.driveroptions = {}
-        self.s = None
-        self.driver = None
-        self.wait = None
-        self.main_window = None
-        self.data_window = None
+        self.s: scheduler = None
+        self.driver: Firefox | Chrome = None
+        self.wait: WebDriverWait = None
+        self.main_window: str = None
+        self.data_window: str = None
 
-        self.conn_ = None
-        self.cursor_ = None
+        self.conn_: Connection = None
+        self.cursor_: Cursor = None
 
-        self.is_resetting = False
-        self.last_request_time = 0
+        self.is_resetting: bool = False
+        self.last_request_time: float = 0
 
         self.perkoptions = {}
 
-        self.statedept = None
-        self.factory = None
+        self.statedept: str = None
+        self.factory: Factory = None
 
         self.prices = Market()
 
     @property
-    def conn(self):
+    def conn(self) -> Connection:
         if not self.conn_:
             self.conn_ = self.create_connection()
         return self.conn_
 
     @property
-    def cursor(self):
+    def cursor(self) -> Cursor:
         if not self.cursor_:
             self.cursor_ = self.conn.cursor()
         return self.cursor_
 
-    def create_connection(self):
+    def create_connection(self) -> Connection | bool:
         import sqlite3
 
         try:
             return sqlite3.connect("database.db")
         except Exception as e:
-            error(self, e, "Error creating database connection")
-            return None
+            return error(self, e, "Error creating database connection")
 
     def load_database(self):
         database.create_tables(self)
@@ -94,7 +97,6 @@ class User:
         try:
             log(self, "Booting browser...")
             if "hrome" in self.driveroptions["browser"]:
-                from selenium.webdriver import Chrome
                 from selenium.webdriver.chrome.options import Options
 
                 options = Options()
@@ -102,7 +104,6 @@ class User:
                     options.add_argument("--headless")
                 self.driver = Chrome(options=options)
             else:
-                from selenium.webdriver import Firefox
                 from selenium.webdriver.firefox.options import Options
 
                 options = Options()
@@ -143,7 +144,7 @@ class User:
                     EC.presence_of_element_located((By.CSS_SELECTOR, "#chat_send"))
                 )
                 return True
-            except:
+            except:  # noqa: E722
                 return False
 
         def ready_data_tab():
@@ -179,7 +180,7 @@ class User:
             return False
 
     def initiate_session(self):
-        self.s = sched.scheduler(time.time, time.sleep)
+        self.s = scheduler(time.time, time.sleep)
         if self.initiate_driver():
             self.id = self.driver.execute_script("return id;")
             self.player = get_player(self.id)
