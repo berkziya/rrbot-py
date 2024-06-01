@@ -46,7 +46,7 @@ def refresh_schedules(user, events_=None, daily_only=False):
         {
             "desc": "build power plants",
             "event": actions.state.economics.fix_state_power_grid,
-            "args": ("cheap",),
+            "args": ("equal",),
             "daily": False,
             "mute": True,
         },
