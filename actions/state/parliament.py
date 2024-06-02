@@ -3,6 +3,7 @@ import time
 from selenium.webdriver.common.by import By
 
 from butler import ajax, error, get_page, return_to_mainwindow
+from misc.logger import log
 
 
 def remove_self_law(user):
@@ -122,3 +123,32 @@ def explore_resource(user, resource="gold", leader=False):
     except:  # noqa: E722
         pass
     return law and pass_law
+
+
+def accept_friends_laws(user, player_id_list):
+    if not get_page(user, "parliament"):
+        return False
+    time.sleep(1)
+    try:
+        parliament_div = user.driver.find_element(
+            By.CSS_SELECTOR, "#parliament_active_laws"
+        )
+        law_divs = parliament_div.find_elements(By.CSS_SELECTOR, "div.parliament_law")
+        for law_div in law_divs:
+            law_action = law_div.get_attribute("action").removeprefix("parliament/law/")
+            if any(str(player_id) in law_action for player_id in player_id_list):
+                break
+        else:
+            # Handle case where no matching law was found
+            return_to_mainwindow(user)
+            return False
+    except Exception as e:
+        return error(user, e, "Something went wrong while accepting a law")
+    return_to_mainwindow(user)
+    log(user, f"Accepting law {law_action}")
+    result = ajax(
+        user,
+        f"/parliament/votelaw/{law_action}/pro",
+        text="Error accepting law",
+    )
+    return result
