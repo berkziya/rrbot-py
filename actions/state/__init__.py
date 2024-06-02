@@ -25,11 +25,11 @@ def border_control(user, border="opened"):
 
     law = ajax(
         user,
-        "/parliament/donew/23/0/0",
+        "parliament/donew/23/0/0",
         data="tmp_gov: '0'",
         text="Error setting border control",
     )
-    pass_law = accept_law(user, f'{"Open" if border == "opened" else "Close"} borders:') # noqa
+    pass_law = accept_law(user, f'{"Open" if border == "opened" else "Close"} borders:')  # noqa
     return law  # and pass_law
 
 
@@ -37,7 +37,7 @@ def set_minister(user, id, ministry="economic"):
     position = "set_econom"
     if ministry == "foreign":
         position = "set_mid"
-    result = ajax(user, f"/leader/{position}", "u: {id}", "Error setting minister")
+    result = ajax(user, f"leader/{position}", "u: {id}", "Error setting minister")
     return result
 
 

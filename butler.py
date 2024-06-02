@@ -141,6 +141,8 @@ def error(user, error, text=None):
 def ajax(user, url, data="", text=None, relad_after=False):
     wait_until_internet_is_back(user)
     return_to_mainwindow(user)
+    if url[0] != "/":
+        url = "/" + url
     try:
         js_ajax = f"""
         $.ajax({{

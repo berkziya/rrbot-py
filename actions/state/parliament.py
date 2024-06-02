@@ -8,7 +8,7 @@ from misc.logger import log
 
 def remove_self_law(user):
     result = ajax(
-        user, "/parliament/removelaw", text="Error removing self law", relad_after=True
+        user, "parliament/removelaw", text="Error removing self law", relad_after=True
     )
     return result
 
@@ -18,15 +18,11 @@ def accept_law(user, text):
         return False
     time.sleep(1)
     try:
-        parliament_div = user.driver.find_element(
-            By.CSS_SELECTOR, "#parliament_active_laws"
-        )
-        law_divs = parliament_div.find_elements(By.CSS_SELECTOR, "div")
+        law_divs = user.driver.find_elements(By.CSS_SELECTOR, "div.parliament_law")
         for law_div in law_divs:
             law_title = law_div.text
             if text in law_title:
-                law_action = law_div.get_attribute("action")
-                law_action = law_action.removeprefix("parliament/law/")
+                law_action = law_div.get_attribute("action").replace("law", "votelaw")
                 break
         else:
             # Handle case where no matching law was found
@@ -37,7 +33,7 @@ def accept_law(user, text):
     return_to_mainwindow(user)
     result = ajax(
         user,
-        f"/parliament/votelaw/{law_action}/pro",
+        f"{law_action}/pro",
         text="Error accepting law",
     )
     return result
@@ -57,7 +53,7 @@ def build_building(user, id, building, amount, leader=False):
     }
     law = ajax(
         user,
-        f"/parliament/donew/build_{buildings[building]}/{amount}/{id}",
+        f"parliament/donew/build_{buildings[building]}/{amount}/{id}",
         data=f"tmp_gov: '{amount}'",
         text=f"Error building {building}",
         relad_after=True,
@@ -88,7 +84,7 @@ def budget_transfer(user, id, resource, amount, leader=False):
     }
     law = ajax(
         user,
-        f"/parliament/donew/send_{resources[resource]}/{amount}/{id}",
+        f"parliament/donew/send_{resources[resource]}/{amount}/{id}",
         data=f"tmp_gov: '{amount}'",
         text=f"Error transfering {resource}",
         relad_after=True,
@@ -109,7 +105,7 @@ def explore_resource(user, resource="gold", leader=False):
     resources = {"gold": 0, "oil": 3, "ore": 4, "uranium": 11, "diamonds": 15}
     law = ajax(
         user,
-        f"/parliament/donew/42/{resources[resource]}/0",
+        f"parliament/donew/42/{resources[resource]}/0",
         text=f"Error exploring {resource}",
         relad_after=True,
     )
@@ -130,13 +126,15 @@ def accept_friends_laws(user, player_id_list):
         return False
     time.sleep(1)
     try:
-        parliament_div = user.driver.find_element(
-            By.CSS_SELECTOR, "#parliament_active_laws"
-        )
-        law_divs = parliament_div.find_elements(By.CSS_SELECTOR, "div.parliament_law")
+        law_divs = user.driver.find_elements(By.CSS_SELECTOR, "div.parliament_law")
         for law_div in law_divs:
-            law_action = law_div.get_attribute("action").removeprefix("parliament/law/")
-            if any(str(player_id) in law_action for player_id in player_id_list):
+            if str(user.player.id) in (law_div.get_attribute("upro") or ""):
+                continue
+            law_action = law_div.get_attribute("action").replace("law", "votelaw")
+            if any(
+                str(player_id) in law_action
+                for player_id in player_id_list + [user.player.id]
+            ):
                 break
         else:
             # Handle case where no matching law was found
@@ -148,7 +146,7 @@ def accept_friends_laws(user, player_id_list):
     log(user, f"Accepting law {law_action}")
     result = ajax(
         user,
-        f"/parliament/votelaw/{law_action}/pro",
+        f"{law_action}/pro",
         text="Error accepting law",
     )
     return result

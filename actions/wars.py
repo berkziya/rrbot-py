@@ -59,7 +59,7 @@ TROOPS_FOR_TYPES = {
 def cancel_autoattack(user):
     result = ajax(
         user,
-        "/war/autoset_cancel/",
+        "war/autoset_cancel/",
         text="Error cancelling autoattack",
         relad_after=True,
     )

@@ -68,7 +68,7 @@ def auto_work_factory(user, id=None, include_fix_wage=True):
         time.sleep(3)
         result = ajax(
             user,
-            "/work/autoset",
+            "work/autoset",
             data=f"mentor: 0, factory: {factory.id}, type: {RESOURCES[factory.type]}, lim: 0",
             text="Error setting auto work",
             relad_after=True,

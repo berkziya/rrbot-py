@@ -22,7 +22,7 @@ def build_military_academy(user):
     get_player_info(user)
     if user.player.region.id != user.player.residency.id:
         user.s.enter(3600, 2, build_military_academy, (user,))
-    result = ajax(user, "/slide/academy_do/", text="Error building military academy")
+    result = ajax(user, "slide/academy_do/", text="Error building military academy")
     return result
 
 

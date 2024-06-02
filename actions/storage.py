@@ -44,7 +44,7 @@ def produce_energy(user):
         return False
     result = ajax(
         user,
-        f"/storage/newproduce/17/{(howmany+2000)*10}",
+        f"storage/newproduce/17/{(howmany+2000)*10}",
         text="Error producing energy",
     )
     return result

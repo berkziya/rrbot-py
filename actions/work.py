@@ -61,7 +61,7 @@ def get_factories(user, id=None, resource="gold"):
 
 def resign_factory(user):
     result = ajax(
-        user, "/factory/resign", text="Error resigning factory", relad_after=True
+        user, "factory/resign", text="Error resigning factory", relad_after=True
     )
     return result
 
@@ -75,7 +75,7 @@ def assign_factory(user, id):
 
     result = ajax(
         user,
-        "/factory/assign",
+        "factory/assign",
         f"factory: {id}",
         f"Error assigning factory {id}",
         relad_after=True,
@@ -85,7 +85,7 @@ def assign_factory(user, id):
 
 def cancel_auto_work(user):
     result = ajax(
-        user, "/work/autoset_cancel", text="Error cancelling work", relad_after=True
+        user, "work/autoset_cancel", text="Error cancelling work", relad_after=True
     )
     return result
 
