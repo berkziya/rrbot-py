@@ -235,8 +235,6 @@ def build_indexes(user, buffer=15, show_next=False):
                     "school": region.indexes.get("school", 0) + 1,
                     "homes": 2
                     if region.indexes.get("homes", 0) == 1
-                    else 3
-                    if region.indexes.get("homes", 0) == 2
                     else 6
                     if region.indexes.get("homes", 0) < 6
                     else 0,
@@ -250,9 +248,11 @@ def build_indexes(user, buffer=15, show_next=False):
                 current_index = region.indexes.get(building, 0)
                 dyn_buffer = buffer
                 target_index = int(config[id][building])
+                if target_index == 0:
+                    continue
                 if building == "hospital" and target_index < 6:
                     target_index = 0
-                if building == "homes" and current_index <= 2 and target_index <= 2:
+                if building == "homes" and current_index < 3 and target_index < 3:
                     dyn_buffer = buffer * 2
                     target_index = 2
                 target = indexes[building].get(target_index, 0) + dyn_buffer
