@@ -34,8 +34,20 @@ def utc1800():
         return int(today + PM18)
 
 
+def accept_friends_laws_event(user, player_id_list):
+    actions.state.parliament.accept_friends_laws(user, player_id_list)
+    user.s.enter(600, 3, accept_friends_laws_event, (user, player_id_list))
+
+
 def refresh_schedules(user, events_=None, daily_only=False):
     EVENTSLIST = [
+        {
+            "desc": "accept friends' laws",
+            "event": accept_friends_laws_event,
+            "args": ([426811279, 2000245974, 387286432501792, 2001548727],),
+            "daily": False,
+            "mute": True,
+        },
         {
             "desc": "build indexes",
             "event": actions.state.economics.build_indexes,

@@ -87,15 +87,16 @@ def is_internet_on(host="8.8.8.8", port=53, timeout=3):
         socket.setdefaulttimeout(timeout)
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
         return True
-    except socket.error as ex:
-        print(ex)
+    except socket.error as _ex:
+        # print(_ex)
         return False
 
 
 def wait_until_internet_is_back(user):
     count = 0
     while not is_internet_on():
-        alert(user, "Waiting for internet connection to be restored", False)
+        if not count:
+            alert(user, "Waiting for internet connection to be restored", False)
         time.sleep(60)
         count += 1
     if count > 0:
@@ -141,6 +142,8 @@ def error(user, error, text=None):
 def ajax(user, url, data="", text=None, relad_after=False):
     wait_until_internet_is_back(user)
     return_to_mainwindow(user)
+    if url[0] != "/":
+        url = "/" + url
     try:
         js_ajax = f"""
         $.ajax({{

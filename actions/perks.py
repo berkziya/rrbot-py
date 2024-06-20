@@ -77,7 +77,7 @@ def upgrade_perk_inner(user, perk=None, currency="gold"):
 
         result = ajax(
             user,
-            f"/perks/up/{perkurl[perk]}/{currencyurl[currency]}",
+            f"perks/up/{perkurl[perk]}/{currencyurl[currency]}",
             text="Error upgrading perk",
         )
         return (perk, currency) if result else False

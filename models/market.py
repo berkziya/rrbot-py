@@ -1,10 +1,10 @@
 class Market:
     def __init__(self):
         self.prices = {
-            "money": [0.55],
+            "money": [0.60],
             "gold": [2.5],
-            "oil": [108],
-            "ore": [99],
+            "oil": [106],
+            "ore": [98],
             "uranium": [920],
             "diamonds": [625e3],
             "lox": [2140],

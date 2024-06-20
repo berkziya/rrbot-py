@@ -120,6 +120,7 @@ class Region:
             + 2 * self.buildings["military"]
             + self.buildings["school"]
             + self.buildings["missile"]
+            + self.buildings["sea"]
             + self.buildings["power"]
             + self.buildings["spaceport"]
             + self.buildings["airport"]
