@@ -144,7 +144,7 @@ def parse_regions_table(user, id=None, only_df=False):
                 reg.set_autonomy(None)
             reg.set_num_of_citizens(int(row_dict["pop"]))
             reg.set_num_of_residents(int(row_dict["res"]))
-            reg.set_buildings("macademy", int(row_dict["dam ata"]) / 45)
+            reg.set_buildings("macademy", int(row_dict["dam ata"]) / 900_000)
             reg.set_buildings("hospital", int(row_dict["ho"]))
             reg.set_buildings("military", int(row_dict["mb"]))
             reg.set_buildings("school", int(row_dict["sc"]))
