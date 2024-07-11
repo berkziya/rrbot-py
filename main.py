@@ -10,21 +10,20 @@ from misc.utils import slang_to_num
 from session import session
 from user import User
 
-DEFAULT_CONFIG = (
-"""[general]
+DEFAULT_CONFIG = """[general]
 browser = firefox
 headless = true
 
 [user]
 email = user1@example.com
-password = password1
+password = password
 goldperks = edu str end
 eduweight = 0
 minlvl4gold = 999
 mingold4gold = 40k
 statedept = gold
 """
-)
+
 
 def create_config_file(config_path):
     with open(config_path, "w") as f:

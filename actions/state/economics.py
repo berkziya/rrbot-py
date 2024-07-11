@@ -83,7 +83,9 @@ def fix_state_power_grid(user, type="equal"):
         diffs[state.capital.id] = need
     elif type == "cheap":
         while need > 0:
-            region = min(state.regions, key=lambda x: x.power_production - diffs.get(x.id, 0))
+            region = min(
+                state.regions, key=lambda x: x.power_production - diffs.get(x.id, 0)
+            )
             diffs[region.id] = diffs.get(region.id, 0) - 10
             need -= 1
     else:  # type == "equal
