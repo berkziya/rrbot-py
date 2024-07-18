@@ -116,15 +116,22 @@ class Region:
     @property
     def initial_defend_damage(self) -> int:
         return (
-            self.buildings["hospital"]
-            + 2 * self.buildings["military"]
-            + self.buildings["school"]
-            + self.buildings["missile"]
-            + self.buildings["sea"]
-            + self.buildings["power"]
-            + self.buildings["spaceport"]
-            + self.buildings["airport"]
-        ) * 100_000
+            (
+                self.buildings["hospital"]
+                + 2 * self.buildings["military"]
+                + self.buildings["school"]
+                + self.buildings["missile"]
+                + self.buildings["sea"]
+                + self.buildings["power"]
+                + self.buildings["spaceport"]
+                + self.buildings["airport"]
+            )
+            * 100_000
+        ) + self.initial_attack_damage
+
+    @property
+    def defence_damage(self) -> int:
+        return self.initial_defend_damage - self.initial_attack_damage
 
     def set_tax(self, value: float):
         self.tax = value

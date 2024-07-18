@@ -257,7 +257,8 @@ def calculate_damage(
             buffs += region1.indexes["military"] / 20
 
     buffs += (
-        2 * player.perks["str"]
+        600  # homeland bonus
+        + player.perks["str"] * 2
         + player.perks["edu"]
         + player.perks["end"]
         + player.level

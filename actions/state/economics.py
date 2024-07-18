@@ -83,8 +83,10 @@ def fix_state_power_grid(user, type="equal"):
         diffs[state.capital.id] = need
     elif type == "cheap":
         while need > 0:
-            region = min(state.regions, key=lambda x: x.power_production)
-            diffs[region.id] = diffs.get(region.id, 0) + 1
+            region = min(
+                state.regions, key=lambda x: x.power_production - diffs.get(x.id, 0)
+            )
+            diffs[region.id] = diffs.get(region.id, 0) - 10
             need -= 1
     else:  # type == "equal
         for region in state.regions:
@@ -92,11 +94,10 @@ def fix_state_power_grid(user, type="equal"):
             diffs[region.id] = diff
 
     what_to_build = {id: {"power": 0} for id in diffs}
-    while need > 0:
+    while sum(diffs.values()) < 0:
         region = min(diffs, key=diffs.get)
         what_to_build[region]["power"] += 1
         diffs[region] += 10
-        need -= 1
 
     costs = {}
     for id in what_to_build:
@@ -237,7 +238,7 @@ def build_indexes(user, buffer=15, show_next=False):
                     if region.indexes.get("homes", 0) == 1
                     else 6
                     if region.indexes.get("homes", 0) < 6
-                    else 0,
+                    else 10,
                 }
         for id, region in regions.items():
             if id not in config:

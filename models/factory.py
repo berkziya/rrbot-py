@@ -57,7 +57,7 @@ class Factory:
         self.wage = value
 
     def get_wage(self) -> float:
-        return self.wage if self.fixed_wage else self.wage * (self.level**0.8)
+        return self.wage if self.fixed_wage else self.wage * (self.level**0.8) * 1.2
 
     def set_fixed_wage(self, value: bool):
         self.fixed_wage = value
