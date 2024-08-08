@@ -44,7 +44,7 @@ def refresh_schedules(user, events_=None, daily_only=False):
         {
             "desc": "accept friends' laws",
             "event": accept_friends_laws_event,
-            "args": ([426811279, 2000245974, 387286432501792, 2001548727],),
+            "args": ([2000768922, 387286432501792, 2001548727],),
             "daily": False,
             "mute": True,
         },
