@@ -254,7 +254,7 @@ def build_indexes(user, buffer=15, show_next=False):
                 if building == "hospital" and target_index < 6:
                     target_index = 0
                 if building == "homes" and current_index < 3 and target_index < 3:
-                    dyn_buffer = buffer * 2
+                    dyn_buffer = buffer * 3
                     target_index = 2
                 target = indexes[building].get(target_index, 0) + dyn_buffer
                 if current < target - buffer / 2:
