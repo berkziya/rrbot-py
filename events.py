@@ -48,13 +48,13 @@ def refresh_schedules(user, events_=None, daily_only=False):
             "daily": False,
             "mute": True,
         },
-        {
-            "desc": "build indexes",
-            "event": actions.state.economics.build_indexes,
-            "args": (15,),
-            "daily": False,
-            "mute": True,
-        },
+        # {
+        #     "desc": "build indexes",
+        #     "event": actions.state.economics.build_indexes,
+        #     "args": (15,),
+        #     "daily": False,
+        #     "mute": True,
+        # },
         {
             "desc": "build power plants",
             "event": actions.state.economics.fix_state_power_grid,
